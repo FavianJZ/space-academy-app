@@ -231,13 +231,14 @@ const CursorAura: React.FC<{ activeCharacter: 'pink' | 'white' | null }> = ({ ac
 const CharacterStage: React.FC<{
   charType: 'pink' | 'white';
   position: [number, number, number];
+  modelScale: number;
   isHovered: boolean;
   isSelected: boolean;
   onHover: () => void;
   onLeave: () => void;
   onSelect: () => void;
   charRef: React.RefObject<THREE.Group | null>;
-}> = ({ charType, position, isHovered, isSelected, onHover, onLeave, onSelect, charRef }) => {
+}> = ({ charType, position, modelScale, isHovered, isSelected, onHover, onLeave, onSelect, charRef }) => {
   const groupRef = useRef<THREE.Group>(null);
   const targetScale = useRef(1);
   const isActive = isHovered || isSelected;
@@ -276,7 +277,7 @@ const CharacterStage: React.FC<{
         onPointerOver={onHover}
         onPointerOut={onLeave}
       >
-        {isPink ? <SpacemanPink scale={1.1} /> : <SpacemanWhite scale={1.1} />}
+        {isPink ? <SpacemanPink scale={modelScale} /> : <SpacemanWhite scale={modelScale} />}
       </group>
 
       {/* Invisible click hitbox */}
@@ -399,12 +400,17 @@ const CharacterSelection: React.FC = () => {
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [showUI, setShowUI] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [isCompactHeight, setIsCompactHeight] = useState(false);
 
   useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth <= 768 || 'ontouchstart' in window);
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
+    const updateViewportFlags = () => {
+      setIsMobile(window.innerWidth <= 768 || 'ontouchstart' in window);
+      setIsCompactHeight(window.innerHeight <= 820);
+    };
+
+    updateViewportFlags();
+    window.addEventListener('resize', updateViewportFlags);
+    return () => window.removeEventListener('resize', updateViewportFlags);
   }, []);
 
   useEffect(() => {
@@ -499,7 +505,7 @@ const CharacterSelection: React.FC = () => {
         }}
       >
         <Suspense fallback={null}>
-          <PerspectiveCamera makeDefault position={[0, 1, 10]} fov={isMobile ? 75 : 55} />
+          <PerspectiveCamera makeDefault position={[0, isCompactHeight ? 0.8 : 1, 10]} fov={isMobile ? 75 : isCompactHeight ? 62 : 55} />
           <CameraSway />
 
           <ambientLight intensity={0.3} />
@@ -512,7 +518,8 @@ const CharacterSelection: React.FC = () => {
 
           <CharacterStage
             charType="pink"
-            position={[isMobile ? -2.2 : -3.5, 0, 0]}
+            position={[isMobile ? -2.2 : -3.5, isCompactHeight ? -0.42 : 0, 0]}
+            modelScale={isCompactHeight ? 0.94 : 1.1}
             isHovered={hoveredCharacter === 'pink'}
             isSelected={selectedChar === 'pink'}
             onHover={() => handleHover('pink')}
@@ -523,7 +530,8 @@ const CharacterSelection: React.FC = () => {
 
           <CharacterStage
             charType="white"
-            position={[isMobile ? 2.2 : 3.5, 0, 0]}
+            position={[isMobile ? 2.2 : 3.5, isCompactHeight ? -0.42 : 0, 0]}
+            modelScale={isCompactHeight ? 0.94 : 1.1}
             isHovered={hoveredCharacter === 'white'}
             isSelected={selectedChar === 'white'}
             onHover={() => handleHover('white')}

@@ -16,6 +16,99 @@ import type { NavigationRoute } from '../types/threejs-intro.types';
 import AdaptiveCanvas from './AdaptiveCanvas';
 import './NewIntroScene.css';
 
+const CockpitLightingRig: React.FC<{
+  gameState: any;
+  interiorLightColor: number;
+  interiorLightIntensity: number;
+}> = ({ gameState, interiorLightColor, interiorLightIntensity }) => {
+  const dashLightRef = useRef<THREE.PointLight>(null);
+  const leftLightRef = useRef<THREE.PointLight>(null);
+  const rightLightRef = useRef<THREE.PointLight>(null);
+  const rearLightRef = useRef<THREE.PointLight>(null);
+  const dashGlowRef = useRef<THREE.Mesh>(null);
+  const canopyGlowRef = useRef<THREE.Mesh>(null);
+  const sideGlowRef = useRef<THREE.Mesh>(null);
+
+  useFrame(({ clock }) => {
+    const time = clock.getElapsedTime();
+    const base = Math.max(interiorLightIntensity, 0.9);
+    const warpBoost = Math.min(1, (gameState?.kecepatanWarp ?? 0) * 0.25);
+    const alarmBoost = gameState?.isAlarmActive ? 1 : 0;
+    const breathing = 1 + Math.sin(time * 1.3) * 0.05;
+    const flicker = alarmBoost ? 0.7 + Math.abs(Math.sin(time * 20)) * 0.6 : 1;
+
+    const baseColor = new THREE.Color(interiorLightColor);
+    const coolColor = baseColor.clone().lerp(new THREE.Color('#7ef9ff'), 0.35);
+    const warmColor = baseColor.clone().lerp(new THREE.Color('#ffb36b'), 0.22);
+    const alarmColor = new THREE.Color('#ff3344');
+
+    if (dashLightRef.current) {
+      dashLightRef.current.color.copy(baseColor);
+      dashLightRef.current.intensity = base * 1.15 * breathing * flicker + warpBoost * 0.45;
+    }
+
+    if (leftLightRef.current) {
+      leftLightRef.current.color.copy(coolColor);
+      leftLightRef.current.intensity = 0.8 + base * 0.45 + warpBoost * 0.25;
+    }
+
+    if (rightLightRef.current) {
+      rightLightRef.current.color.copy(warmColor);
+      rightLightRef.current.intensity = 0.75 + base * 0.38 + warpBoost * 0.2;
+    }
+
+    if (rearLightRef.current) {
+      rearLightRef.current.color.copy(alarmBoost ? alarmColor : coolColor);
+      rearLightRef.current.intensity = alarmBoost
+        ? 0.45 + Math.abs(Math.sin(time * 24)) * 0.55
+        : 0.18 + warpBoost * 0.12;
+    }
+
+    if (dashGlowRef.current) {
+      const material = dashGlowRef.current.material as THREE.MeshBasicMaterial;
+      material.color.copy(baseColor);
+      material.opacity = 0.12 + base * 0.045 + warpBoost * 0.04 + alarmBoost * 0.09;
+      dashGlowRef.current.scale.setScalar(1 + Math.sin(time * 2.2) * 0.02 + warpBoost * 0.04);
+    }
+
+    if (canopyGlowRef.current) {
+      const material = canopyGlowRef.current.material as THREE.MeshBasicMaterial;
+      material.color.copy(alarmBoost ? alarmColor : coolColor);
+      material.opacity = 0.07 + base * 0.03 + alarmBoost * 0.08;
+    }
+
+    if (sideGlowRef.current) {
+      const material = sideGlowRef.current.material as THREE.MeshBasicMaterial;
+      material.color.copy(warmColor);
+      material.opacity = 0.06 + base * 0.025 + warpBoost * 0.03;
+    }
+  });
+
+  return (
+    <>
+      <pointLight ref={dashLightRef} position={[0, 10.4, 4.1]} distance={16} color={interiorLightColor} intensity={1} />
+      <pointLight ref={leftLightRef} position={[-4.6, 12.3, 1.8]} distance={12} color="#7ef9ff" intensity={1} />
+      <pointLight ref={rightLightRef} position={[4.6, 12.3, 1.8]} distance={12} color="#ffb36b" intensity={0.9} />
+      <pointLight ref={rearLightRef} position={[0, 15.6, -1.8]} distance={18} color="#bffcff" intensity={0.3} />
+
+      <mesh ref={dashGlowRef} position={[0, 10.7, 4.25]} renderOrder={1}>
+        <planeGeometry args={[8.8, 1.5]} />
+        <meshBasicMaterial transparent opacity={0.12} color={interiorLightColor} depthWrite={false} blending={THREE.AdditiveBlending} />
+      </mesh>
+
+      <mesh ref={canopyGlowRef} position={[0, 15.15, 0.8]} renderOrder={1}>
+        <planeGeometry args={[10.8, 0.5]} />
+        <meshBasicMaterial transparent opacity={0.08} color="#eafcff" depthWrite={false} blending={THREE.AdditiveBlending} />
+      </mesh>
+
+      <mesh ref={sideGlowRef} position={[0, 12.0, 3.2]} renderOrder={1}>
+        <planeGeometry args={[6.8, 0.35]} />
+        <meshBasicMaterial transparent opacity={0.05} color="#ffb36b" depthWrite={false} blending={THREE.AdditiveBlending} />
+      </mesh>
+    </>
+  );
+};
+
 /**
  * Main 3D Scene Component
  */
@@ -88,11 +181,17 @@ const IntroScene3D: React.FC<{
       {/* Lighting Setup - Exact match from original */}
       <ambientLight intensity={0.1} color={0xffffff} />
       <directionalLight intensity={0.2} position={[5, 5, 5]} color={0xffffff} />
+
+      <CockpitLightingRig
+        gameState={gameState}
+        interiorLightColor={interiorLightColor}
+        interiorLightIntensity={interiorLightIntensity}
+      />
       
       {/* Interior cockpit light - Dynamic color and intensity */}
       <pointLight 
         ref={interiorLightRef}
-        position={[0, 13, 0]} 
+        position={[0, 13, 2.2]} 
         color={interiorLightColor}
         intensity={interiorLightIntensity}
       />
@@ -140,7 +239,7 @@ export const NewIntroScene: React.FC<{
   const [statusText, setStatusText] = useState('AWAITING COMMANDER\'S AUTHORIZATION...');
   const [flashOpacity, setFlashOpacity] = useState(0);
   const [interiorLightColor, setInteriorLightColor] = useState(0x00ffff);
-  const [interiorLightIntensity, setInteriorLightIntensity] = useState(0);
+  const [interiorLightIntensity, setInteriorLightIntensity] = useState(1.25);
   const [asteroidVisible, setAsteroidVisible] = useState(false);
   const [asteroidAnimating, setAsteroidAnimating] = useState(false);
 

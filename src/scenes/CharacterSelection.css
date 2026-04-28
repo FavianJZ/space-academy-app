@@ -850,6 +850,48 @@
   }
 }
 
+/* === Short Desktop Viewports (e.g. 1366x768, laptop screens) === */
+@media (max-height: 820px) and (min-width: 769px) {
+  .cs-overlay {
+    justify-content: flex-start;
+    padding: 18px 18px 16px;
+    gap: 12px;
+  }
+
+  .cs-title-section {
+    margin-bottom: auto;
+  }
+
+  .cs-title-main {
+    font-size: clamp(2rem, 4.8vw, 4.6rem);
+  }
+
+  .cs-title-sub {
+    font-size: clamp(0.95rem, 2vw, 1.9rem);
+  }
+
+  .cs-instruction {
+    margin-top: 10px;
+  }
+
+  .cs-focus-panel {
+    width: min(720px, calc(100% - 24px));
+    padding: 10px 14px;
+  }
+
+  .cs-cards-container {
+    margin-bottom: 8px;
+  }
+
+  .cs-card {
+    min-height: 320px;
+  }
+
+  .cs-card-content {
+    padding: 18px 16px 16px;
+  }
+}
+
 /* === Mobile Landscape + Small Tablets (600px - 768px) === */
 @media (max-width: 768px) {
   .cs-overlay {
