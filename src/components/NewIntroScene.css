@@ -1,0 +1,43 @@
+/* New Intro Scene Styling */
+.new-intro-scene-container {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+  background: linear-gradient(135deg, #0a0a2a 0%, #1a0033 100%);
+}
+
+.intro-canvas {
+  background: radial-gradient(ellipse at center, #0a0a2a 0%, #000000 100%);
+}
+
+.flash-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #ffffff;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* Ensure Three.js canvas fills the viewport */
+canvas {
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* Disable default scrolling */
+body {
+  overflow: hidden;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .new-intro-scene-container {
+    height: 100vh;
+  }
+}

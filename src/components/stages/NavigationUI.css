@@ -1,0 +1,64 @@
+/* Navigation UI - Sesuai desain temanmu */
+#nav-layer {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 15;
+  width: 80%;
+  max-width: 600px;
+}
+
+.nav-box {
+  background: rgba(0, 15, 20, 0.9);
+  border: 2px solid #00ffff;
+  box-shadow: 0 0 20px rgba(255, 204, 0, 0.4);
+  padding: 30px;
+  text-align: center;
+  border-radius: 10px;
+  font-family: 'Courier New', monospace;
+  color: #00ffff;
+}
+
+.nav-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.nav-btn {
+  background: rgba(0, 255, 255, 0.1);
+  border: 1px solid #00ffff;
+  color: #00ffff;
+  padding: 15px;
+  font-family: 'Courier New', monospace;
+  font-size: 14px;
+  cursor: pointer;
+  transition: 0.3s;
+  text-transform: uppercase;
+  border-radius: 5px;
+}
+
+.nav-btn:hover {
+  background: #00ffff;
+  color: #000;
+  box-shadow: 0 0 15px #00ffff;
+  transform: scale(1.05);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  #nav-layer {
+    width: 90%;
+  }
+
+  .nav-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .nav-btn {
+    padding: 12px;
+    font-size: 12px;
+  }
+}

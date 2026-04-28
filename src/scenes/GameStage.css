@@ -1,0 +1,498 @@
+/* ═══════════════════════════════════════════════════════════
+   GameStage.css — Fully Responsive
+   Targets: Android, iPhone SE→Pro Max, iPad, Tablets, Desktop
+   Breakpoints: 1200 / 1024 / 768 / 640 / 480 / 380 / 360
+   ═══════════════════════════════════════════════════════════ */
+
+/* ─── CSS Custom Properties ─── */
+:root {
+  --gs-pad-x: clamp(1rem, 3vw, 2.5rem);
+  --gs-pad-y: clamp(1.5rem, 4vh, 3.75rem);
+  --gs-radius: clamp(12px, 2vw, 20px);
+  --gs-gap: clamp(1rem, 2.5vw, 2.5rem);
+}
+
+/* ─── Container ─── */
+.game-stage-container {
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  background: linear-gradient(135deg, #0a1428 0%, #0f2439 50%, #051418 100%);
+  overflow: hidden;
+}
+
+/* ─── Error State ─── */
+.game-stage-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  background: linear-gradient(135deg, #0a1428 0%, #0f2439 50%, #051418 100%);
+  color: #ff6464;
+  font-family: 'Orbitron', sans-serif;
+  padding: var(--gs-pad-x);
+  text-align: center;
+}
+
+.game-stage-error h1 {
+  font-size: clamp(1.25rem, 4vw, 2rem);
+  margin-bottom: clamp(1rem, 3vh, 1.875rem);
+  text-shadow: 0 0 10px rgba(255, 100, 100, 0.5);
+}
+
+.game-stage-error button {
+  padding: clamp(0.6rem, 1.5vw, 0.75rem) clamp(1.2rem, 3vw, 1.875rem);
+  font-size: clamp(0.8rem, 1.5vw, 1rem);
+  border: 2px solid #ff6464;
+  border-radius: 8px;
+  background: rgba(255, 100, 100, 0.2);
+  color: #ff6464;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: 'Orbitron', sans-serif;
+  min-height: 44px;
+  min-width: 44px;
+}
+
+.game-stage-error button:hover {
+  background: rgba(255, 100, 100, 0.3);
+  box-shadow: 0 0 20px rgba(255, 100, 100, 0.5);
+  transform: scale(1.05);
+}
+
+.game-stage-error button:active {
+  transform: scale(0.97);
+}
+
+/* ─── Loading ─── */
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  color: #00ffff;
+  font-size: clamp(0.9rem, 2vw, 1.25rem);
+  font-family: 'Orbitron', sans-serif;
+  animation: pulse 2s infinite;
+  padding: 1rem;
+  text-align: center;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* ─── Completion Screen ─── */
+.completion-screen {
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  background: linear-gradient(135deg, #0a1428 0%, #0f2439 50%, #051418 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--gs-pad-x);
+  padding-top: env(safe-area-inset-top, 0);
+  padding-bottom: env(safe-area-inset-bottom, 0);
+  overflow-y: auto;
+}
+
+.completion-content {
+  background: rgba(10, 50, 100, 0.95);
+  border: clamp(2px, 0.3vw, 3px) solid #00ff88;
+  border-radius: var(--gs-radius);
+  padding: var(--gs-pad-y) var(--gs-pad-x);
+  max-width: 700px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 0 50px rgba(0, 255, 136, 0.3), inset 0 0 30px rgba(0, 255, 136, 0.1);
+  animation: slideInDown 0.8s ease-out;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+@keyframes slideInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.completion-content h1 {
+  color: #00ff88;
+  font-size: clamp(1.5rem, 5vw, 3rem);
+  margin-bottom: clamp(1rem, 3vh, 1.875rem);
+  text-shadow: 0 0 20px rgba(0, 255, 136, 0.6);
+  letter-spacing: clamp(1px, 0.15vw, 2px);
+  font-family: 'Orbitron', sans-serif;
+  word-break: break-word;
+}
+
+.completion-message {
+  color: #ffffff;
+  font-size: clamp(0.85rem, 1.8vw, 1.125rem);
+  margin-bottom: var(--gs-gap);
+  line-height: 1.6;
+  white-space: pre-wrap;
+  font-family: 'Roboto Mono', monospace;
+}
+
+/* ─── Score Board ─── */
+.score-board {
+  background: rgba(0, 100, 200, 0.3);
+  border: 2px solid #00ffff;
+  border-radius: clamp(8px, 1.2vw, 10px);
+  padding: clamp(1rem, 2.5vw, 1.875rem);
+  margin-bottom: var(--gs-gap);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+.score-board h2 {
+  color: #00ffff;
+  margin: 0 0 clamp(0.5rem, 1.5vh, 0.9375rem) 0;
+  font-size: clamp(1rem, 2.5vw, 1.5rem);
+  font-family: 'Orbitron', sans-serif;
+}
+
+.score-display {
+  font-size: clamp(2rem, 7vw, 3.5rem);
+  color: #ffaa00;
+  font-weight: bold;
+  text-shadow: 0 0 20px rgba(255, 170, 0, 0.5);
+  margin-bottom: clamp(0.25rem, 1vh, 0.625rem);
+  font-family: 'Orbitron', sans-serif;
+}
+
+.completion-rank {
+  color: #ffaa00;
+  font-size: clamp(0.8rem, 1.5vw, 1rem);
+  margin: 0;
+  font-family: 'Roboto Mono', monospace;
+}
+
+/* ─── Leaderboard Preview ─── */
+.leaderboard-preview {
+  background: rgba(0, 50, 100, 0.5);
+  border: 1px solid #00ffff;
+  border-radius: clamp(8px, 1.2vw, 10px);
+  padding: clamp(0.8rem, 2vw, 1.25rem);
+  margin-bottom: var(--gs-gap);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+.leaderboard-preview h3 {
+  color: #00ffff;
+  margin-top: 0;
+  font-size: clamp(0.9rem, 1.8vw, 1.125rem);
+  font-family: 'Orbitron', sans-serif;
+}
+
+/* ─── Mini Leaderboard ─── */
+.mini-leaderboard {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(0.4rem, 1vw, 0.625rem);
+}
+
+.leaderboard-mini-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: clamp(0.5rem, 1.2vw, 0.625rem);
+  background: rgba(0, 255, 255, 0.1);
+  border-radius: 5px;
+  color: #ffffff;
+  font-family: 'Roboto Mono', monospace;
+  font-size: clamp(0.75rem, 1.4vw, 0.9rem);
+}
+
+.leaderboard-mini-row .rank {
+  color: #ffaa00;
+  font-weight: bold;
+  width: clamp(28px, 5vw, 40px);
+  flex-shrink: 0;
+}
+
+.leaderboard-mini-row .name {
+  flex: 1;
+  margin-left: clamp(0.5rem, 1.5vw, 0.9375rem);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.leaderboard-mini-row .score {
+  color: #00ff88;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+/* ─── Menu Button ─── */
+.menu-button {
+  padding: clamp(0.6rem, 1.5vw, 0.9375rem) clamp(1.5rem, 4vw, 2.5rem);
+  font-size: clamp(0.8rem, 1.5vw, 1rem);
+  font-weight: bold;
+  background: #00ff88;
+  color: #000;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-family: 'Orbitron', sans-serif;
+  min-height: 44px;
+  min-width: 44px;
+}
+
+.menu-button:hover {
+  background: #ffffff;
+  box-shadow: 0 0 30px rgba(0, 255, 136, 0.5);
+  transform: scale(1.05);
+}
+
+.menu-button:active {
+  transform: scale(0.97);
+}
+
+/* ─── Explanation Box ─── */
+.explanation-box {
+  margin-top: clamp(0.8rem, 2vw, 1.25rem);
+  padding: clamp(0.7rem, 1.5vw, 0.9375rem);
+  background: rgba(0, 255, 136, 0.15);
+  border-left: 4px solid #00ff88;
+  border-radius: 6px;
+  animation: slideIn 0.4s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.explanation-box p {
+  margin: 0;
+  color: #ffffff;
+  font-size: clamp(0.75rem, 1.4vw, 0.875rem);
+  line-height: 1.5;
+  font-family: 'Roboto Mono', monospace;
+}
+
+.explanation-box strong {
+  color: #00ff88;
+  font-weight: bold;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   RESPONSIVE BREAKPOINTS
+   ═══════════════════════════════════════════════════════════ */
+
+/* ─── Large Tablets / Small Desktops ─── */
+@media (max-width: 1024px) {
+  .completion-content {
+    max-width: 600px;
+  }
+}
+
+/* ─── Tablets (iPad, etc.) ─── */
+@media (max-width: 768px) {
+  .completion-content {
+    max-width: 95%;
+    border-width: 2px;
+  }
+
+  .menu-button {
+    width: 100%;
+    max-width: 320px;
+  }
+}
+
+/* ─── Large Phones / Small Tablets ─── */
+@media (max-width: 640px) {
+  .completion-screen {
+    padding: 1rem;
+    align-items: flex-start;
+    padding-top: max(1rem, env(safe-area-inset-top, 0));
+  }
+
+  .completion-content {
+    max-height: 90vh;
+    max-height: 90dvh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .leaderboard-mini-row {
+    padding: 0.5rem;
+  }
+}
+
+/* ─── Phones ─── */
+@media (max-width: 480px) {
+  .completion-screen {
+    padding: 0.75rem;
+  }
+
+  .completion-content {
+    border-radius: 12px;
+  }
+
+  .menu-button {
+    width: 100%;
+    max-width: none;
+    padding: 0.75rem 1rem;
+  }
+
+  .score-board {
+    padding: 0.75rem;
+  }
+
+  .leaderboard-preview {
+    padding: 0.6rem;
+  }
+}
+
+/* ─── Small Phones (iPhone SE, Galaxy S) ─── */
+@media (max-width: 380px) {
+  .completion-content {
+    padding: 1rem 0.75rem;
+  }
+
+  .leaderboard-mini-row .name {
+    max-width: 100px;
+  }
+}
+
+/* ─── Very Small Phones ─── */
+@media (max-width: 360px) {
+  .completion-content {
+    padding: 0.75rem 0.6rem;
+  }
+}
+
+/* ─── Landscape Mode ─── */
+@media (orientation: landscape) and (max-height: 500px) {
+  .completion-screen {
+    align-items: flex-start;
+    overflow-y: auto;
+    padding: 0.5rem 2rem;
+  }
+
+  .completion-content {
+    max-height: none;
+    padding: 1rem 1.5rem;
+  }
+
+  .completion-content h1 {
+    font-size: clamp(1.2rem, 4vw, 1.8rem);
+    margin-bottom: 0.5rem;
+  }
+
+  .completion-message {
+    font-size: clamp(0.75rem, 1.5vw, 0.9rem);
+    margin-bottom: 0.5rem;
+  }
+
+  .score-board {
+    padding: 0.5rem 1rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .score-display {
+    font-size: clamp(1.5rem, 5vw, 2rem);
+  }
+
+  .leaderboard-preview {
+    margin-bottom: 0.5rem;
+  }
+
+  .menu-button {
+    padding: 0.5rem 2rem;
+  }
+}
+
+/* ─── iPad-specific ─── */
+@media only screen
+  and (min-device-width: 768px)
+  and (max-device-width: 1024px)
+  and (-webkit-min-device-pixel-ratio: 2) {
+  .completion-content {
+    max-width: 80%;
+  }
+}
+
+/* ─── Safe Area (notch phones) ─── */
+@supports (padding: env(safe-area-inset-bottom)) {
+  .completion-screen {
+    padding-left: max(var(--gs-pad-x), env(safe-area-inset-left, 0));
+    padding-right: max(var(--gs-pad-x), env(safe-area-inset-right, 0));
+    padding-bottom: max(0.5rem, env(safe-area-inset-bottom, 0));
+  }
+
+  .menu-button {
+    margin-bottom: env(safe-area-inset-bottom, 0);
+  }
+}
+
+/* ─── Touch Device Optimizations ─── */
+@media (hover: none) and (pointer: coarse) {
+  .menu-button {
+    min-height: 48px;
+    font-size: clamp(0.85rem, 1.6vw, 1rem);
+  }
+
+  .game-stage-error button {
+    min-height: 48px;
+  }
+
+  .menu-button:hover {
+    transform: none;
+    box-shadow: none;
+  }
+
+  .menu-button:active {
+    transform: scale(0.95);
+    background: #00dd77;
+  }
+
+  .game-stage-error button:hover {
+    transform: none;
+  }
+
+  .game-stage-error button:active {
+    transform: scale(0.95);
+  }
+}
+
+/* ─── Reduced Motion ─── */
+@media (prefers-reduced-motion: reduce) {
+  .completion-content {
+    animation: none;
+  }
+
+  .explanation-box {
+    animation: none;
+  }
+
+  .loading {
+    animation: none;
+    opacity: 1;
+  }
+}

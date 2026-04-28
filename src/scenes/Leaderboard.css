@@ -1,0 +1,493 @@
+/* ═══════════════════════════════════════════════════════════
+   Leaderboard.css — Fully Responsive (deduplicated)
+   Targets: Android, iPhone SE→Pro Max, iPad, Tablets, Desktop
+   Breakpoints: 1200 / 1024 / 768 / 640 / 480 / 380 / 360
+   ═══════════════════════════════════════════════════════════ */
+
+/* ─── CSS Custom Properties ─── */
+:root {
+  --lb-pad: clamp(1rem, 3vw, 2.5rem);
+  --lb-radius: clamp(10px, 2vw, 15px);
+  --lb-cell-pad: clamp(0.5rem, 1.2vw, 0.9375rem);
+}
+
+/* ─── Container ─── */
+.leaderboard-container {
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  background: linear-gradient(135deg, #0a1428 0%, #0f2439 50%, #051418 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--lb-pad);
+  font-family: 'Orbitron', sans-serif;
+  position: relative;
+  overflow: hidden;
+}
+
+.leaderboard-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at 50% 50%, rgba(0, 150, 200, 0.1) 0%, rgba(0, 50, 100, 0.3) 100%);
+  pointer-events: none;
+}
+
+/* ─── Content Card ─── */
+.leaderboard-content {
+  max-width: 1000px;
+  width: 100%;
+  background: rgba(10, 50, 100, 0.95);
+  border: clamp(2px, 0.3vw, 3px) solid #00ffff;
+  border-radius: var(--lb-radius);
+  padding: var(--lb-pad);
+  box-shadow: 0 0 50px rgba(0, 255, 255, 0.3), inset 0 0 30px rgba(0, 255, 255, 0.1);
+  position: relative;
+  z-index: 1;
+  animation: slideInUp 0.6s ease-out;
+  max-height: 90vh;
+  max-height: 90dvh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ─── Header ─── */
+.leaderboard-header {
+  text-align: center;
+  margin-bottom: clamp(1.25rem, 4vh, 2.5rem);
+}
+
+.leaderboard-header h1 {
+  margin: 0 0 clamp(0.3rem, 1vh, 0.625rem) 0;
+  color: #00ff88;
+  font-size: clamp(1.1rem, 3.5vw, 2.25rem);
+  text-shadow: 0 0 20px #00ff88;
+  letter-spacing: clamp(1px, 0.2vw, 2px);
+  word-break: break-word;
+}
+
+.leaderboard-header p {
+  margin: 0;
+  color: #00ffff;
+  font-size: clamp(0.7rem, 1.5vw, 1rem);
+  opacity: 0.8;
+  font-family: 'Roboto Mono', monospace;
+}
+
+/* ─── Table Section ─── */
+.leaderboard-section {
+  margin-bottom: clamp(1rem, 3vh, 1.875rem);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ─── Table ─── */
+.leaderboard-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: clamp(0.75rem, 1.4vw, 1rem);
+  font-family: 'Roboto Mono', monospace;
+}
+
+.leaderboard-table thead {
+  background: rgba(0, 255, 136, 0.1);
+  border-bottom: 2px solid #00ffff;
+}
+
+.leaderboard-table th {
+  padding: var(--lb-cell-pad);
+  text-align: left;
+  color: #00ff88;
+  font-weight: bold;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  font-size: clamp(0.6rem, 1.2vw, 0.875rem);
+  font-family: 'Orbitron', sans-serif;
+  white-space: nowrap;
+}
+
+.leaderboard-table td {
+  padding: var(--lb-cell-pad);
+  border-bottom: 1px solid rgba(0, 255, 255, 0.2);
+  color: #ffffff;
+}
+
+/* ─── Column Widths ─── */
+.rank-col {
+  width: 10%;
+  text-align: center;
+}
+
+.name-col {
+  width: 40%;
+  color: #00ffff;
+}
+
+.major-col {
+  width: 25%;
+  text-align: center;
+  color: #ff6600;
+}
+
+.score-col {
+  width: 25%;
+  text-align: right;
+}
+
+/* ─── Badges ─── */
+.rank-badge {
+  display: inline-block;
+  padding: clamp(3px, 0.5vw, 5px) clamp(6px, 1vw, 10px);
+  background: rgba(255, 200, 0, 0.2);
+  border: 1px solid #ffcc00;
+  border-radius: 20px;
+  color: #ffcc00;
+  font-weight: bold;
+  font-size: clamp(0.7rem, 1.3vw, 1rem);
+  min-width: clamp(28px, 4vw, 40px);
+  text-align: center;
+}
+
+.score-badge {
+  display: inline-block;
+  padding: clamp(4px, 0.6vw, 8px) clamp(8px, 1.2vw, 15px);
+  background: rgba(0, 255, 136, 0.2);
+  border: 1px solid #00ff88;
+  border-radius: 6px;
+  color: #00ff88;
+  font-weight: bold;
+  font-size: clamp(0.7rem, 1.3vw, 1rem);
+}
+
+/* ─── Row States ─── */
+.leaderboard-table tbody tr {
+  transition: all 0.3s ease;
+}
+
+.leaderboard-table tbody tr:hover {
+  background: rgba(0, 255, 255, 0.1);
+  box-shadow: inset 5px 0 0 #00ffff;
+}
+
+.leaderboard-table tbody tr.top-rank {
+  background: rgba(255, 200, 0, 0.1);
+  border-left: 4px solid #ffcc00;
+}
+
+.leaderboard-table tbody tr.top-rank:hover {
+  background: rgba(255, 200, 0, 0.2);
+}
+
+.leaderboard-table tbody tr.player-row {
+  background: rgba(0, 150, 200, 0.2);
+  border: 2px solid #00ffff;
+  font-weight: bold;
+}
+
+.leaderboard-table tbody tr.player-row.glow {
+  animation: playerGlow 2s infinite;
+}
+
+@keyframes playerGlow {
+  0%, 100% {
+    box-shadow: inset 0 0 10px rgba(0, 255, 136, 0.3);
+  }
+  50% {
+    box-shadow: inset 0 0 20px rgba(0, 255, 136, 0.6);
+  }
+}
+
+/* ─── Footer ─── */
+.leaderboard-footer {
+  display: flex;
+  justify-content: center;
+  gap: clamp(0.5rem, 1.5vw, 0.9375rem);
+  margin-top: clamp(1.25rem, 3vh, 2.5rem);
+}
+
+/* ─── Back Button ─── */
+.back-button {
+  padding: clamp(0.6rem, 1.2vw, 0.875rem) clamp(1.25rem, 3vw, 2.5rem);
+  font-size: clamp(0.75rem, 1.4vw, 1rem);
+  font-weight: bold;
+  border: 2px solid #00ffff;
+  border-radius: 8px;
+  background: rgba(0, 200, 255, 0.2);
+  color: #00ffff;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+  font-family: 'Orbitron', sans-serif;
+  min-height: 44px;
+  min-width: 44px;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+.back-button:hover {
+  background: rgba(0, 255, 255, 0.3);
+  box-shadow: 0 0 20px rgba(0, 255, 255, 0.6);
+  transform: translateY(-2px);
+}
+
+.back-button:active {
+  transform: translateY(0) scale(0.97);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   RESPONSIVE BREAKPOINTS
+   ═══════════════════════════════════════════════════════════ */
+
+/* ─── Large Tablets / Small Desktops ─── */
+@media (max-width: 1024px) {
+  .leaderboard-content {
+    max-width: 90%;
+  }
+}
+
+/* ─── Tablets ─── */
+@media (max-width: 768px) {
+  .leaderboard-content {
+    max-width: 98%;
+    border-radius: 10px;
+  }
+
+  .leaderboard-table th,
+  .leaderboard-table td {
+    padding: clamp(0.4rem, 1vw, 0.625rem);
+  }
+
+  .rank-col {
+    width: 15%;
+  }
+
+  .name-col {
+    width: 35%;
+  }
+
+  .major-col {
+    width: 25%;
+  }
+
+  .score-col {
+    width: 25%;
+  }
+
+  .back-button {
+    width: 100%;
+    max-width: 280px;
+  }
+}
+
+/* ─── Large Phones ─── */
+@media (max-width: 640px) {
+  .leaderboard-container {
+    padding: 0.75rem;
+    align-items: flex-start;
+    padding-top: max(0.75rem, env(safe-area-inset-top, 0));
+  }
+
+  .leaderboard-content {
+    max-height: 95vh;
+    max-height: 95dvh;
+  }
+
+  .leaderboard-section {
+    margin-left: -0.5rem;
+    margin-right: -0.5rem;
+    padding: 0 0.5rem;
+  }
+}
+
+/* ─── Phones ─── */
+@media (max-width: 480px) {
+  .leaderboard-container {
+    padding: 0.5rem;
+  }
+
+  .leaderboard-content {
+    padding: 0.75rem;
+  }
+
+  /* Hide major column on small phones */
+  .major-col {
+    display: none;
+  }
+
+  .rank-col {
+    width: 20%;
+  }
+
+  .name-col {
+    width: 50%;
+  }
+
+  .score-col {
+    width: 30%;
+  }
+
+  .back-button {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+/* ─── Small Phones (iPhone SE, Galaxy S) ─── */
+@media (max-width: 380px) {
+  .leaderboard-content {
+    padding: 0.5rem;
+  }
+
+  .leaderboard-header h1 {
+    font-size: 1rem;
+  }
+
+  .rank-badge {
+    padding: 2px 5px;
+    min-width: 24px;
+    font-size: 0.65rem;
+  }
+
+  .score-badge {
+    padding: 3px 6px;
+    font-size: 0.65rem;
+  }
+
+  .name-col {
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+/* ─── Very Small Phones ─── */
+@media (max-width: 360px) {
+  .leaderboard-header h1 {
+    font-size: 0.9rem;
+    letter-spacing: 0;
+  }
+}
+
+/* ─── Landscape Mode ─── */
+@media (orientation: landscape) and (max-height: 500px) {
+  .leaderboard-container {
+    align-items: flex-start;
+    padding: 0.5rem 1.5rem;
+  }
+
+  .leaderboard-content {
+    max-height: none;
+    padding: 0.75rem 1rem;
+  }
+
+  .leaderboard-header {
+    margin-bottom: 0.5rem;
+  }
+
+  .leaderboard-header h1 {
+    font-size: clamp(0.9rem, 3vw, 1.4rem);
+    margin-bottom: 0.2rem;
+  }
+
+  .leaderboard-table th,
+  .leaderboard-table td {
+    padding: 0.3rem 0.5rem;
+  }
+
+  .leaderboard-footer {
+    margin-top: 0.5rem;
+  }
+
+  .back-button {
+    padding: 0.4rem 1.5rem;
+  }
+}
+
+/* ─── iPad-specific ─── */
+@media only screen
+  and (min-device-width: 768px)
+  and (max-device-width: 1024px)
+  and (-webkit-min-device-pixel-ratio: 2) {
+  .leaderboard-content {
+    max-width: 85%;
+  }
+
+  .leaderboard-table {
+    font-size: 0.9rem;
+  }
+}
+
+/* ─── Safe Area (notch phones) ─── */
+@supports (padding: env(safe-area-inset-bottom)) {
+  .leaderboard-container {
+    padding-left: max(var(--lb-pad), env(safe-area-inset-left, 0));
+    padding-right: max(var(--lb-pad), env(safe-area-inset-right, 0));
+    padding-bottom: max(0.5rem, env(safe-area-inset-bottom, 0));
+  }
+
+  .back-button {
+    margin-bottom: env(safe-area-inset-bottom, 0);
+  }
+}
+
+/* ─── Touch Device Optimizations ─── */
+@media (hover: none) and (pointer: coarse) {
+  .back-button {
+    min-height: 48px;
+  }
+
+  .leaderboard-table tbody tr:hover {
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .leaderboard-table tbody tr.top-rank:hover {
+    background: rgba(255, 200, 0, 0.1);
+  }
+
+  .leaderboard-table tbody tr.player-row:hover {
+    background: rgba(0, 150, 200, 0.2);
+  }
+
+  .back-button:hover {
+    transform: none;
+    box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+  }
+
+  .back-button:active {
+    transform: scale(0.95);
+    background: rgba(0, 255, 255, 0.35);
+  }
+}
+
+/* ─── Reduced Motion ─── */
+@media (prefers-reduced-motion: reduce) {
+  .leaderboard-content {
+    animation: none;
+  }
+
+  .leaderboard-table tbody tr.player-row.glow {
+    animation: none;
+    box-shadow: inset 0 0 15px rgba(0, 255, 136, 0.4);
+  }
+}
