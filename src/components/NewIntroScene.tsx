@@ -5,7 +5,7 @@ import * as THREE from 'three';
 import { useIntroAudio } from '../hooks/useIntroAudio';
 import { useIntroGameState } from '../hooks/useIntroGameState';
 import { useIntroStory } from '../hooks/useIntroStory';
-import { SceneEffects } from './SceneEffects';
+import { SceneEffectsPro } from './SceneEffectsPro';
 import { CockpitModel } from './CockpitModel';
 import { AsteroidObject } from './AsteroidObject';
 import AICompanion from './stages/AICompanion';
@@ -31,10 +31,10 @@ const CockpitLightingRig: React.FC<{
 
   useFrame(({ clock }) => {
     const time = clock.getElapsedTime();
-    const base = Math.max(interiorLightIntensity, 0.9);
+    const base = Math.max(interiorLightIntensity, 2.0);
     const warpBoost = Math.min(1, (gameState?.kecepatanWarp ?? 0) * 0.25);
     const alarmBoost = gameState?.isAlarmActive ? 1 : 0;
-    const breathing = 1 + Math.sin(time * 1.3) * 0.05;
+    const breathing = 1 + Math.sin(time * 1.3) * 0.08;
     const flicker = alarmBoost ? 0.7 + Math.abs(Math.sin(time * 20)) * 0.6 : 1;
 
     const baseColor = new THREE.Color(interiorLightColor);
@@ -44,52 +44,58 @@ const CockpitLightingRig: React.FC<{
 
     if (dashLightRef.current) {
       dashLightRef.current.color.copy(baseColor);
-      dashLightRef.current.intensity = base * 1.15 * breathing * flicker + warpBoost * 0.45;
+      dashLightRef.current.intensity = base * 2.2 * breathing * flicker + warpBoost * 0.8;
     }
 
     if (leftLightRef.current) {
       leftLightRef.current.color.copy(coolColor);
-      leftLightRef.current.intensity = 0.8 + base * 0.45 + warpBoost * 0.25;
+      leftLightRef.current.intensity = 1.8 + base * 0.85 + warpBoost * 0.4;
     }
 
     if (rightLightRef.current) {
       rightLightRef.current.color.copy(warmColor);
-      rightLightRef.current.intensity = 0.75 + base * 0.38 + warpBoost * 0.2;
+      rightLightRef.current.intensity = 1.6 + base * 0.75 + warpBoost * 0.35;
     }
 
     if (rearLightRef.current) {
       rearLightRef.current.color.copy(alarmBoost ? alarmColor : coolColor);
       rearLightRef.current.intensity = alarmBoost
-        ? 0.45 + Math.abs(Math.sin(time * 24)) * 0.55
-        : 0.18 + warpBoost * 0.12;
+        ? 2.0 + Math.abs(Math.sin(time * 24)) * 2.0
+        : 0.8 + warpBoost * 0.3;
     }
 
     if (dashGlowRef.current) {
       const material = dashGlowRef.current.material as THREE.MeshBasicMaterial;
       material.color.copy(baseColor);
-      material.opacity = 0.12 + base * 0.045 + warpBoost * 0.04 + alarmBoost * 0.09;
-      dashGlowRef.current.scale.setScalar(1 + Math.sin(time * 2.2) * 0.02 + warpBoost * 0.04);
+      material.opacity = 0.35 + base * 0.12 + warpBoost * 0.08 + alarmBoost * 0.15;
+      dashGlowRef.current.scale.setScalar(1 + Math.sin(time * 2.2) * 0.03 + warpBoost * 0.06);
     }
 
     if (canopyGlowRef.current) {
       const material = canopyGlowRef.current.material as THREE.MeshBasicMaterial;
       material.color.copy(alarmBoost ? alarmColor : coolColor);
-      material.opacity = 0.07 + base * 0.03 + alarmBoost * 0.08;
+      material.opacity = 0.28 + base * 0.1 + alarmBoost * 0.15;
     }
 
     if (sideGlowRef.current) {
       const material = sideGlowRef.current.material as THREE.MeshBasicMaterial;
       material.color.copy(warmColor);
-      material.opacity = 0.06 + base * 0.025 + warpBoost * 0.03;
+      material.opacity = 0.22 + base * 0.08 + warpBoost * 0.06;
     }
   });
 
   return (
     <>
-      <pointLight ref={dashLightRef} position={[0, 10.4, 4.1]} distance={16} color={interiorLightColor} intensity={1} />
-      <pointLight ref={leftLightRef} position={[-4.6, 12.3, 1.8]} distance={12} color="#7ef9ff" intensity={1} />
-      <pointLight ref={rightLightRef} position={[4.6, 12.3, 1.8]} distance={12} color="#ffb36b" intensity={0.9} />
-      <pointLight ref={rearLightRef} position={[0, 15.6, -1.8]} distance={18} color="#bffcff" intensity={0.3} />
+      <pointLight ref={dashLightRef} position={[0, 10.4, 4.1]} distance={24} color={interiorLightColor} intensity={2.5} />
+      <pointLight ref={leftLightRef} position={[-4.6, 12.3, 1.8]} distance={18} color="#7ef9ff" intensity={2.2} />
+      <pointLight ref={rightLightRef} position={[4.6, 12.3, 1.8]} distance={18} color="#ffb36b" intensity={2.0} />
+      <pointLight ref={rearLightRef} position={[0, 15.6, -1.8]} distance={24} color="#bffcff" intensity={1.2} />
+      
+      {/* Fill lights for better cabin illumination */}
+      <pointLight position={[0, 8.5, 2.0]} distance={20} color="#5effff" intensity={1.6} />
+      <pointLight position={[-3.5, 11, 0]} distance={15} color="#87ceeb" intensity={1.2} />
+      <pointLight position={[3.5, 11, 0]} distance={15} color="#ffb380" intensity={1.1} />
+      <pointLight position={[0, 9.5, -1.5]} distance={16} color="#00ffff" intensity={0.9} />
 
       <mesh ref={dashGlowRef} position={[0, 10.7, 4.25]} renderOrder={1}>
         <planeGeometry args={[8.8, 1.5]} />
@@ -178,9 +184,9 @@ const IntroScene3D: React.FC<{
       {/* POV Camera positioned inside cockpit looking outward */}
       <PerspectiveCamera makeDefault position={[0, 16, 0]} fov={75} />
       
-      {/* Lighting Setup - Exact match from original */}
-      <ambientLight intensity={0.1} color={0xffffff} />
-      <directionalLight intensity={0.2} position={[5, 5, 5]} color={0xffffff} />
+      {/* Lighting Setup - Enhanced for bright cabin interior */}
+      <ambientLight intensity={0.55} color={0xffffff} />
+      <directionalLight intensity={0.45} position={[5, 5, 5]} color={0xffffff} />
 
       <CockpitLightingRig
         gameState={gameState}
@@ -192,11 +198,12 @@ const IntroScene3D: React.FC<{
       <pointLight 
         ref={interiorLightRef}
         position={[0, 13, 2.2]} 
+        distance={28}
         color={interiorLightColor}
-        intensity={interiorLightIntensity}
+        intensity={interiorLightIntensity * 1.8}
       />
 
-      <SceneEffects />
+      <SceneEffectsPro gameState={gameState} />
       <CockpitModel onLoaded={() => console.log('Cockpit loaded')} />
 
       {/* OrbitControls - POV from cockpit center, stationary */}
@@ -239,7 +246,7 @@ export const NewIntroScene: React.FC<{
   const [statusText, setStatusText] = useState('AWAITING COMMANDER\'S AUTHORIZATION...');
   const [flashOpacity, setFlashOpacity] = useState(0);
   const [interiorLightColor, setInteriorLightColor] = useState(0x00ffff);
-  const [interiorLightIntensity, setInteriorLightIntensity] = useState(1.25);
+  const [interiorLightIntensity, setInteriorLightIntensity] = useState(4.0);
   const [asteroidVisible, setAsteroidVisible] = useState(false);
   const [asteroidAnimating, setAsteroidAnimating] = useState(false);
 
