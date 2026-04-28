@@ -1,8 +1,7 @@
-import * as THREE from 'three'
-import React from 'react'
 import { useGLTF } from '@react-three/drei'
+import type { ThreeElements } from '@react-three/fiber'
 
-export function Island(props: JSX.IntrinsicElements['group']) {
+export function Island(props: ThreeElements['group']) {
   const { scene } = useGLTF('/models/island_1.glb')
   
   return (

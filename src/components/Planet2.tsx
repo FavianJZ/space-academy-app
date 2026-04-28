@@ -9,8 +9,8 @@ Title: Pixel Planet Kepler-7b
 */
 
 import * as THREE from 'three'
-import React from 'react'
 import { useGLTF } from '@react-three/drei'
+import type { ThreeElements } from '@react-three/fiber'
 
 type GLTFResult = {
   nodes: {
@@ -22,7 +22,7 @@ type GLTFResult = {
   animations: any[]
 }
 
-export function Planet2(props: JSX.IntrinsicElements['group']) {
+export function Planet2(props: ThreeElements['group']) {
   const { nodes, materials } = useGLTF('/models/planet_2_optimized.glb') as unknown as GLTFResult
   return (
     <group {...props} dispose={null}>

@@ -9,8 +9,8 @@ Title: Rocket Ship - Low Poly
 */
 
 import * as THREE from 'three'
-import React from 'react'
 import { useGLTF } from '@react-three/drei'
+import type { ThreeElements } from '@react-three/fiber'
 
 type GLTFResult = {
   nodes: {
@@ -24,7 +24,7 @@ type GLTFResult = {
   animations: any[]
 }
 
-export function RocketShip(props: JSX.IntrinsicElements['group']) {
+export function RocketShip(props: ThreeElements['group']) {
   const { nodes, materials } = useGLTF('/models/rocket_ship_optimized.glb') as unknown as GLTFResult
   return (
     <group {...props} dispose={null}>

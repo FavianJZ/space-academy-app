@@ -9,8 +9,9 @@ Title: Planet of Ice and Fire - Final
 */
 
 import * as THREE from 'three'
-import React, { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { useGLTF, useAnimations } from '@react-three/drei'
+import type { ThreeElements } from '@react-three/fiber'
 
 type ActionName = 'Object_0'
 
@@ -95,8 +96,8 @@ type GLTFResult = {
   animations: GLTFAction[]
 }
 
-export function Planet4(props: JSX.IntrinsicElements['group']) {
-  const group = React.useRef<THREE.Group>(null)
+export function Planet4(props: ThreeElements['group']) {
+  const group = useRef<THREE.Group>(null)
   const { nodes, materials, animations } = useGLTF('/models/planet_4_optimized.glb') as unknown as GLTFResult
   const { actions } = useAnimations(animations, group)
 

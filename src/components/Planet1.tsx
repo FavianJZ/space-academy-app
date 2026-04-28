@@ -9,8 +9,8 @@ Title: Planet
 */
 
 import * as THREE from 'three'
-import React from 'react'
 import { useGLTF } from '@react-three/drei'
+import type { ThreeElements } from '@react-three/fiber'
 
 type GLTFResult = {
   nodes: {
@@ -22,7 +22,7 @@ type GLTFResult = {
   animations: any[]
 }
 
-export function Planet1(props: JSX.IntrinsicElements['group']) {
+export function Planet1(props: ThreeElements['group']) {
   const { nodes, materials } = useGLTF('/models/planet_1_optimized.glb') as unknown as GLTFResult
   return (
     <group {...props} dispose={null}>

@@ -111,7 +111,7 @@ const EnergyBeam: React.FC<{ color: string; isActive: boolean }> = ({ color, isA
 };
 
 /* ====== Magnetic Spaceman Response ====== */
-const SpacemanMagneticResponse: React.FC<{ charRef: React.RefObject<THREE.Group>; baseRotY?: number; isActive?: boolean }> = ({ 
+const SpacemanMagneticResponse: React.FC<{ charRef: React.RefObject<THREE.Group | null>; baseRotY?: number; isActive?: boolean }> = ({ 
   charRef, baseRotY = 0, isActive = false 
 }) => {
   const cursorTarget = useRef(new THREE.Vector3());
@@ -236,7 +236,7 @@ const CharacterStage: React.FC<{
   onHover: () => void;
   onLeave: () => void;
   onSelect: () => void;
-  charRef: React.RefObject<THREE.Group>;
+  charRef: React.RefObject<THREE.Group | null>;
 }> = ({ charType, position, isHovered, isSelected, onHover, onLeave, onSelect, charRef }) => {
   const groupRef = useRef<THREE.Group>(null);
   const targetScale = useRef(1);

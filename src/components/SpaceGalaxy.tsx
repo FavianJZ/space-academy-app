@@ -9,8 +9,8 @@ Title: Need some space?
 */
 
 import * as THREE from 'three'
-import React from 'react'
 import { useGLTF } from '@react-three/drei'
+import type { ThreeElements } from '@react-three/fiber'
 
 type GLTFResult = {
   nodes: {
@@ -22,7 +22,7 @@ type GLTFResult = {
   animations: any[]
 }
 
-export function SpaceGalaxy(props: JSX.IntrinsicElements['group']) {
+export function SpaceGalaxy(props: ThreeElements['group']) {
   const { nodes, materials } = useGLTF('/models/space_galaxy_optimized.glb') as unknown as GLTFResult
   return (
     <group {...props} dispose={null}>

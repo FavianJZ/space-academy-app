@@ -9,8 +9,8 @@ Title: Pixel Planet TRAPPIST-1-e
 */
 
 import * as THREE from 'three'
-import React from 'react'
 import { useGLTF } from '@react-three/drei'
+import type { ThreeElements } from '@react-three/fiber'
 
 type GLTFResult = {
   nodes: {
@@ -22,7 +22,7 @@ type GLTFResult = {
   animations: any[]
 }
 
-export function Planet6(props: JSX.IntrinsicElements['group']) {
+export function Planet6(props: ThreeElements['group']) {
   const { nodes, materials } = useGLTF('/models/planet_6_optimized.glb') as unknown as GLTFResult
   return (
     <group {...props} dispose={null}>

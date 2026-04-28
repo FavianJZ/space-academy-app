@@ -146,7 +146,7 @@ const Stage5LogicFlow: React.FC<Stage5LogicFlowProps> = ({ planetId }) => {
     return { x: 0, y: 0 };
   };
 
-  const handleMouseDown = (e: React.MouseEvent, portId: string) => {
+  const handleMouseDown = (_event: React.MouseEvent, portId: string) => {
     if (status !== 'playing') return;
     // Prevent starting from an input port (simplified logic: only start from outputs)
     if (portId === 'diamond-in' || portId === 'bulb-in') return;

@@ -9,8 +9,9 @@ Title: Futuristic flying animated Robot - Low Poly
 */
 
 import * as THREE from 'three'
-import React, { useEffect, useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import { useGLTF, useAnimations } from '@react-three/drei'
+import type { ThreeElements } from '@react-three/fiber'
 
 type ActionName = 'Scene'
 
@@ -42,7 +43,7 @@ type GLTFResult = {
 }
 
 // NOTE: Mouse following logic removed for debugging
-export function Robot(props: JSX.IntrinsicElements['group']) {
+export function Robot(props: ThreeElements['group']) {
   const group = useRef<THREE.Group>(null)
   const { nodes, materials, animations } = useGLTF('/models/robot_optimized.glb') as unknown as GLTFResult
   const { actions } = useAnimations(animations, group)

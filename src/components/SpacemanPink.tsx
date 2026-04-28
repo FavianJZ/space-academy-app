@@ -9,8 +9,8 @@ Title: Spaceman
 */
 
 import * as THREE from 'three'
-import React from 'react'
 import { useGLTF } from '@react-three/drei'
+import type { ThreeElements } from '@react-three/fiber'
 
 type GLTFResult = {
   nodes: {
@@ -29,7 +29,7 @@ type GLTFResult = {
 }
 
 // NOTE: Mouse following logic removed for debugging
-export function SpacemanPink(props: JSX.IntrinsicElements['group']) {
+export function SpacemanPink(props: ThreeElements['group']) {
   const { nodes, materials } = useGLTF('/models/spaceman_pink_optimized.glb') as unknown as GLTFResult
   
   return (

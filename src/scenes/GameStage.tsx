@@ -50,7 +50,7 @@ const GameStage: React.FC = () => {
   );
 };
 
-const CompletionScreen: React.FC = () => {
+export const CompletionScreen: React.FC = () => {
   const navigate = useNavigate();
   const playerData = useGameStore((state) => state.playerData);
   const totalScore = useGameStore((state) => state.getTotalScore)();
