@@ -339,6 +339,7 @@ const SpeakerSpotlight: React.FC<{ activeSpeaker: ActiveSpeaker }> = ({ activeSp
 const Bedroom: React.FC = () => {
   const navigate = useNavigate();
   const setPlayerData = useGameStore((state) => state.setPlayerData);
+  const character = useGameStore((state) => state.character);
 
   const [dialoguePhase, setDialoguePhase] = useState<DialoguePhase>(0);
   const [isLoading, setIsLoading] = useState(true);
@@ -365,6 +366,7 @@ const Bedroom: React.FC = () => {
   const charRef = useRef<THREE.Group | null>(null);
   const navigateTimeoutRef = useRef<number | null>(null);
   const autoPlayTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isTransitioningRef = useRef(false);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -588,6 +590,8 @@ const Bedroom: React.FC = () => {
       setIdentityStep(step);
       setStepError('');
       setIsSubmittingStep(false);
+      setTypingDone(false);
+      setSkipTyping(false);
       
       if (forceSkipMode && cfg?.field) {
         setShowInputCard(true);
@@ -629,14 +633,25 @@ const Bedroom: React.FC = () => {
 
   const handleContinueStory = useCallback(() => {
     if (!typingDone) return;
+    if (isTransitioningRef.current) return;
     if (storyQueue.length === 0) {
       return;
     }
 
-    if (currentStoryIndex < storyQueue.length - 1) {
-      setCurrentStoryIndex((prev) => prev + 1);
+    // Safety: clamp index to valid range
+    const safeIndex = Math.min(currentStoryIndex, storyQueue.length - 1);
+
+    if (safeIndex < storyQueue.length - 1) {
+      // Reset typing state synchronously to prevent stale closure bypasses
+      setTypingDone(false);
+      setSkipTyping(false);
+      setCurrentStoryIndex(safeIndex + 1);
       return;
     }
+
+    // We're at the end of the story queue — prevent re-entrant transitions
+    isTransitioningRef.current = true;
+    setTimeout(() => { isTransitioningRef.current = false; }, 300);
 
     if (isSubmittingStep) {
       setIsSubmittingStep(false);
@@ -776,6 +791,7 @@ const Bedroom: React.FC = () => {
   }, [dialoguePhase, currentDialogue, storyQueue, currentStoryIndex]);
 
   const handleDialogueClick = useCallback(() => {
+    if (isTransitioningRef.current) return;
     if (!typingDone) setSkipTyping(true);
   }, [typingDone]);
 
@@ -852,8 +868,11 @@ const Bedroom: React.FC = () => {
                 rotation={[-1, 0, 4.8]}
                 scale={dialoguePhase >= 3 ? 0.8 : 1}
               >
-                <SpacemanWhite scale={0.2} />
-                <SpacemanPink scale={0.2} />
+                {character === 'pink' ? (
+                  <SpacemanPink scale={0.2} />
+                ) : (
+                  <SpacemanWhite scale={0.2} />
+                )}
               </group>
 
               <group ref={robotRef} position={[2, -0.5, 0]} scale={dialoguePhase >= 1 ? 1 : 0}>
@@ -939,6 +958,9 @@ const Bedroom: React.FC = () => {
                       className="dialogue-btn"
                       onClick={(e) => {
                         e.stopPropagation();
+                        if (isTransitioningRef.current) return;
+                        isTransitioningRef.current = true;
+                        setTimeout(() => { isTransitioningRef.current = false; }, 300);
                         if (btn.action === 3) {
                           setDialoguePhase(3);
                           startStep('intro');
@@ -998,7 +1020,7 @@ const Bedroom: React.FC = () => {
 
                 {identityStep === 'intro' && atStoryEnd && !isSubmittingStep && (
                   <div className={`dialogue-actions ${typingDone ? 'visible' : ''}`}>
-                    <button className="dialogue-btn blue-btn" onClick={(e) => { e.stopPropagation(); startStep('name'); }}>
+                    <button className="dialogue-btn blue-btn" onClick={(e) => { e.stopPropagation(); if (isTransitioningRef.current) return; isTransitioningRef.current = true; setTimeout(() => { isTransitioningRef.current = false; }, 300); startStep('name'); }}>
                       ▸ Mulai Verifikasi
                     </button>
                   </div>
@@ -1006,7 +1028,7 @@ const Bedroom: React.FC = () => {
 
                 {canContinueStory && (
                   <div className={`dialogue-actions ${typingDone ? 'visible' : ''}`}>
-                    <button className="dialogue-btn" onClick={(e) => { e.stopPropagation(); handleContinueStory(); }}>
+                    <button className="dialogue-btn" onClick={(e) => { e.stopPropagation(); if (isTransitioningRef.current) return; handleContinueStory(); }}>
                       ▸ Lanjut Dialog
                     </button>
                   </div>
