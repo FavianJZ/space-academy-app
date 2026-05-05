@@ -6,13 +6,28 @@ import './Leaderboard.css';
 const Leaderboard: React.FC = () => {
   const navigate = useNavigate();
   const leaderboard = useGameStore((state) => state.getLeaderboardEntries());
+  const addLeaderboardEntry = useGameStore((state) => state.addLeaderboardEntry);
   const playerData = useGameStore((state) => state.playerData);
+  const visitedPlanets = useGameStore((state) => state.visitedPlanets);
   const totalScore = useGameStore((state) => state.getTotalScore)();
 
   useEffect(() => {
     // Auto-scroll to top
     window.scrollTo(0, 0);
   }, []);
+
+  useEffect(() => {
+    if (visitedPlanets.size < 6) return;
+    const playerName = playerData.name?.trim();
+    if (!playerName) return;
+
+    addLeaderboardEntry({
+      playerName,
+      totalScore,
+      timestamp: Date.now(),
+      major: playerData.major,
+    });
+  }, [visitedPlanets.size, playerData.name, playerData.major, totalScore, addLeaderboardEntry]);
 
   return (
     <div className="leaderboard-container">

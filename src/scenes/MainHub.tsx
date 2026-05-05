@@ -375,6 +375,7 @@ const MainHub: React.FC = () => {
   const setSfxVolume = useGameStore((state) => state.setSfxVolume);
   const bossMode = useGameStore((state) => state.bossMode);
   const setBossMode = useGameStore((state) => state.setBossMode);
+  const resetBossHP = useGameStore((state) => state.resetBossHP);
   const getPlanetLeaderboard = useGameStore((state) => state.getPlanetLeaderboard);
   const addPlanetLeaderboardEntry = useGameStore((state) => state.addPlanetLeaderboardEntry);
   const planetLeaderboards = useGameStore((state) => state.planetLeaderboards);
@@ -755,7 +756,12 @@ const MainHub: React.FC = () => {
           {selectedPlanet === 6 && (
             <button
               className={`boss-mode-toggle ${bossMode ? 'active' : ''}`}
-              onClick={() => setBossMode(!bossMode)}
+              onClick={() => {
+                if (!bossMode) {
+                  resetBossHP();
+                }
+                setBossMode(!bossMode);
+              }}
             >
               {bossMode ? 'BOSS MODE' : 'NORMAL MODE'}
             </button>

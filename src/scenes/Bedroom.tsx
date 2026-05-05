@@ -810,7 +810,7 @@ const Bedroom: React.FC = () => {
               </group>
 
               <group ref={robotRef} position={[2, -0.5, 0]} scale={dialoguePhase >= 1 ? 1 : 0}>
-                <Robot scale={0.8} />
+                <Robot scale={0.8} isSpeaking={activeSpeaker === 'robot'} />
               </group>
 
               <CameraAnimator phase={dialoguePhase} activeSpeaker={activeSpeaker} showInputCard={showInputCard} identityStep={identityStep} />

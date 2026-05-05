@@ -3,6 +3,7 @@ import { createJSONStorage, persist } from 'zustand/middleware';
 
 type Character = 'pink' | 'white';
 type PlanetId = 1 | 2 | 3 | 4 | 5 | 6;
+const BOSS_MAX_HP = 20000;
 
 interface PlayerData {
   name: string;
@@ -198,7 +199,19 @@ export const useGameStore = create<GameState>()(
       leaderboard: [],
       addLeaderboardEntry: (entry) => {
         const leaderboard = get().leaderboard;
-        const newLeaderboard = [...leaderboard, entry];
+        const existingIdx = leaderboard.findIndex((item) => item.playerName === entry.playerName);
+        const newLeaderboard = [...leaderboard];
+
+        if (existingIdx >= 0) {
+          const prev = newLeaderboard[existingIdx];
+          // Keep the best score; if tie, keep the latest timestamp.
+          if (entry.totalScore > prev.totalScore || (entry.totalScore === prev.totalScore && entry.timestamp > prev.timestamp)) {
+            newLeaderboard[existingIdx] = entry;
+          }
+        } else {
+          newLeaderboard.push(entry);
+        }
+
         // Sort by score descending
         newLeaderboard.sort((a, b) => b.totalScore - a.totalScore);
         // Keep top 100
@@ -260,8 +273,8 @@ export const useGameStore = create<GameState>()(
       // Boss Mode
       bossMode: false,
       setBossMode: (mode) => set({ bossMode: mode }),
-      bossGlobalHP: 500000,
-      bossMaxHP: 500000,
+      bossGlobalHP: BOSS_MAX_HP,
+      bossMaxHP: BOSS_MAX_HP,
       dealBossDamage: (damage, playerName) => {
         const currentHP = get().bossGlobalHP;
         const newHP = Math.max(0, currentHP - damage);
@@ -270,11 +283,18 @@ export const useGameStore = create<GameState>()(
         set({ bossGlobalHP: newHP, bossDamageLog: log.slice(-50) });
       },
       bossDamageLog: [],
-      resetBossHP: () => set({ bossGlobalHP: 500000, bossDamageLog: [] }),
+      resetBossHP: () => set({ bossGlobalHP: BOSS_MAX_HP, bossMaxHP: BOSS_MAX_HP, bossDamageLog: [] }),
     }),
     {
       name: 'space-academy-storage',
       storage,
+      version: 1,
+      migrate: (persistedState) => ({
+        ...(persistedState as GameState),
+        bossGlobalHP: BOSS_MAX_HP,
+        bossMaxHP: BOSS_MAX_HP,
+        bossDamageLog: [],
+      } as GameState),
     }
   )
 );

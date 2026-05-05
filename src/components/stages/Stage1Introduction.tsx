@@ -145,7 +145,7 @@ const Stage1Introduction: React.FC<Stage1IntroductionProps> = ({ planetId }) => 
             <AdaptiveCanvas camera={{ position: [0, 1, 5], fov: 50 }} dpr={[1, 1.1]} quality="low">
               <ambientLight intensity={0.8} />
               <pointLight position={[5, 5, 5]} intensity={100} color="#00ffff" />
-              <InteractiveRobot reaction="celebrating" scale={4} position={[0, -1.5, 0]} />
+              <InteractiveRobot reaction="celebrating" scale={3.5} position={[0, -1.5, 0]} />
               <Stars radius={100} depth={20} count={220} factor={5} saturation={0} fade speed={1} />
             </AdaptiveCanvas>
           </div>
@@ -164,7 +164,7 @@ const Stage1Introduction: React.FC<Stage1IntroductionProps> = ({ planetId }) => 
           <pointLight position={[5, 5, 5]} intensity={100} color="#00ff88" />
           <InteractiveRobot
             reaction={robotReaction}
-            scale={5}
+            scale={3.6}
             position={[0, -1.5, 0]}
             onClick={handleRobotClick}
           />

@@ -279,86 +279,90 @@ const Stage4FlowchartFixer: React.FC<Stage4FlowchartFixerProps> = ({ planetId })
 
       <div className="flowchart-content">
         <div className="flowchart-workspace">
-          <div className="flowchart-card blueprint-card">
-            <div className="flowchart-header">
-              <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
-                <h1 style={{margin: 0}}>Challenge {currentChallengeIdx + 1}/{challenges.length}</h1>
-                <div style={{
-                  background: timeLeft <= 10 ? 'rgba(255,50,50,0.9)' : 'rgba(0,200,255,0.2)',
-                  border: timeLeft <= 10 ? '2px solid #ff3232' : '2px solid rgba(0,200,255,0.5)',
-                  borderRadius: '12px', padding: '6px 14px',
-                  color: timeLeft <= 10 ? '#fff' : '#00c8ff',
-                  fontFamily: "'Orbitron', sans-serif", fontSize: '1rem', fontWeight: 700,
-                  animation: timeLeft <= 10 ? 'pulse 1s infinite' : 'none'
-                }}>⏱ {timeLeft}s</div>
-              </div>
-              <p className="flowchart-description">{currentChallenge.description}</p>
-            </div>
-
-            <div className="flowchart-diagram">
-              {/* Start Block */}
-              <div className="flowchart-block start-block">
-                <div className="block-label">START</div>
-                <div className="block-value">{currentChallenge.startBlock}</div>
+          <div className="flowchart-main">
+            <div className="flowchart-card blueprint-card">
+              <div className="flowchart-header">
+                <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+                  <h1 style={{margin: 0}}>Challenge {currentChallengeIdx + 1}/{challenges.length}</h1>
+                  <div style={{
+                    background: timeLeft <= 10 ? 'rgba(255,50,50,0.9)' : 'rgba(0,200,255,0.2)',
+                    border: timeLeft <= 10 ? '2px solid #ff3232' : '2px solid rgba(0,200,255,0.5)',
+                    borderRadius: '12px', padding: '6px 14px',
+                    color: timeLeft <= 10 ? '#fff' : '#00c8ff',
+                    fontFamily: "'Orbitron', sans-serif", fontSize: '1rem', fontWeight: 700,
+                    animation: timeLeft <= 10 ? 'pulse 1s infinite' : 'none'
+                  }}>⏱ {timeLeft}s</div>
+                </div>
+                <p className="flowchart-description">{currentChallenge.description}</p>
               </div>
 
-              <div className="flow-arrow">↓</div>
+              <div className="flowchart-diagram">
+                {/* Start Block */}
+                <div className="flowchart-block start-block">
+                  <div className="block-label">START</div>
+                  <div className="block-value">{currentChallenge.startBlock}</div>
+                </div>
 
-              {/* Decision Block */}
-              <div className="decision-diamond-wrapper">
-                <div className="decision-diamond">
-                  <div className="diamond-inner-text">{currentChallenge.decisionBlock}</div>
+                <div className="flow-arrow">↓</div>
+
+                {/* Decision Block */}
+                <div className="decision-diamond-wrapper">
+                  <div className="decision-diamond">
+                    <div className="diamond-inner-text">{currentChallenge.decisionBlock}</div>
+                  </div>
+                </div>
+
+                {/* Drop Zone */}
+                <div className="flow-arrow">↓</div>
+                <div
+                  className={`connector-drop-zone ${isDraggingOver ? 'over' : ''} ${tappedConnector && !selectedPath ? 'tap-ready' : ''} ${
+                    selectedPath ? (isCorrect ? 'correct' : 'incorrect') : ''
+                  }`}
+                  onDragOver={handleDragOver}
+                  onDrop={handleDrop}
+                  onDragLeave={handleDragLeave}
+                  onClick={handleDropZoneTap}
+                >
+                  {selectedPath ? `PATH: ${selectedPath.toUpperCase()}` : tappedConnector ? `Tap to place ${tappedConnector.toUpperCase()} Path` : 'Drag or Tap Connector Here'}
+                </div>
+                <div className="flow-arrow">↓</div>
+
+                {/* End Block */}
+                <div className="flowchart-block end-block">
+                  <div className="block-label">END</div>
+                  <div className="block-value">{currentChallenge.endBlock}</div>
                 </div>
               </div>
 
-              {/* Drop Zone */}
-              <div className="flow-arrow">↓</div>
-              <div
-                className={`connector-drop-zone ${isDraggingOver ? 'over' : ''} ${tappedConnector && !selectedPath ? 'tap-ready' : ''} ${
-                  selectedPath ? (isCorrect ? 'correct' : 'incorrect') : ''
-                }`}
-                onDragOver={handleDragOver}
-                onDrop={handleDrop}
-                onDragLeave={handleDragLeave}
-                onClick={handleDropZoneTap}
-              >
-                {selectedPath ? `PATH: ${selectedPath.toUpperCase()}` : tappedConnector ? `Tap to place ${tappedConnector.toUpperCase()} Path` : 'Drag or Tap Connector Here'}
-              </div>
-              <div className="flow-arrow">↓</div>
-
-              {/* End Block */}
-              <div className="flowchart-block end-block">
-                <div className="block-label">END</div>
-                <div className="block-value">{currentChallenge.endBlock}</div>
-              </div>
+              {showExplanation && (
+                <div className="explanation-box">
+                  <p>
+                    <strong>{isCorrect ? '✓ Correct!' : '✗ Incorrect!'}</strong> {currentChallenge.explanation}
+                  </p>
+                </div>
+              )}
             </div>
 
-            {showExplanation && (
-              <div className="explanation-box">
-                <p>
-                  <strong>{isCorrect ? '✓ Correct!' : '✗ Incorrect!'}</strong> {currentChallenge.explanation}
-                </p>
-              </div>
-            )}
+            <div className="flowchart-footer">
+              {showExplanation && (
+                <button className="submit-btn flowchart-next-btn" onClick={handleNext}>
+                  {currentChallengeIdx === challenges.length - 1 ? 'FINISH STAGE' : 'NEXT CHALLENGE'}
+                </button>
+              )}
 
-            {showExplanation && (
-              <button className="submit-btn" onClick={handleNext}>
-                {currentChallengeIdx === challenges.length - 1 ? 'FINISH STAGE' : 'NEXT CHALLENGE'}
-              </button>
-            )}
-
-            <div className="intro-progress">
-              <div className="progress-bar">
-                <div
-                  className="progress-fill"
-                  style={{
-                    width: `${((currentChallengeIdx + 1) / challenges.length) * 100}%`,
-                  }}
-                ></div>
+              <div className="intro-progress flowchart-progress-inline">
+                <div className="progress-bar">
+                  <div
+                    className="progress-fill"
+                    style={{
+                      width: `${((currentChallengeIdx + 1) / challenges.length) * 100}%`,
+                    }}
+                  ></div>
+                </div>
+                <span className="progress-text">
+                  {currentChallengeIdx + 1} / {challenges.length}
+                </span>
               </div>
-              <span className="progress-text">
-                {currentChallengeIdx + 1} / {challenges.length}
-              </span>
             </div>
           </div>
 

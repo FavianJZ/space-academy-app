@@ -90,6 +90,7 @@ const Stage2MultipleChoice: React.FC<Stage2MultipleChoiceProps> = ({ planetId })
   const [currentQuestionIdx, setCurrentQuestionIdx] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState<Map<number, string>>(new Map());
   const [showExplanation, setShowExplanation] = useState(false);
+  const [feedbackStatus, setFeedbackStatus] = useState<'success' | 'failure' | null>(null);
   const [score, setScore] = useState(0);
   const [showCompletion, setShowCompletion] = useState(false);
   const addPlanetScore = useGameStore((state) => state.addPlanetScore);
@@ -154,11 +155,13 @@ const Stage2MultipleChoice: React.FC<Stage2MultipleChoiceProps> = ({ planetId })
         setRobotReaction('correct');
         setSpeechMessage(getRandomMessage(robotMessages.correct));
         setScreenEffect('screen-flash-green');
+        setFeedbackStatus('success');
         setTimeout(() => { setScreenEffect(''); setRobotReaction('idle'); }, 2000);
       } else {
         setRobotReaction('incorrect');
         setSpeechMessage(getRandomMessage(robotMessages.incorrect));
         setScreenEffect('screen-shake');
+        setFeedbackStatus('failure');
         setTimeout(() => { setScreenEffect(''); setRobotReaction('idle'); }, 2000);
       }
     }
@@ -171,13 +174,24 @@ const Stage2MultipleChoice: React.FC<Stage2MultipleChoiceProps> = ({ planetId })
   };
 
   const handleNext = () => {
+    setShowExplanation(false);
+    setFeedbackStatus(null);
     if (currentQuestionIdx < quizQuestions.length - 1) {
       setCurrentQuestionIdx(currentQuestionIdx + 1);
-      setShowExplanation(false);
       questionStartTimeRef.current = Date.now(); // Reset timer for next question
     } else {
       handleComplete();
     }
+  };
+
+  const handleRetryQuestion = () => {
+    const newAnswers = new Map(selectedAnswers);
+    newAnswers.delete(currentQuestion.id);
+    setSelectedAnswers(newAnswers);
+    setShowExplanation(false);
+    setFeedbackStatus(null);
+    setRobotReaction('idle');
+    questionStartTimeRef.current = Date.now();
   };
 
   const handleComplete = () => {
@@ -292,21 +306,10 @@ const Stage2MultipleChoice: React.FC<Stage2MultipleChoiceProps> = ({ planetId })
             ))}
           </div>
 
-          {showExplanation && (
-            <div className="explanation-box">
-              <p>
-                <strong>{isCorrect ? '✓ Correct!' : '✗ Incorrect!'}</strong> {currentQuestion.explanation}
-              </p>
-            </div>
-          )}
+        </div>
 
-          {showExplanation && (
-            <button className="submit-btn" onClick={handleNext}>
-              {currentQuestionIdx === quizQuestions.length - 1 ? 'FINISH QUIZ' : 'NEXT QUESTION'}
-            </button>
-          )}
-
-          <div className="intro-progress">
+        <div className="quiz-footer">
+          <div className="intro-progress quiz-progress-inline">
             <div className="progress-bar">
               <div
                 className="progress-fill"
@@ -320,6 +323,20 @@ const Stage2MultipleChoice: React.FC<Stage2MultipleChoiceProps> = ({ planetId })
             </span>
           </div>
         </div>
+
+        {showExplanation && feedbackStatus && (
+          <div className={`feedback-modal ${feedbackStatus}`}>
+            <h3>{feedbackStatus === 'success' ? 'CORRECT!' : 'TRY AGAIN'}</h3>
+            <p>{currentQuestion.explanation}</p>
+            {feedbackStatus === 'success' ? (
+              <button className="next-btn" onClick={handleNext}>
+                {currentQuestionIdx === quizQuestions.length - 1 ? 'FINISH QUIZ' : 'NEXT QUESTION'}
+              </button>
+            ) : (
+              <button className="retry-btn" onClick={handleRetryQuestion}>TRY AGAIN</button>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

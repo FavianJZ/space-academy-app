@@ -108,12 +108,164 @@ const BOSS_BUG_RATIO = 0.55;
 const ABDUCTION_PENALTY = 300;
 const BOSS_DAMAGE_PER_BUG = 100;
 
-/* ─── Fake player names for ticker simulation ─── */
-const FAKE_PLAYERS = [
-  'AceCoderX', 'NovaSpark', 'ByteStorm', 'StarPilot22', 'CodeNinja',
-  'PixelWarp', 'DarkSyntax', 'LunarDev', 'QuantumBit', 'ZeroBug',
-  'AlphaHack', 'GalaxyNode', 'TurboScript', 'NeonStack', 'CosmicPush',
-];
+type CoopPlayerId = 'P1' | 'P2' | 'P3';
+
+interface CoopPlayerSnapshot {
+  hits: number;
+  misses: number;
+  damage: number;
+  score: number;
+  lastAction: string;
+}
+
+interface CoopPlayerProfile {
+  id: CoopPlayerId;
+  title: string;
+  subtitle: string;
+  inputHint: string;
+  description: string;
+  keyRows: string[][];
+  accent: string;
+}
+
+const COOP_PLAYER_ORDER: CoopPlayerId[] = ['P1', 'P2', 'P3'];
+
+const COOP_PLAYER_PROFILES: Record<CoopPlayerId, CoopPlayerProfile> = {
+  P1: {
+    id: 'P1',
+    title: 'Mouse Pilot',
+    subtitle: 'Click to blast bugs instantly',
+    inputHint: 'Mouse click',
+    description: 'Click any active bug tile. This is the primary raid control for the lead player.',
+    keyRows: [['LMB'], ['Click active bugs directly']],
+    accent: '#00ffff',
+  },
+  P2: {
+    id: 'P2',
+    title: 'Number Runner',
+    subtitle: 'Top row and numpad 1-9',
+    inputHint: '1-9 / Numpad 1-9',
+    description: 'Use digits in grid order, from top-left to bottom-right.',
+    keyRows: [
+      ['1', '2', '3'],
+      ['4', '5', '6'],
+      ['7', '8', '9'],
+    ],
+    accent: '#ffb703',
+  },
+  P3: {
+    id: 'P3',
+    title: 'Letter Grid',
+    subtitle: 'QWE / ASD / ZXC layout',
+    inputHint: 'Q W E / A S D / Z X C',
+    description: 'Use letters laid out like a 3x3 grid so each key matches one tile.',
+    keyRows: [
+      ['Q', 'W', 'E'],
+      ['A', 'S', 'D'],
+      ['Z', 'X', 'C'],
+    ],
+    accent: '#ff4fd8',
+  },
+};
+
+const NUMERIC_KEY_MAP: Record<string, number> = {
+  '1': 0,
+  '2': 1,
+  '3': 2,
+  '4': 3,
+  '5': 4,
+  '6': 5,
+  '7': 6,
+  '8': 7,
+  '9': 8,
+};
+
+const LETTER_KEY_MAP: Record<string, number> = {
+  q: 0,
+  w: 1,
+  e: 2,
+  a: 3,
+  s: 4,
+  d: 5,
+  z: 6,
+  x: 7,
+  c: 8,
+};
+
+const createDefaultCoopSnapshot = (): Record<CoopPlayerId, CoopPlayerSnapshot> => ({
+  P1: { hits: 0, misses: 0, damage: 0, score: 0, lastAction: 'Ready' },
+  P2: { hits: 0, misses: 0, damage: 0, score: 0, lastAction: 'Ready' },
+  P3: { hits: 0, misses: 0, damage: 0, score: 0, lastAction: 'Ready' },
+});
+
+const CoopLegend: React.FC<{
+  compact?: boolean;
+  stats?: Record<CoopPlayerId, CoopPlayerSnapshot>;
+}> = ({ compact = false, stats }) => {
+  return (
+    <div className={`coop-legend ${compact ? 'compact' : 'full'}`}>
+      {COOP_PLAYER_ORDER.map((playerId) => {
+        const profile = COOP_PLAYER_PROFILES[playerId];
+        const snapshot = stats?.[playerId];
+
+        return (
+          <div
+            key={playerId}
+            className={`coop-card ${compact ? 'compact' : 'full'}`}
+            style={{ borderColor: profile.accent, boxShadow: `0 0 0 1px ${profile.accent}22 inset, 0 0 26px ${profile.accent}14` }}
+          >
+            <div className="coop-card-header">
+              <span className="coop-card-id" style={{ color: profile.accent }}>{profile.id}</span>
+              <div>
+                <div className="coop-card-title" style={{ color: profile.accent }}>{profile.title}</div>
+                <div className="coop-card-subtitle">{profile.subtitle}</div>
+              </div>
+            </div>
+
+            <div className="coop-card-hint">{profile.inputHint}</div>
+
+            {!compact && (
+              <>
+                <div className="coop-key-grid">
+                  {profile.keyRows.map((row, rowIndex) => (
+                    <div key={`${playerId}-${rowIndex}`} className="coop-key-row">
+                      {row.map((key) => (
+                        <kbd key={key}>{key}</kbd>
+                      ))}
+                    </div>
+                  ))}
+                </div>
+                <p className="coop-card-description">{profile.description}</p>
+              </>
+            )}
+
+            {compact && snapshot && (
+              <div className="coop-card-mini-stats">
+                <span>{snapshot.hits} hit</span>
+                <span>{snapshot.damage} DMG</span>
+                <span>{snapshot.misses} miss</span>
+              </div>
+            )}
+
+            {compact && !snapshot && (
+              <div className="coop-card-mini-stats">
+                <span>{profile.description}</span>
+              </div>
+            )}
+
+            {!compact && snapshot && (
+              <div className="coop-card-live">
+                <span>{snapshot.hits} hit</span>
+                <span>{snapshot.damage} DMG</span>
+                <span>{snapshot.misses} miss</span>
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+};
 
 /* ─── Helper: pick random from array ─── */
 function pickRandom<T>(arr: T[]): T {
@@ -129,6 +281,7 @@ function pickRandom<T>(arr: T[]): T {
 const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
   const navigate = useNavigate();
   const addPlanetScore = useGameStore((state) => state.addPlanetScore);
+  const addLeaderboardEntry = useGameStore((state) => state.addLeaderboardEntry);
   const markPlanetVisited = useGameStore((state) => state.markPlanetVisited);
   const visitedPlanets = useGameStore((state) => state.visitedPlanets);
   const sfxVolume = useGameStore((state) => state.sfxVolume);
@@ -166,6 +319,7 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
   const [tickerMessages, setTickerMessages] = useState<TickerMessage[]>([]);
   const [abductedCells, setAbductedCells] = useState<Set<number>>(new Set());
   const [laserActive, setLaserActive] = useState(false);
+  const [coopStats, setCoopStats] = useState<Record<CoopPlayerId, CoopPlayerSnapshot>>(createDefaultCoopSnapshot);
   const damageIdRef = useRef(0);
   const tickerIdRef = useRef(0);
   const abductionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -186,6 +340,7 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
   const phaseRef = useRef(phase);
   const totalBugsRef = useRef(0);
   const bossDmgRef = useRef(0);
+  const coopStatsRef = useRef<Record<CoopPlayerId, CoopPlayerSnapshot>>(createDefaultCoopSnapshot());
   const usedSnippetIds = useRef(new Set<number>());
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -196,6 +351,32 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
   useEffect(() => { timeRef.current = timeLeft; }, [timeLeft]);
   useEffect(() => { phaseRef.current = phase; }, [phase]);
   useEffect(() => { bossDmgRef.current = bossDamageTaken; }, [bossDamageTaken]);
+  useEffect(() => { coopStatsRef.current = coopStats; }, [coopStats]);
+
+  const updateCoopStats = useCallback(
+    (playerId: CoopPlayerId, updater: (snapshot: CoopPlayerSnapshot) => CoopPlayerSnapshot) => {
+      setCoopStats((prev) => ({
+        ...prev,
+        [playerId]: updater(prev[playerId]),
+      }));
+    },
+    []
+  );
+
+  const resolveCoopInput = useCallback((event: KeyboardEvent) => {
+    const key = event.key.toLowerCase();
+    const digitCell = NUMERIC_KEY_MAP[key];
+    if (digitCell !== undefined) {
+      return { playerId: 'P2' as CoopPlayerId, cellIdx: digitCell };
+    }
+
+    const letterCell = LETTER_KEY_MAP[key];
+    if (letterCell !== undefined) {
+      return { playerId: 'P3' as CoopPlayerId, cellIdx: letterCell };
+    }
+
+    return null;
+  }, []);
 
   /* ─── Sound helper ─── */
   const playSound = useCallback((type: 'squash' | 'wrong' | 'miss' | 'complete' | 'countdown' | 'go' | 'laser' | 'abduct') => {
@@ -383,12 +564,15 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
   /* ─── Boss Mode: Fake multiplayer ticker ─── */
   const spawnTickerMessage = useCallback(() => {
     if (!isBossMode) return;
-    const player = pickRandom(FAKE_PLAYERS);
-    const dmg = Math.round(300 + Math.random() * 1500);
+    const playerId = pickRandom(COOP_PLAYER_ORDER);
+    const profile = COOP_PLAYER_PROFILES[playerId];
+    const snapshot = coopStatsRef.current[playerId];
     tickerIdRef.current += 1;
     const msg: TickerMessage = {
       id: tickerIdRef.current,
-      text: `${player} dealt ${dmg} DMG!`,
+      text: snapshot.hits > 0
+        ? `${profile.id} ${snapshot.hits} hits · ${snapshot.damage} DMG`
+        : `${profile.id} ready: ${profile.inputHint}`,
       time: Date.now(),
     };
     setTickerMessages(prev => [...prev.slice(-4), msg]);
@@ -410,14 +594,26 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
     }, 1200);
   }, []);
 
-  /* ─── Handle cell click ─── */
-  const handleCellClick = useCallback((cellIdx: number) => {
+  /* ─── Shared raid ticker ─── */
+  const pushTickerMessage = useCallback((text: string) => {
+    tickerIdRef.current += 1;
+    const msg: TickerMessage = {
+      id: tickerIdRef.current,
+      text,
+      time: Date.now(),
+    };
+    setTickerMessages(prev => [...prev.slice(-4), msg]);
+  }, []);
+
+  /* ─── Handle cell activation (mouse + keyboard co-op) ─── */
+  const handleCellAction = useCallback((cellIdx: number, playerId: CoopPlayerId = 'P1') => {
     if (phaseRef.current !== 'playing') return;
     const cell = cellsRef.current[cellIdx];
     if (!cell || cell.animState === 'exiting') return;
 
     const snippet = cell.snippet;
     const isAbducted = cell.abducted;
+    const playerProfile = COOP_PLAYER_PROFILES[playerId];
 
     // Clear the cell
     setCells(prev => {
@@ -441,16 +637,30 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
       setMaxCombo(mc => Math.max(mc, newCombo));
       setBugsSquashed(b => b + 1);
       playSound('squash');
+      updateCoopStats(playerId, (snapshot) => ({
+        ...snapshot,
+        hits: snapshot.hits + 1,
+        score: snapshot.score + points,
+        lastAction: `+${points} score`,
+      }));
 
       // Boss mode: deal damage + laser
       if (isBossMode) {
         const dmg = Math.round(BOSS_DAMAGE_PER_BUG * comboMultiplier);
         setBossDamageTaken(d => d + dmg);
+        bossDmgRef.current += dmg;
         setUfoHitFlash(true);
         setTimeout(() => setUfoHitFlash(false), 200);
         setLaserActive(true);
         setTimeout(() => setLaserActive(false), 300);
         addDamageNumber(dmg);
+        dealBossDamage(dmg, playerProfile.title);
+        updateCoopStats(playerId, (snapshot) => ({
+          ...snapshot,
+          damage: snapshot.damage + dmg,
+          lastAction: `+${dmg} DMG`,
+        }));
+        pushTickerMessage(`${playerProfile.id} smashed a bug for ${dmg} DMG`);
         playSound('laser');
       }
 
@@ -482,6 +692,12 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
       setScore(s => Math.max(0, s - ABDUCTION_PENALTY));
       setCombo(0);
       setWrongClicks(w => w + 1);
+      updateCoopStats(playerId, (snapshot) => ({
+        ...snapshot,
+        misses: snapshot.misses + 1,
+        lastAction: 'Hit an abduction trap',
+      }));
+      pushTickerMessage(`${playerProfile.id} hit an abduction trap!`);
       playSound('abduct');
 
       setFeedbacks(prev => {
@@ -507,6 +723,12 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
       setScore(s => Math.max(0, s - 50));
       setCombo(0);
       setWrongClicks(w => w + 1);
+      updateCoopStats(playerId, (snapshot) => ({
+        ...snapshot,
+        misses: snapshot.misses + 1,
+        lastAction: 'Missed a clean tile',
+      }));
+      pushTickerMessage(`${playerProfile.id} missed a clean tile`);
       playSound('wrong');
 
       setFeedbacks(prev => {
@@ -527,7 +749,7 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
       setScreenEffect('screen-shake');
       setTimeout(() => { setScreenEffect(''); setRobotReaction('idle'); }, 1200);
     }
-  }, [playSound, isBossMode, addDamageNumber]);
+  }, [playSound, isBossMode, addDamageNumber, dealBossDamage, pushTickerMessage, updateCoopStats]);
 
   /* ─── Robot click handler ─── */
   const handleRobotClick = () => {
@@ -612,25 +834,31 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
       const finalScore = scoreRef.current + bonus;
       setScore(finalScore);
 
-      // Boss mode: submit damage to global HP
-      if (isBossMode) {
-        dealBossDamage(bossDmgRef.current, playerData.name || 'Unknown');
-      }
-
       setRobotReaction('celebrating');
       setSpeechMessage(isBossMode
-        ? `Raid complete! You dealt ${bossDmgRef.current} DMG to the UFO! 🎉`
+        ? `Raid complete, ${playerData.name?.trim() || 'cadet'}! You dealt ${bossDmgRef.current} DMG to the UFO! 🎉`
         : "Mission complete! Great debugging, cadet! 🎉"
       );
       playSound('complete');
     }
-  }, [phase, bugsSquashed, maxCombo, playSound, isBossMode, dealBossDamage, playerData.name]);
+  }, [phase, bugsSquashed, maxCombo, playSound, isBossMode, playerData.name]);
 
   /* ─── Handle game completion ─── */
   const handleComplete = useCallback(() => {
     markPlanetVisited(planetId as 1 | 2 | 3 | 4 | 5 | 6);
     const elapsed = Math.round((Date.now() - stageStartRef.current) / 1000);
     addPlanetScore(planetId as 1 | 2 | 3 | 4 | 5 | 6, 6, score, elapsed);
+
+    const allVisitedAfterThisStage = visitedPlanets.size >= 5;
+    if (allVisitedAfterThisStage && playerData.name?.trim()) {
+      addLeaderboardEntry({
+        playerName: playerData.name.trim(),
+        totalScore: useGameStore.getState().getTotalScore(),
+        timestamp: Date.now(),
+        major: playerData.major,
+      });
+    }
+
     setPhase('completion');
     setRobotReaction('celebrating');
     setScreenEffect('screen-flash-green');
@@ -640,7 +868,7 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
       const allVisited = visitedPlanets.size >= 5;
       navigate(allVisited ? '/leaderboard' : '/mainhub');
     }, 4000);
-  }, [planetId, score, markPlanetVisited, addPlanetScore, navigate, visitedPlanets]);
+  }, [planetId, score, markPlanetVisited, addPlanetScore, addLeaderboardEntry, navigate, visitedPlanets, playerData.name, playerData.major]);
 
   /* ─── Replay handler ─── */
   const handleReplay = () => {
@@ -660,6 +888,7 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
     setDamageNumbers([]);
     setTickerMessages([]);
     setAbductedCells(new Set());
+    setCoopStats(createDefaultCoopSnapshot());
     usedSnippetIds.current.clear();
     setCells(Array(GRID_SIZE).fill(null));
     setFeedbacks(Array(GRID_SIZE).fill(null));
@@ -679,6 +908,32 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
       if (tickerTimerRef.current) clearInterval(tickerTimerRef.current);
     };
   }, []);
+
+  useEffect(() => {
+    if (!isBossMode || phase !== 'playing') return;
+    if (bossGlobalHP > 0) return;
+    setPhase('results');
+  }, [isBossMode, phase, bossGlobalHP]);
+
+  useEffect(() => {
+    if (phase !== 'playing') return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.repeat) return;
+      const target = event.target as HTMLElement | null;
+      if (target && ['input', 'textarea', 'select'].includes(target.tagName.toLowerCase())) return;
+      if (target?.isContentEditable) return;
+
+      const resolved = resolveCoopInput(event);
+      if (!resolved) return;
+
+      event.preventDefault();
+      handleCellAction(resolved.cellIdx, resolved.playerId);
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [phase, resolveCoopInput, handleCellAction]);
 
   /* ─── Computed values ─── */
   const accuracy = totalBugsSpawned > 0 ? Math.round((bugsSquashed / totalBugsSpawned) * 100) : 0;
@@ -719,10 +974,11 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
             <button className="return-btn" onClick={() => navigate('/mainhub')}>Return to Hub</button>
           </div>
           <div className="robot-celebration">
-            <AdaptiveCanvas camera={{ position: [0, 1, 5], fov: 50 }} dpr={[1, 1.1]} quality="low">
-              <ambientLight intensity={0.8} />
-              <pointLight position={[5, 5, 5]} intensity={100} color="#ffcc00" />
-              <InteractiveRobot reaction="celebrating" scale={4} position={[0, -1.5, 0]} />
+            <AdaptiveCanvas camera={{ position: [0, 1.2, 6], fov: 44 }} dpr={[1, 1.1]} quality="low" gl={{ alpha: true, antialias: true }}>
+              <ambientLight intensity={0.9} />
+              <directionalLight position={[2, 4, 6]} intensity={1.8} color="#ffffff" />
+              <pointLight position={[5, 5, 5]} intensity={80} color="#ffcc00" />
+              <InteractiveRobot reaction="celebrating" scale={4.2} position={[0, -1.55, 0]} />
               <Stars radius={100} depth={20} count={220} factor={5} saturation={0} fade speed={1} />
             </AdaptiveCanvas>
           </div>
@@ -736,10 +992,11 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
     return (
       <div className={`stage-bug-hunt ${isBossMode ? 'boss-mode' : ''} ${screenEffect}`}>
         <div className="bughunt-canvas-corner">
-          <AdaptiveCanvas camera={{ position: [0, 1, 5], fov: 50 }} dpr={[1, 1.1]} quality="low">
-            <ambientLight intensity={0.6} />
-            <pointLight position={[5, 5, 5]} intensity={100} color="#ffcc00" />
-            <InteractiveRobot reaction={robotReaction} scale={5} position={[0, -1.5, 0]} onClick={handleRobotClick} />
+          <AdaptiveCanvas camera={{ position: [0, 1.2, 6], fov: 44 }} dpr={[1, 1.1]} quality="low" gl={{ alpha: true, antialias: true }}>
+            <ambientLight intensity={0.9} />
+            <directionalLight position={[2, 4, 6]} intensity={1.5} color="#ffffff" />
+            <pointLight position={[5, 5, 5]} intensity={80} color="#ffcc00" />
+            <InteractiveRobot reaction={robotReaction} scale={5.2} position={[0, -1.55, 0]} onClick={handleRobotClick} />
             <Stars radius={100} depth={20} count={140} factor={4} saturation={0} fade speed={1} />
           </AdaptiveCanvas>
           {speechMessage && (
@@ -750,56 +1007,68 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
         <FloatingParticles />
 
         <div className="bughunt-intro-overlay">
-          <div className={`bughunt-intro-card ${isBossMode ? 'boss-intro' : ''}`}>
-            <div className="bughunt-intro-icon">{isBossMode ? '🛸' : '🐛'}</div>
-            <h1 className="bughunt-title">{isBossMode ? 'BOSS RAID' : 'BUG HUNT'}</h1>
-            <h2 className="bughunt-subtitle">{isBossMode ? 'UFO Invasion — Code Debug Raid' : 'Code Debug Challenge'}</h2>
+          <div className={`bughunt-intro-layout ${isBossMode ? 'boss-mode' : ''}`}>
+            <div className={`bughunt-intro-card ${isBossMode ? 'boss-intro' : ''}`}>
+              <div className="bughunt-intro-icon">{isBossMode ? '🛸' : '🐛'}</div>
+              <h1 className="bughunt-title">{isBossMode ? 'BOSS RAID' : 'BUG HUNT'}</h1>
+              <h2 className="bughunt-subtitle">{isBossMode ? 'UFO Invasion — Code Debug Raid' : 'Code Debug Challenge'}</h2>
 
-            {isBossMode && (
-              <div className="boss-hp-preview">
-                <div className="boss-hp-label">UFO GLOBAL HP</div>
-                <div className="boss-hp-bar-track">
-                  <div className="boss-hp-bar-fill" style={{ width: `${bossHPPercent}%` }} />
+              {isBossMode && (
+                <div className="boss-hp-preview">
+                  <div className="boss-hp-label">UFO GLOBAL HP</div>
+                  <div className="boss-hp-bar-track">
+                    <div className="boss-hp-bar-fill" style={{ width: `${bossHPPercent}%` }} />
+                  </div>
+                  <div className="boss-hp-text">{bossGlobalHP.toLocaleString()} / {bossMaxHP.toLocaleString()}</div>
                 </div>
-                <div className="boss-hp-text">{bossGlobalHP.toLocaleString()} / {bossMaxHP.toLocaleString()}</div>
-              </div>
-            )}
+              )}
 
-            <div className="bughunt-rules">
-              <div className="rule-item rule-good">
-                <span className="rule-icon">🎯</span>
-                <div>
-                  <strong>{isBossMode ? 'Squash bugs to damage UFO' : 'Tap buggy code'}</strong>
-                  <p>{isBossMode ? 'Each bug squashed fires a laser at the boss! +100 DMG' : 'Spot syntax errors and squash them! +100 pts'}</p>
+              <div className="bughunt-rules">
+                <div className="rule-item rule-good">
+                  <span className="rule-icon">🎯</span>
+                  <div>
+                    <strong>{isBossMode ? 'Squash bugs to damage UFO' : 'Tap buggy code'}</strong>
+                    <p>{isBossMode ? 'Each bug squashed fires a laser at the boss! +100 DMG' : 'Spot syntax errors and squash them! +100 pts'}</p>
+                  </div>
+                </div>
+                <div className="rule-item rule-bad">
+                  <span className="rule-icon">⚠️</span>
+                  <div>
+                    <strong>{isBossMode ? 'Watch for Abduction Beams!' : 'Avoid correct code'}</strong>
+                    <p>{isBossMode ? 'The UFO targets clean code with green beams — clicking them costs −300 pts!' : "Don't tap clean code or you lose points! −50 pts"}</p>
+                  </div>
+                </div>
+                <div className="rule-item rule-combo">
+                  <span className="rule-icon">🔥</span>
+                  <div>
+                    <strong>{isBossMode ? 'Combo = More damage' : 'Build combos'}</strong>
+                    <p>{isBossMode ? 'Consecutive hits deal up to 3x damage!' : 'Consecutive squashes multiply your score!'}</p>
+                  </div>
                 </div>
               </div>
-              <div className="rule-item rule-bad">
-                <span className="rule-icon">⚠️</span>
-                <div>
-                  <strong>{isBossMode ? 'Watch for Abduction Beams!' : 'Avoid correct code'}</strong>
-                  <p>{isBossMode ? 'The UFO targets clean code with green beams — clicking them costs −300 pts!' : "Don't tap clean code or you lose points! −50 pts"}</p>
+
+              {isBossMode && (
+                <div className="boss-raid-note">
+                  <span>👥</span> All players share the boss HP. Your damage counts!
                 </div>
-              </div>
-              <div className="rule-item rule-combo">
-                <span className="rule-icon">🔥</span>
-                <div>
-                  <strong>{isBossMode ? 'Combo = More damage' : 'Build combos'}</strong>
-                  <p>{isBossMode ? 'Consecutive hits deal up to 3x damage!' : 'Consecutive squashes multiply your score!'}</p>
-                </div>
-              </div>
+              )}
+
+              <p className="bughunt-timer-info">⏱ You have {GAME_DURATION} seconds. The clock is ticking!</p>
+              <button className={`bughunt-start-btn ${isBossMode ? 'boss-start' : ''}`} onClick={startCountdown}>
+                <span>{isBossMode ? 'ENGAGE BOSS' : 'LAUNCH MISSION'}</span>
+                <span className="btn-glow" />
+              </button>
             </div>
 
             {isBossMode && (
-              <div className="boss-raid-note">
-                <span>👥</span> All players share the boss HP. Your damage counts!
+              <div className="boss-coop-section">
+                <div className="boss-coop-label">3-PLAYER CO-OP CONTROLS</div>
+                <CoopLegend />
+                <div className="boss-coop-note">
+                  Shared raid session. P1 uses the mouse, P2 uses numbers/numpad, and P3 uses letters.
+                </div>
               </div>
             )}
-
-            <p className="bughunt-timer-info">⏱ You have {GAME_DURATION} seconds. The clock is ticking!</p>
-            <button className={`bughunt-start-btn ${isBossMode ? 'boss-start' : ''}`} onClick={startCountdown}>
-              <span>{isBossMode ? 'ENGAGE BOSS' : 'LAUNCH MISSION'}</span>
-              <span className="btn-glow" />
-            </button>
           </div>
         </div>
       </div>
@@ -825,10 +1094,11 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
     return (
       <div className={`stage-bug-hunt ${isBossMode ? 'boss-mode' : ''} ${screenEffect}`}>
         <div className="bughunt-canvas-corner">
-          <AdaptiveCanvas camera={{ position: [0, 1, 5], fov: 50 }} dpr={[1, 1.1]} quality="low">
-            <ambientLight intensity={0.6} />
-            <pointLight position={[5, 5, 5]} intensity={100} color="#ffcc00" />
-            <InteractiveRobot reaction="celebrating" scale={5} position={[0, -1.5, 0]} />
+          <AdaptiveCanvas camera={{ position: [0, 1.2, 6], fov: 44 }} dpr={[1, 1.1]} quality="low" gl={{ alpha: true, antialias: true }}>
+            <ambientLight intensity={0.9} />
+            <directionalLight position={[2, 4, 6]} intensity={1.5} color="#ffffff" />
+            <pointLight position={[5, 5, 5]} intensity={80} color="#ffcc00" />
+            <InteractiveRobot reaction="celebrating" scale={5.2} position={[0, -1.55, 0]} />
             <Stars radius={100} depth={20} count={140} factor={4} saturation={0} fade speed={1} />
           </AdaptiveCanvas>
         </div>
@@ -923,15 +1193,16 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
       {/* ── Boss Mode: UFO 3D Scene ── */}
       {isBossMode && (
         <div className="boss-ufo-scene">
-          <AdaptiveCanvas camera={{ position: [0, 3, 12], fov: 40 }} dpr={[1, 1.2]} quality="low">
-            <ambientLight intensity={0.4} />
-            <pointLight position={[0, 10, 5]} intensity={50} color="#00ff88" />
+          <AdaptiveCanvas camera={{ position: [0, 3.7, 14], fov: 34 }} dpr={[1, 1.2]} quality="low" gl={{ alpha: true, antialias: true }}>
+            <ambientLight intensity={0.9} />
+            <directionalLight position={[3, 6, 8]} intensity={1.8} color="#ffffff" />
+            <pointLight position={[0, 10, 5]} intensity={35} color="#00ffcc" />
             <BossUFO
               hp={bossGlobalHP}
               maxHP={bossMaxHP}
               hitFlash={ufoHitFlash}
-              position={[0, 1, 0]}
-              scale={1.2}
+              position={[0, 0.85, 0]}
+              scale={1.05}
             />
             <Stars radius={100} depth={20} count={90} factor={3} saturation={0} fade speed={1} />
           </AdaptiveCanvas>
@@ -982,6 +1253,12 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
         </div>
       </div>
 
+      {isBossMode && (
+        <div className="boss-coop-hud">
+          <CoopLegend compact stats={coopStats} />
+        </div>
+      )}
+
       {/* ── Boss Mode: Ticker ── */}
       {isBossMode && tickerMessages.length > 0 && (
         <div className="boss-ticker">
@@ -1001,7 +1278,7 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
               <div
                 key={idx}
                 className={`bughunt-cell ${cell ? 'has-snippet' : 'empty'} ${cell?.animState === 'entering' ? 'cell-enter' : ''} ${cell?.animState === 'exiting' ? 'cell-exit' : ''} ${feedback?.type === 'squash' ? 'cell-squash' : ''} ${feedback?.type === 'wrong' ? 'cell-wrong' : ''} ${feedback?.type === 'miss' ? 'cell-miss' : ''} ${feedback?.type === 'abducted' ? 'cell-abducted-hit' : ''} ${isAbducted ? 'cell-abduction-beam' : ''}`}
-                onClick={() => handleCellClick(idx)}
+                onClick={() => handleCellAction(idx, 'P1')}
               >
                 {/* Abduction beam overlay */}
                 {isAbducted && (

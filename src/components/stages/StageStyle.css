@@ -32,11 +32,26 @@
   height: 100vh;
   height: 100dvh;
   display: flex;
-  background: var(--stage-bg);
+  background:
+    radial-gradient(circle at 12% 18%, rgba(0, 255, 255, 0.08), transparent 28%),
+    radial-gradient(circle at 84% 20%, rgba(255, 204, 0, 0.06), transparent 24%),
+    radial-gradient(circle at 50% 82%, rgba(0, 255, 136, 0.05), transparent 30%),
+    var(--stage-bg);
+  background-size: 140% 140%;
+  animation: stageAuraDrift 18s ease-in-out infinite alternate;
   color: var(--accent-cyan);
   font-family: 'Segoe UI', 'Arial', sans-serif;
   overflow: hidden;
   position: relative;
+}
+
+@keyframes stageAuraDrift {
+  0% {
+    background-position: 0% 0%, 100% 0%, 50% 100%, 0% 0%;
+  }
+  100% {
+    background-position: 100% 100%, 0% 100%, 50% 0%, 100% 100%;
+  }
 }
 
 /* Canvas (3D Robot) Side */
@@ -44,10 +59,17 @@
 .canvas-container {
   flex: 1;
   position: relative;
-  background: radial-gradient(ellipse at 50% 60%, rgba(0, 100, 180, 0.12) 0%, transparent 70%);
+  background:
+    radial-gradient(circle at 50% 35%, rgba(0, 255, 255, 0.08), transparent 40%),
+    linear-gradient(180deg, rgba(6, 20, 45, 0.88), rgba(2, 8, 20, 0.96));
   min-height: 0;
-  border-radius: 0;
-  overflow: hidden;
+  border-radius: 24px;
+  overflow: visible;
+  border: 1px solid rgba(255, 204, 0, 0.35);
+  box-shadow:
+    0 0 24px rgba(255, 204, 0, 0.15),
+    0 0 0 1px rgba(255, 255, 255, 0.04) inset,
+    inset 0 0 30px rgba(0, 0, 0, 0.38);
 }
 
 /* Content Side */
@@ -107,6 +129,19 @@
   overflow-y: auto;
   overflow-x: hidden;
   max-height: 100%;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+.intro-card:hover,
+.quiz-card:hover,
+.puzzle-card:hover,
+.flowchart-card:hover,
+.logic-card:hover {
+  transform: translateY(-4px);
+  box-shadow:
+    0 0 36px rgba(0, 255, 255, 0.24),
+    inset 0 0 40px rgba(0, 255, 255, 0.05),
+    0 14px 36px rgba(0, 0, 0, 0.42);
 }
 
 /* Animated top-border glow line */
@@ -944,6 +979,369 @@
   justify-content: center;
 }
 
+/* ============ STAGE 2-4 WIDE DESKTOP MODE (NO SCROLL) ============ */
+@media (min-width: 1025px) {
+  .stage-multiple-choice,
+  .stage-puzzle,
+  .stage-flowchart {
+    position: relative;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  .stage-multiple-choice > .canvas-container,
+  .stage-puzzle > .canvas-container,
+  .stage-flowchart > .canvas-container {
+    position: absolute;
+    bottom: clamp(12px, 2vw, 24px);
+    left: clamp(12px, 2vw, 24px);
+    width: clamp(120px, 14vw, 190px);
+    height: clamp(120px, 14vw, 190px);
+    flex: none;
+    z-index: 12;
+    border-radius: 24px;
+    background:
+      radial-gradient(circle at 50% 35%, rgba(0, 255, 255, 0.08), transparent 40%),
+      linear-gradient(180deg, rgba(6, 20, 45, 0.88), rgba(2, 8, 20, 0.96));
+    border: 1px solid rgba(255, 204, 0, 0.35);
+    box-shadow:
+      0 0 24px rgba(255, 204, 0, 0.15),
+      0 0 0 1px rgba(255, 255, 255, 0.04) inset,
+      inset 0 0 30px rgba(0, 0, 0, 0.38);
+    overflow: visible;
+    pointer-events: auto;
+  }
+
+  .stage-multiple-choice > .canvas-container > canvas,
+  .stage-puzzle > .canvas-container > canvas,
+  .stage-flowchart > .canvas-container > canvas {
+    border-radius: 24px;
+  }
+
+  .stage-multiple-choice > .quiz-content,
+  .stage-puzzle > .puzzle-content,
+  .stage-flowchart > .flowchart-content {
+    width: 100%;
+    height: 100%;
+    padding: clamp(14px, 2vw, 26px) clamp(20px, 3vw, 42px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden !important;
+    gap: clamp(12px, 1.4vw, 18px);
+  }
+
+  .stage-multiple-choice .quiz-card,
+  .stage-puzzle .puzzle-card,
+  .stage-flowchart .flowchart-card {
+    width: min(980px, calc(100vw - 260px));
+    max-width: min(980px, calc(100vw - 260px));
+    max-height: min(90dvh, 860px);
+    overflow: hidden;
+  }
+
+  .stage-multiple-choice .quiz-card {
+    max-width: min(900px, calc(100vw - 260px));
+    width: min(900px, calc(100vw - 260px));
+  }
+
+  .stage-multiple-choice .quiz-card {
+    padding: clamp(16px, 2.1vw, 26px);
+  }
+
+  .stage-multiple-choice .quiz-options {
+    gap: clamp(8px, 1vw, 12px);
+    margin-bottom: clamp(12px, 1.5vw, 18px);
+  }
+
+  .stage-multiple-choice .quiz-option {
+    min-height: 46px;
+    padding: clamp(10px, 1.2vw, 13px) clamp(12px, 1.4vw, 16px);
+  }
+
+  .stage-puzzle .puzzle-card {
+    max-width: min(860px, calc(100vw - 260px));
+    width: min(860px, calc(100vw - 260px));
+    padding: clamp(16px, 2.1vw, 24px);
+  }
+
+  .stage-puzzle .puzzle-grid {
+    max-width: min(360px, 34vw);
+    margin-bottom: clamp(8px, 1vw, 12px);
+  }
+
+  .stage-puzzle .puzzle-grid-3x3 {
+    gap: clamp(4px, 0.7vw, 7px);
+  }
+
+  .stage-flowchart .flowchart-workspace {
+    width: min(1180px, calc(100vw - 260px));
+    max-width: min(1180px, calc(100vw - 260px));
+    align-items: stretch;
+    gap: clamp(14px, 2vw, 24px);
+  }
+
+  .stage-flowchart .flowchart-main {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: clamp(10px, 1.2vw, 14px);
+    flex: 1;
+    min-width: 0;
+  }
+
+  .stage-flowchart .flowchart-card {
+    flex: 1;
+    width: auto;
+    max-width: none;
+    max-height: min(90dvh, 860px);
+    padding: clamp(14px, 1.7vw, 22px);
+  }
+
+  .stage-flowchart .connector-palette {
+    width: clamp(170px, 18vw, 220px);
+    flex-direction: column;
+    justify-content: flex-start;
+  }
+
+  .stage-flowchart .flowchart-diagram {
+    max-height: min(56vh, 560px);
+    overflow: hidden;
+  }
+
+  .quiz-footer,
+  .puzzle-footer,
+  .flowchart-footer {
+    width: min(900px, calc(100vw - 260px));
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: clamp(8px, 1vw, 12px);
+    flex-shrink: 0;
+    z-index: 3;
+  }
+
+  .quiz-footer {
+    align-items: flex-end;
+    padding-right: clamp(4px, 0.8vw, 12px);
+  }
+
+  .puzzle-footer {
+    position: absolute;
+    left: clamp(24px, 3vw, 52px);
+    top: auto;
+    bottom: clamp(28px, 4vw, 54px);
+    transform: none;
+    width: clamp(180px, 16vw, 240px);
+    align-items: stretch;
+    z-index: 16;
+  }
+
+  .flowchart-footer {
+    width: 100%;
+  }
+
+  .quiz-next-btn,
+  .puzzle-solve-btn,
+  .flowchart-next-btn {
+    width: min(320px, 100%);
+  }
+
+  .quiz-progress-inline,
+  .flowchart-progress-inline {
+    width: 100%;
+  }
+
+  .quiz-progress-inline {
+    max-width: 100%;
+  }
+
+  .flowchart-progress-inline {
+    max-width: 760px;
+    margin: 0 auto;
+  }
+
+  .puzzle-reference-preview {
+    position: absolute;
+    top: clamp(12px, 2vw, 24px);
+    right: clamp(20px, 3vw, 40px);
+    width: clamp(180px, 18vw, 260px);
+    max-height: clamp(120px, 20vh, 180px);
+    margin: 0;
+    z-index: 15;
+    pointer-events: none;
+    box-shadow: 0 0 22px rgba(0, 255, 255, 0.16);
+  }
+
+  .puzzle-solve-btn {
+    width: 100%;
+  }
+
+  .quiz-next-btn,
+  .flowchart-next-btn {
+    width: min(280px, 100%);
+  }
+
+  .stage-flowchart > .flowchart-content {
+    justify-content: flex-start;
+    padding-top: clamp(18px, 3vw, 34px);
+    padding-bottom: clamp(18px, 3vw, 34px);
+  }
+
+  .stage-flowchart .flowchart-workspace {
+    position: relative;
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: flex-start;
+    width: min(1200px, calc(100vw - 120px));
+    max-width: min(1200px, calc(100vw - 120px));
+    gap: clamp(18px, 2vw, 28px);
+    padding-right: clamp(230px, 20vw, 290px);
+  }
+
+  .stage-flowchart .flowchart-main {
+    width: 100%;
+    max-width: min(900px, calc(100% - clamp(230px, 20vw, 290px)));
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: clamp(10px, 1.2vw, 14px);
+  }
+
+  .stage-flowchart .flowchart-card {
+    width: min(900px, 100%);
+    max-width: min(900px, 100%);
+    max-height: min(66dvh, 640px);
+    padding: clamp(12px, 1.4vw, 18px);
+  }
+
+  .stage-flowchart .flowchart-diagram {
+    max-height: min(44vh, 440px);
+    overflow: hidden;
+  }
+
+  .stage-flowchart .connector-palette {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    right: 0;
+    width: clamp(180px, 18vw, 240px);
+    max-width: clamp(180px, 18vw, 240px);
+    flex-direction: column;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    align-items: stretch;
+    gap: 12px;
+    padding: clamp(14px, 1.8vw, 20px);
+    border-radius: 24px;
+  }
+
+  .stage-flowchart .connector-palette h3,
+  .stage-flowchart .palette-hint {
+    flex-basis: 100%;
+    text-align: center;
+    margin: 0;
+  }
+
+  .stage-flowchart .connector-drag-item {
+    flex: none;
+    width: 100%;
+    min-height: 52px;
+    border-radius: 999px;
+    justify-content: center;
+    padding: clamp(12px, 1.5vw, 16px) clamp(16px, 1.8vw, 20px);
+  }
+
+  .stage-flowchart .flowchart-main {
+    max-height: calc(100dvh - 120px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: clamp(2px, 0.5vw, 6px);
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .stage-flowchart .flowchart-main::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+  }
+
+  .stage-flowchart .flowchart-card {
+    max-height: min(58dvh, 520px);
+    padding: clamp(10px, 1.2vw, 16px);
+  }
+
+  .stage-flowchart .flowchart-header {
+    margin-bottom: clamp(8px, 1vw, 12px);
+  }
+
+  .stage-flowchart .flowchart-header h1 {
+    font-size: clamp(20px, 2vw, 28px);
+  }
+
+  .stage-flowchart .flowchart-description {
+    font-size: clamp(11px, 1.1vw, 13px);
+  }
+
+  .stage-flowchart .flowchart-diagram {
+    max-height: min(34vh, 300px);
+    margin-bottom: clamp(10px, 1vw, 14px);
+  }
+
+  .stage-flowchart .flowchart-block {
+    max-width: 340px;
+    padding: clamp(10px, 1.2vw, 14px);
+  }
+
+  .stage-flowchart .block-label {
+    font-size: clamp(12px, 1.3vw, 16px);
+  }
+
+  .stage-flowchart .block-value {
+    font-size: clamp(11px, 1.2vw, 13px);
+  }
+
+  .stage-flowchart .decision-diamond-wrapper {
+    padding: clamp(6px, 0.8vw, 10px) 0;
+  }
+
+  .stage-flowchart .decision-diamond {
+    width: clamp(84px, 10vw, 120px);
+    height: clamp(84px, 10vw, 120px);
+  }
+
+  .stage-flowchart .diamond-inner-text {
+    font-size: clamp(10px, 1vw, 12px);
+    padding: 6px;
+  }
+
+  .stage-flowchart .flow-arrow {
+    margin: clamp(4px, 0.6vw, 8px) 0;
+    font-size: clamp(15px, 2vw, 22px);
+  }
+
+  .stage-flowchart .connector-drop-zone {
+    max-width: 340px;
+    min-height: 46px;
+    padding: clamp(10px, 1.2vw, 14px);
+    font-size: clamp(11px, 1.2vw, 14px);
+  }
+
+  .stage-flowchart .flowchart-footer {
+    width: min(900px, calc(100vw - 260px));
+    align-items: flex-end;
+    gap: clamp(6px, 0.8vw, 10px);
+  }
+
+  .stage-flowchart .flowchart-progress-inline {
+    max-width: 700px;
+    margin: 0 auto;
+  }
+}
+
 .connector-palette {
   background: rgba(0, 10, 30, 0.9);
   border: 2px solid rgba(0, 136, 255, 0.5);
@@ -1166,19 +1564,24 @@
   position: absolute;
   bottom: clamp(10px, 2vw, 20px);
   right: clamp(10px, 2vw, 20px);
-  width: clamp(90px, 13vw, 160px);
-  height: clamp(90px, 13vw, 160px);
+  width: clamp(120px, 14vw, 190px);
+  height: clamp(120px, 14vw, 190px);
   z-index: 15;
-  border-radius: 50%;
-  background: radial-gradient(ellipse at 50% 50%, rgba(6, 20, 45, 0.95) 0%, rgba(4, 14, 30, 0.98) 70%);
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at 50% 35%, rgba(0, 255, 255, 0.08), transparent 40%),
+    linear-gradient(180deg, rgba(6, 20, 45, 0.88), rgba(2, 8, 20, 0.96));
   overflow: visible;
   pointer-events: auto;
-  border: 2px solid rgba(255, 204, 0, 0.4);
-  box-shadow: 0 0 20px rgba(255, 204, 0, 0.15), inset 0 0 30px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 204, 0, 0.35);
+  box-shadow:
+    0 0 24px rgba(255, 204, 0, 0.15),
+    0 0 0 1px rgba(255, 255, 255, 0.04) inset,
+    inset 0 0 30px rgba(0, 0, 0, 0.38);
 }
 
 .bughunt-canvas-corner > canvas {
-  border-radius: 50%;
+  border-radius: 24px;
 }
 
 /* ── HUD (top bar) ── */
@@ -1535,10 +1938,19 @@
   position: absolute;
   inset: 0;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
   z-index: 10;
-  padding: clamp(16px, 3vw, 40px);
+  padding: clamp(16px, 3vw, 40px) clamp(16px, 3vw, 40px) clamp(20px, 4vw, 48px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.bughunt-intro-overlay::-webkit-scrollbar {
+  width: 0;
+  height: 0;
 }
 
 .bughunt-intro-card {
@@ -1555,6 +1967,143 @@
   box-shadow:
     0 0 40px rgba(255, 204, 0, 0.1),
     inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  max-height: calc(100dvh - clamp(32px, 6vw, 72px));
+  overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.bughunt-intro-card::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+.bughunt-intro-layout {
+  width: min(520px, 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(16px, 2vw, 24px);
+}
+
+.bughunt-intro-layout.boss-mode {
+  width: min(1320px, 100%);
+  flex-direction: row;
+  align-items: flex-start;
+}
+
+.bughunt-intro-card.boss-intro {
+  max-width: none;
+  width: 100%;
+  height: 100%;
+  min-height: min(74dvh, 760px);
+}
+
+.bughunt-intro-card.boss-intro .bughunt-rules {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(10px, 1.4vw, 16px);
+}
+
+.bughunt-intro-card.boss-intro .rule-item {
+  min-height: 100%;
+}
+
+.bughunt-intro-layout.boss-mode .boss-coop-section {
+  width: clamp(280px, 26vw, 360px);
+  margin: 0;
+  min-height: min(74dvh, 760px);
+  max-height: calc(100dvh - 120px);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.bughunt-intro-layout.boss-mode .boss-coop-section::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+.bughunt-intro-layout.boss-mode .coop-legend.full {
+  grid-template-columns: 1fr;
+  flex: 1;
+}
+
+.bughunt-intro-layout.boss-mode .boss-coop-section {
+  padding: 10px 10px 8px;
+  gap: 8px;
+}
+
+.bughunt-intro-layout.boss-mode .boss-coop-label {
+  font-size: clamp(0.62rem, 1vw, 0.76rem);
+  margin-bottom: 6px;
+}
+
+.bughunt-intro-layout.boss-mode .boss-coop-note {
+  margin-top: 6px;
+  font-size: clamp(0.54rem, 0.9vw, 0.68rem);
+}
+
+.bughunt-intro-layout.boss-mode .coop-legend {
+  gap: 8px;
+}
+
+.bughunt-intro-layout.boss-mode .coop-card {
+  padding: 8px 9px;
+}
+
+.bughunt-intro-layout.boss-mode .coop-card-header {
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.bughunt-intro-layout.boss-mode .coop-card-id {
+  font-size: 0.7rem;
+}
+
+.bughunt-intro-layout.boss-mode .coop-card-title {
+  font-size: clamp(0.62rem, 0.9vw, 0.82rem);
+}
+
+.bughunt-intro-layout.boss-mode .coop-card-subtitle {
+  font-size: 0.55rem;
+}
+
+.bughunt-intro-layout.boss-mode .coop-card-hint {
+  font-size: 0.56rem;
+  margin-bottom: 6px;
+}
+
+.bughunt-intro-layout.boss-mode .coop-key-grid {
+  gap: 5px;
+  margin-bottom: 6px;
+}
+
+.bughunt-intro-layout.boss-mode .coop-key-row {
+  gap: 5px;
+}
+
+.bughunt-intro-layout.boss-mode .coop-key-row kbd {
+  min-width: 24px;
+  padding: 4px 7px;
+  font-size: 0.52rem;
+}
+
+.bughunt-intro-layout.boss-mode .coop-card-description {
+  font-size: 0.52rem;
+  line-height: 1.35;
+}
+
+.bughunt-intro-layout.boss-mode .coop-card-live,
+.bughunt-intro-layout.boss-mode .coop-card-mini-stats {
+  margin-top: 6px;
+  font-size: 0.5rem;
+}
+
+.bughunt-intro-layout.boss-mode .coop-card.full {
+  min-height: 0;
 }
 
 @keyframes cardSlideIn {
@@ -1882,7 +2431,12 @@
     height: min(55vh, 400px);
     gap: 5px;
   }
-
+    background:
+      radial-gradient(circle at 14% 16%, rgba(0, 255, 255, 0.08), transparent 26%),
+      radial-gradient(circle at 82% 18%, rgba(255, 140, 0, 0.08), transparent 22%),
+      var(--stage-bg);
+    background-size: 140% 140%;
+    animation: stageAuraDrift 18s ease-in-out infinite alternate;
   .cell-code {
     font-size: clamp(9px, 2.5vw, 13px);
   }
@@ -1892,6 +2446,19 @@
     height: 70px;
     bottom: 8px;
     right: 8px;
+  }
+
+  .bughunt-intro-card.boss-intro {
+    max-width: 520px;
+    width: 100%;
+  }
+
+  .bughunt-intro-card.boss-intro .bughunt-rules {
+    grid-template-columns: 1fr;
+  }
+
+  .bughunt-intro-layout.boss-mode .coop-legend.full {
+    grid-template-columns: 1fr;
   }
 
   .bughunt-stats {
@@ -1943,21 +2510,26 @@
   position: absolute;
   bottom: clamp(12px, 2vw, 24px);
   left: clamp(12px, 2vw, 24px);
-  width: clamp(100px, 15vw, 180px);
-  height: clamp(100px, 15vw, 180px);
+  width: clamp(120px, 14vw, 190px);
+  height: clamp(120px, 14vw, 190px);
   flex: none;
   z-index: 15;
-  border-radius: 50%;
-  background: radial-gradient(ellipse at 50% 50%, rgba(6, 20, 45, 0.95) 0%, rgba(4, 14, 30, 0.98) 70%);
-  overflow: visible;
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at 50% 35%, rgba(0, 255, 255, 0.08), transparent 40%),
+    linear-gradient(180deg, rgba(6, 20, 45, 0.88), rgba(2, 8, 20, 0.96));
+  overflow: hidden;
   pointer-events: auto;
-  border: 2px solid rgba(0, 255, 255, 0.4);
-  box-shadow: 0 0 20px rgba(0, 255, 255, 0.15), inset 0 0 30px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 204, 0, 0.35);
+  box-shadow:
+    0 0 24px rgba(255, 204, 0, 0.15),
+    0 0 0 1px rgba(255, 255, 255, 0.04) inset,
+    inset 0 0 30px rgba(0, 0, 0, 0.38);
 }
 
-/* Clip only the canvas (3D scene) to the circle, not the speech bubble */
+/* Clip the canvas (3D scene) to the rounded card */
 .stage-logic-flow > .canvas-container > canvas {
-  border-radius: 50%;
+  border-radius: 24px;
 }
 
 /* Speech bubble wrapper for Stage 5 — positioned relative to stage, near the robot circle */
@@ -2292,9 +2864,16 @@
     z-index: 10;
     pointer-events: none;
     flex: none;
-    background: radial-gradient(ellipse at 50% 60%, rgba(0, 100, 180, 0.25) 0%, transparent 70%);
-    border-radius: 50%;
-    overflow: hidden;
+    background:
+      radial-gradient(circle at 50% 35%, rgba(0, 255, 255, 0.08), transparent 40%),
+      linear-gradient(180deg, rgba(6, 20, 45, 0.88), rgba(2, 8, 20, 0.96));
+    border-radius: 24px;
+    overflow: visible;
+    border: 1px solid rgba(255, 204, 0, 0.35);
+    box-shadow:
+      0 0 24px rgba(255, 204, 0, 0.15),
+      0 0 0 1px rgba(255, 255, 255, 0.04) inset,
+      inset 0 0 30px rgba(0, 0, 0, 0.38);
   }
 
   .stage-content,
@@ -2315,6 +2894,21 @@
   .flowchart-card,
   .logic-card {
     max-width: 100%;
+  }
+
+  .bughunt-intro-layout.boss-mode {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .bughunt-intro-layout.boss-mode .bughunt-intro-card.boss-intro,
+  .bughunt-intro-layout.boss-mode .boss-coop-section {
+    width: 100%;
+    min-height: unset;
+  }
+
+  .bughunt-intro-layout.boss-mode .coop-legend.full {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .flowchart-workspace {
@@ -2872,6 +3466,7 @@
 .intro-canvas-container canvas,
 .canvas-container canvas {
   cursor: pointer;
+  border-radius: 24px;
 }
 
 /* ============ RESPONSIVE: SPEECH BUBBLES ============ */
@@ -2945,25 +3540,226 @@
 
 /* ── Boss mode container modifier ── */
 .stage-bug-hunt.boss-mode {
-  background: radial-gradient(ellipse at top, #1a0a2e 0%, #0a0a1a 50%, #000 100%);
+  background:
+    radial-gradient(circle at 18% 14%, rgba(255, 68, 102, 0.1), transparent 24%),
+    radial-gradient(circle at 82% 18%, rgba(0, 255, 255, 0.08), transparent 22%),
+    radial-gradient(ellipse at top, #1a0a2e 0%, #0a0a1a 50%, #000 100%);
+  background-size: 140% 140%;
+  animation: stageAuraDrift 18s ease-in-out infinite alternate;
 }
 
 /* ── UFO 3D Scene Area ── */
 .boss-ufo-scene {
   position: absolute;
   top: 50%;
-  left: 10px;
+  left: clamp(10px, 1.4vw, 22px);
   transform: translateY(-50%);
-  width: clamp(180px, 20vw, 280px);
-  height: clamp(240px, 42vh, 400px);
+  width: clamp(240px, 23vw, 340px);
+  height: clamp(320px, 50vh, 460px);
   z-index: 5;
   pointer-events: none;
-  border-radius: 16px;
-  overflow: visible;
+  border-radius: 28px;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 50% 25%, rgba(0, 255, 204, 0.08), transparent 45%),
+    linear-gradient(180deg, rgba(4, 12, 26, 0.86), rgba(2, 6, 16, 0.96));
+  border: 1px solid rgba(0, 255, 255, 0.18);
+  box-shadow:
+    0 0 28px rgba(0, 255, 255, 0.12),
+    0 0 0 1px rgba(255, 255, 255, 0.04) inset,
+    inset 0 0 30px rgba(0, 0, 0, 0.34);
 }
 
 .boss-ufo-scene canvas {
+  border-radius: 28px;
+}
+
+/* ── Boss Co-op tutorial panels ── */
+.boss-coop-section {
+  width: min(920px, 100%);
+  margin: 14px auto 8px;
+  padding: 14px 14px 10px;
   border-radius: 16px;
+  background: linear-gradient(180deg, rgba(4, 16, 36, 0.84), rgba(2, 8, 20, 0.94));
+  border: 1px solid rgba(0, 255, 255, 0.12);
+  box-shadow: 0 0 30px rgba(0, 255, 255, 0.08);
+}
+
+.boss-coop-label {
+  font-family: 'Orbitron', sans-serif;
+  font-size: clamp(0.7rem, 1.3vw, 0.9rem);
+  letter-spacing: 0.18em;
+  color: #00ffff;
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.boss-coop-note {
+  margin-top: 10px;
+  text-align: center;
+  color: rgba(255, 204, 0, 0.86);
+  font-family: 'Orbitron', sans-serif;
+  font-size: clamp(0.62rem, 1.1vw, 0.8rem);
+  letter-spacing: 0.08em;
+}
+
+.boss-coop-hud {
+  position: relative;
+  z-index: 9;
+  width: min(1280px, calc(100% - 24px));
+  margin: 10px auto 6px;
+  padding: 0 12px;
+}
+
+.coop-legend {
+  display: grid;
+  gap: 10px;
+}
+
+.coop-legend.full {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.coop-legend.compact {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.coop-card {
+  border-radius: 14px;
+  background: rgba(3, 13, 30, 0.9);
+  padding: 10px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+}
+
+.coop-card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.coop-card-id {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+}
+
+.coop-card-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: clamp(0.72rem, 1vw, 0.92rem);
+  font-weight: 900;
+  letter-spacing: 0.06em;
+}
+
+.coop-card-subtitle,
+.coop-card-hint,
+.coop-card-description,
+.coop-card-mini-stats,
+.coop-card-live {
+  font-family: 'Orbitron', sans-serif;
+}
+
+.coop-card-subtitle {
+  font-size: 0.62rem;
+  color: rgba(255, 255, 255, 0.55);
+  letter-spacing: 0.08em;
+}
+
+.coop-card-hint {
+  font-size: 0.62rem;
+  color: rgba(255, 255, 255, 0.82);
+  letter-spacing: 0.08em;
+  margin-bottom: 8px;
+}
+
+.coop-key-grid {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.coop-key-row {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.coop-key-row kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  padding: 5px 8px;
+  border-radius: 8px;
+  border: 1px solid currentColor;
+  color: inherit;
+  background: rgba(255, 255, 255, 0.05);
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.58rem;
+  letter-spacing: 0.08em;
+}
+
+.coop-card-description {
+  margin: 0;
+  font-size: 0.58rem;
+  color: rgba(255, 255, 255, 0.62);
+  line-height: 1.45;
+  letter-spacing: 0.04em;
+}
+
+.coop-card-live,
+.coop-card-mini-stats {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 8px;
+  font-size: 0.56rem;
+  letter-spacing: 0.08em;
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.coop-card.compact {
+  padding: 8px 10px;
+}
+
+.coop-card.compact .coop-card-subtitle,
+.coop-card.compact .coop-card-description {
+  display: none;
+}
+
+.coop-card.compact .coop-card-hint {
+  margin-bottom: 4px;
+}
+
+.coop-card.compact .coop-card-header {
+  margin-bottom: 4px;
+}
+
+@media (max-width: 1024px) {
+  .coop-legend.full,
+  .coop-legend.compact {
+    grid-template-columns: 1fr;
+  }
+
+  .boss-ufo-scene {
+    width: clamp(200px, 32vw, 300px);
+    height: clamp(280px, 42vh, 400px);
+  }
+}
+
+@media (max-width: 600px) {
+  .boss-coop-hud {
+    width: calc(100% - 16px);
+    padding: 0 8px;
+  }
+
+  .boss-ufo-scene {
+    width: 160px;
+    height: 220px;
+  }
 }
 
 /* ── Floating Damage Numbers ── */

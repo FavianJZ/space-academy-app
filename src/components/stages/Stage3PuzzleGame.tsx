@@ -240,12 +240,6 @@ const Stage3PuzzleGame: React.FC<Stage3PuzzleGameProps> = ({ planetId }) => {
             </button>
           </div>
 
-          {showReference && (
-            <div className="reference-preview">
-              <img src="/assets/gambar_binus_puzzel_game.jpeg" alt="Reference" />
-            </div>
-          )}
-
           <div className="puzzle-grid puzzle-grid-3x3">
             {tiles.map((tile, index) => (
               <div
@@ -262,8 +256,16 @@ const Stage3PuzzleGame: React.FC<Stage3PuzzleGameProps> = ({ planetId }) => {
               </div>
             ))}
           </div>
+        </div>
 
-          <button className="solve-btn" onClick={handleRestart}>🔄 RESTART PUZZLE</button>
+        {showReference && (
+          <div className="reference-preview puzzle-reference-preview">
+            <img src="/assets/gambar_binus_puzzel_game.jpeg" alt="Reference" />
+          </div>
+        )}
+
+        <div className="puzzle-footer">
+          <button className="solve-btn puzzle-solve-btn" onClick={handleRestart}>🔄 RESTART PUZZLE</button>
         </div>
       </div>
     </div>

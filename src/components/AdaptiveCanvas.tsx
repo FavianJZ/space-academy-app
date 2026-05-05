@@ -51,7 +51,7 @@ export const AdaptiveCanvas: React.FC<AdaptiveCanvasProps> = ({
     if (typeof gl === 'function') return gl;
 
     return {
-      alpha: false,
+      alpha: true,
       antialias: tier !== 'low',
       powerPreference: 'low-power',
       stencil: false,
@@ -63,6 +63,7 @@ export const AdaptiveCanvas: React.FC<AdaptiveCanvasProps> = ({
 
   const handleCreated = useCallback<NonNullable<CanvasProps['onCreated']>>(
     (state) => {
+      state.gl.setClearColor(0x000000, 0);
       state.gl.toneMapping = THREE.ACESFilmicToneMapping;
       state.gl.toneMappingExposure = tier === 'low' ? 1.0 : 1.1;
       state.gl.setPixelRatio(Math.min(window.devicePixelRatio || 1, tier === 'low' ? 1.15 : 1.5));
