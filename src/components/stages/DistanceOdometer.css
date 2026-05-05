@@ -1,0 +1,66 @@
+.distance-odometer {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 100;
+  font-family: 'Courier New', monospace;
+}
+
+.odometer-display {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: linear-gradient(135deg, rgba(0, 255, 255, 0.1) 0%, rgba(0, 200, 255, 0.05) 100%);
+  border: 2px solid #00ffff;
+  border-radius: 5px;
+  padding: 8px 15px;
+  box-shadow: 0 0 20px rgba(0, 255, 255, 0.4), inset 0 0 20px rgba(0, 255, 255, 0.1);
+  text-shadow: 0 0 10px #00ffff, 0 0 20px #0088ff;
+}
+
+.odometer-label {
+  color: #00ffff;
+  font-weight: bold;
+  font-size: 12px;
+  letter-spacing: 2px;
+}
+
+.odometer-value {
+  color: #00ff00;
+  font-weight: bold;
+  font-size: 16px;
+  letter-spacing: 3px;
+  min-width: 90px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.odometer-unit {
+  color: #00ffff;
+  font-size: 11px;
+  letter-spacing: 1px;
+  font-weight: bold;
+}
+
+/* Glitch effect on distance change */
+@keyframes odometer-glitch {
+  0% {
+    text-shadow: 
+      2px 0 #ff00ff,
+      -2px 0 #00ffff,
+      0 0 10px #00ffff;
+  }
+  50% {
+    text-shadow: 
+      -2px 0 #ff00ff,
+      2px 0 #00ffff,
+      0 0 10px #00ffff;
+  }
+  100% {
+    text-shadow: 0 0 10px #00ffff;
+  }
+}
+
+.odometer-value:active {
+  animation: odometer-glitch 0.2s;
+}

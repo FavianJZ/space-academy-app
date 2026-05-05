@@ -1,0 +1,178 @@
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap');
+
+:root {
+  --primary-cyan: #00ffff;
+  --primary-blue: #0066ff;
+  --accent-orange: #ff6600;
+  --accent-green: #00ff88;
+  --accent-red: #ff3333;
+  --danger-red: #ff0000;
+  --bg-dark: #000010;
+  --bg-darker: #000005;
+  --text-light: #ffffff;
+  --text-muted: #aaaaaa;
+  --glow-intensity: 0.7;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Orbitron', 'Roboto Mono', monospace;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background: linear-gradient(135deg, #000010 0%, #001a33 100%);
+  color: white;
+  overflow: hidden;
+}
+
+/* Global Typography */
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+}
+
+p, span, a, button {
+  font-family: 'Roboto Mono', monospace;
+}
+
+/* Smooth Scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Selection Styling */
+::selection {
+  background-color: rgba(0, 255, 255, 0.3);
+  color: #00ffff;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.5);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 255, 255, 0.5);
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 255, 255, 0.8);
+}
+
+/* Button Global Styles */
+button {
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Input Global Styles */
+input, select, textarea {
+  font-family: 'Roboto Mono', monospace;
+  background: rgba(0, 0, 0, 0.5);
+  border: 2px solid rgba(0, 255, 255, 0.3);
+  color: #00ffff;
+  padding: 10px;
+  border-radius: 5px;
+  transition: all 0.3s ease;
+}
+
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: #00ffff;
+  box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+}
+
+input::placeholder {
+  color: rgba(0, 255, 255, 0.5);
+}
+
+/* Loading Animation */
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+@keyframes glow {
+  0%, 100% { 
+    text-shadow: 0 0 10px rgba(0, 255, 255, 0.5),
+                 0 0 20px rgba(0, 255, 255, 0.3);
+  }
+  50% { 
+    text-shadow: 0 0 20px rgba(0, 255, 255, 0.8),
+                 0 0 40px rgba(0, 255, 255, 0.5);
+  }
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100vw;
+  height: 100vh;
+  background: linear-gradient(135deg, #000010 0%, #001a33 100%);
+  font-size: 24px;
+  animation: pulse 2s infinite;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  h1 { font-size: 24px; }
+  h2 { font-size: 20px; }
+  h3 { font-size: 18px; }
+  p { font-size: 14px; }
+  
+  button {
+    padding: 10px 15px;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  h1 { font-size: 18px; }
+  h2 { font-size: 16px; }
+  h3 { font-size: 14px; }
+  p { font-size: 12px; }
+  
+  button {
+    padding: 8px 12px;
+    font-size: 10px;
+  }
+}
