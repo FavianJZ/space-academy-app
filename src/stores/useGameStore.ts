@@ -295,13 +295,23 @@ export const useGameStore = create<GameState>()(
     {
       name: 'space-academy-storage',
       storage,
-      version: 1,
-      migrate: (persistedState) => ({
-        ...(persistedState as GameState),
-        bossGlobalHP: BOSS_MAX_HP,
-        bossMaxHP: BOSS_MAX_HP,
-        bossDamageLog: [],
-      } as GameState),
+      version: 2,
+      migrate: (persistedState, version) => {
+        const state = persistedState as GameState;
+        if (version < 2) {
+          return {
+            ...state,
+            visitedPlanets: new Set(),
+            planetScores: new Map(),
+            planetLeaderboards: [],
+            bossGlobalHP: BOSS_MAX_HP,
+            bossMaxHP: BOSS_MAX_HP,
+            bossDamageLog: [],
+            isGameCompleted: false,
+          } as GameState;
+        }
+        return state;
+      },
     }
   )
 );

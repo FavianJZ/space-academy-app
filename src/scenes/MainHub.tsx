@@ -290,7 +290,7 @@ const PlanetWrapper: React.FC<{
         {}
         {isNext && showNameLabel && !showTooltip && (
           <Html
-            position={[0, scale * 2.5, 0]}
+            position={[0, Math.min(scale * 2.5, 4.5), 0]}
             center
             distanceFactor={6}
             zIndexRange={[25, 0]}
@@ -298,7 +298,7 @@ const PlanetWrapper: React.FC<{
             style={{ pointerEvents: 'none' }}
           >
             <div className="planet-start-here-indicator" style={{ '--accent': meta.color } as React.CSSProperties}>
-              <div className="indicator-text">YOUR HERE</div>
+              <div className="indicator-text">YOU ARE HERE</div>
               <div className="indicator-arrows">
                 <span>▼</span><span>▼</span><span>▼</span>
               </div>
