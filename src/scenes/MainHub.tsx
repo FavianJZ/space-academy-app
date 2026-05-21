@@ -115,7 +115,7 @@ const PlanetWrapper: React.FC<{
   const [isHovered, setIsHovered] = useState(false);
   const [labelPosition, setLabelPosition] = useState<[number, number, number]>([0, -scale * 1.12, 0]);
   const hoverTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  
+
   const orbitAngleRef = useRef<number>(angle);
 
   useEffect(() => {
@@ -161,7 +161,7 @@ const PlanetWrapper: React.FC<{
 
   const handlePointerOver = useCallback((e: any) => {
     e.stopPropagation();
-    
+
     if (hoverTimeoutRef.current) {
       clearTimeout(hoverTimeoutRef.current);
       hoverTimeoutRef.current = null;
@@ -178,7 +178,7 @@ const PlanetWrapper: React.FC<{
 
   const handlePointerOut = useCallback((e: any) => {
     e.stopPropagation();
-    
+
     if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
     hoverTimeoutRef.current = setTimeout(() => {
       setIsHovered(false);
@@ -204,7 +204,7 @@ const PlanetWrapper: React.FC<{
     if (planetMeshRef.current) {
       planetMeshRef.current.rotation.y += 0.005;
     }
-    
+
     if (glowRef.current && isHovered) {
       const pulse = 1 + Math.sin(t * 4) * 0.08;
       glowRef.current.scale.setScalar(pulse);
@@ -216,7 +216,7 @@ const PlanetWrapper: React.FC<{
   };
 
   const ringRadius = Math.max(scale * 0.7, 0.8);
-  
+
   const hitRadius = scale * 1.535;
 
   const showTooltip = isHovered && !isSelected;
@@ -228,7 +228,7 @@ const PlanetWrapper: React.FC<{
       onClick={handleClick}
     >
       <group ref={ref}>
-        {}
+        { }
         <mesh
           onPointerOver={handlePointerOver}
           onPointerOut={handlePointerOut}
@@ -238,12 +238,12 @@ const PlanetWrapper: React.FC<{
           <meshBasicMaterial transparent opacity={0} />
         </mesh>
 
-        {}
+        { }
         <group ref={planetMeshRef} scale={scale}>
           {planet}
         </group>
 
-        {}
+        { }
         <mesh ref={glowRef} rotation={[Math.PI / 2, 0, 0]} visible={showTooltip}>
           <torusGeometry args={[ringRadius, 0.04, 16, 100]} />
           <meshStandardMaterial
@@ -255,7 +255,7 @@ const PlanetWrapper: React.FC<{
           />
         </mesh>
 
-        {}
+        { }
         <mesh rotation={[Math.PI / 2, 0, 0]} visible={showTooltip}>
           <torusGeometry args={[ringRadius, 0.15, 16, 100]} />
           <meshStandardMaterial
@@ -267,12 +267,12 @@ const PlanetWrapper: React.FC<{
           />
         </mesh>
 
-        {}
+        { }
         {showTooltip && (
           <pointLight color={meta.color} intensity={5} distance={scale * 4} />
         )}
 
-        {}
+        { }
         {showNameLabel && (
           <Html
             position={labelPosition}
@@ -287,7 +287,7 @@ const PlanetWrapper: React.FC<{
           </Html>
         )}
 
-        {}
+        { }
         {isNext && showNameLabel && !showTooltip && (
           <Html
             position={[0, Math.min(scale * 2.5, 4.5), 0]}
@@ -298,7 +298,7 @@ const PlanetWrapper: React.FC<{
             style={{ pointerEvents: 'none' }}
           >
             <div className="planet-start-here-indicator" style={{ '--accent': meta.color } as React.CSSProperties}>
-              <div className="indicator-text">YOU ARE HERE</div>
+              <div className="indicator-text">YOUR HERE</div>
               <div className="indicator-arrows">
                 <span>▼</span><span>▼</span><span>▼</span>
               </div>
@@ -306,7 +306,7 @@ const PlanetWrapper: React.FC<{
           </Html>
         )}
 
-        {}
+        { }
         {showTooltip && (
           <Html
             position={[0, scale * 1.8, 0]}
@@ -318,13 +318,13 @@ const PlanetWrapper: React.FC<{
           >
             <div className="planet-tooltip-hologram" style={{ '--accent': meta.color } as React.CSSProperties}>
               <div className="hologram-card" style={{ borderColor: meta.color, boxShadow: `0 0 20px ${meta.color}30, inset 0 0 30px ${meta.color}08` }}>
-                {}
+                { }
                 <div className="tooltip-corner tl" style={{ borderColor: meta.color }} />
                 <div className="tooltip-corner tr" style={{ borderColor: meta.color }} />
                 <div className="tooltip-corner bl" style={{ borderColor: meta.color }} />
                 <div className="tooltip-corner br" style={{ borderColor: meta.color }} />
 
-                {}
+                { }
                 {activePlayers > 0 && (
                   <div className="hologram-players-badge">
                     <div className="hologram-players-avatar">
@@ -350,7 +350,7 @@ const PlanetWrapper: React.FC<{
                   {isVisited ? '✓ COMPLETED' : 'CLICK TO BEGIN MISSION'}
                 </div>
               </div>
-              {}
+              { }
               <div className="hologram-arrow" style={{ borderTopColor: meta.color }} />
             </div>
           </Html>
@@ -364,7 +364,7 @@ const AvatarCharacterModel: React.FC<{ CharacterModel: React.FC<any> }> = ({ Cha
   const groupRef = useRef<THREE.Group>(null);
   useFrame((state) => {
     if (groupRef.current) {
-      
+
       groupRef.current.rotation.y = state.clock.getElapsedTime() * 0.5;
       groupRef.current.position.y = Math.sin(state.clock.getElapsedTime() * 1.5) * 0.08;
     }
@@ -422,7 +422,7 @@ const MainHub: React.FC = () => {
     ];
     const entries: Array<{ playerName: string; planetId: PlanetId; score: number; completionTime: number; timestamp: number }> = [];
     for (let pid = 1; pid <= 6; pid++) {
-      const count = 3; 
+      const count = 3;
       for (let i = 0; i < count; i++) {
         const name = sampleNames[Math.floor(Math.random() * sampleNames.length)];
         const baseScore = (7 - pid) * 150 + Math.floor(Math.random() * 300);
@@ -472,7 +472,7 @@ const MainHub: React.FC = () => {
   const [, setPlanetMeshRefsVersion] = useState(0);
 
   // Intro States: 'story' -> 'character' -> 'input' -> 'hub'
-  
+
   const [hubPhase, setHubPhase] = useState<'story' | 'character' | 'input' | 'hub'>(
     introCompleted || (playerData.name && playerData.major) ? 'hub' : 'story'
   );
@@ -585,7 +585,7 @@ const MainHub: React.FC = () => {
   if (hubPhase === 'character') {
     return (
       <div className="mh-charselect-container">
-        {}
+        { }
         <AdaptiveCanvas
           className="mh-charselect-canvas"
           dpr={[1, 1.25]}
@@ -598,19 +598,19 @@ const MainHub: React.FC = () => {
             <pointLight position={[4, 3, 2]} intensity={10} color="#6ce7ff" distance={10} />
             <Stars radius={200} depth={60} count={1400} factor={6} saturation={0.8} fade speed={0.5} />
 
-            {}
+            { }
             <group position={[-2.5, -0.5, 0]}>
               <AvatarCharacterModel CharacterModel={SpacemanPink} />
             </group>
 
-            {}
+            { }
             <group position={[2.5, -0.5, 0]}>
               <AvatarCharacterModel CharacterModel={SpacemanWhite} />
             </group>
           </Suspense>
         </AdaptiveCanvas>
 
-        {}
+        { }
         <div className="mh-charselect-overlay">
           <div className="mh-charselect-title">
             <h1>SELECT YOUR PILOT</h1>
@@ -722,7 +722,7 @@ const MainHub: React.FC = () => {
           <pointLight position={[0, 10, 0]} intensity={1000} color="#ffdfb3" />
           <Stars radius={300} depth={50} count={1800} factor={10} saturation={0} fade speed={1} />
 
-          {}
+          { }
           {planetData.map((data, index) => {
             const firstUncompleted = stageStatus.stageList.find(s => !s.completed);
             const isNext = firstUncompleted?.id === data.id;
@@ -769,10 +769,10 @@ const MainHub: React.FC = () => {
         <OrbitControls />
       </AdaptiveCanvas>
 
-      {}
+      { }
       {showPlanetUI && selectedPlanet && (
         <div className="planet-selection-ui" style={{ borderColor: planetMeta[selectedPlanet].color, boxShadow: `0 0 30px ${planetMeta[selectedPlanet].color}50, inset 0 0 20px ${planetMeta[selectedPlanet].color}15` }}>
-          {}
+          { }
           {selectedPlanet === 6 && (
             <button
               className={`boss-mode-toggle ${bossMode ? 'active' : ''}`}
@@ -787,7 +787,7 @@ const MainHub: React.FC = () => {
             </button>
           )}
           <div className="planet-info">
-            {}
+            { }
             {selectedPlanet && visitedPlanets.has(selectedPlanet) && (() => {
               const score = getPlanetScore(selectedPlanet, selectedPlanet);
               const totalScore = getTotalScore();
@@ -815,7 +815,7 @@ const MainHub: React.FC = () => {
                 </div>
               );
             })()}
-            {}
+            { }
             {activePlayers[selectedPlanet] > 0 && (
               <div className="planet-ui-players">
                 <span className="planet-ui-players-icon">👾</span>
@@ -846,7 +846,7 @@ const MainHub: React.FC = () => {
               const fullLb = getPlanetLeaderboard(selectedPlanet);
               const top10 = fullLb.slice(0, 10);
               const currentPlayerName = playerData.name || 'CADET';
-              
+
               const playerIdx = fullLb.findIndex(e => e.playerName === currentPlayerName);
               const playerInTop10 = playerIdx >= 0 && playerIdx < 10;
               const playerEntry = playerIdx >= 0 ? fullLb[playerIdx] : null;
@@ -928,7 +928,7 @@ const MainHub: React.FC = () => {
         </div>
       )}
 
-      {}
+      { }
       {showP2Modal && (
         <div className="p2-modal-overlay" onClick={() => setShowP2Modal(false)}>
           <div className="p2-modal" onClick={(e) => e.stopPropagation()}>
@@ -998,7 +998,7 @@ const MainHub: React.FC = () => {
         </div>
       )}
 
-      {}
+      { }
       {showSettings && (
         <div className="settings-modal-overlay">
           <div className="settings-modal">
@@ -1032,7 +1032,7 @@ const MainHub: React.FC = () => {
         </div>
       )}
 
-      {}
+      { }
       <div className="welcome-message">
         <h1>WELCOME, {playerData.name || 'CADET'}</h1>
         <p>CLICK A PLANET TO BEGIN YOUR MISSION</p>
@@ -1046,9 +1046,9 @@ const MainHub: React.FC = () => {
         </div>
       </div>
 
-      {}
+      { }
       <div className="top-right-area">
-        {}
+        { }
         <div
           className={`character-avatar-wrapper ${avatarHovered ? 'hovered' : ''}`}
           onMouseEnter={() => setAvatarHovered(true)}
@@ -1075,12 +1075,12 @@ const MainHub: React.FC = () => {
           <div className={`avatar-pulse-ring ${character}`} />
         </div>
 
-      </div> {}
+      </div> { }
 
-      {}
+      { }
       {!showPlanetUI && (
         <div className="level-roadmap-bar">
-          {}
+          { }
           <div className="roadmap-connector-track">
             <div
               className="roadmap-connector-fill"
@@ -1092,7 +1092,7 @@ const MainHub: React.FC = () => {
             {stageStatus.stageList.map((stage, idx) => {
               const meta = planetMeta[stage.id];
               const desc = stageDescriptions[stage.id];
-              
+
               const firstUncompleted = stageStatus.stageList.find(s => !s.completed);
               const isNext = firstUncompleted?.id === stage.id;
               const isCompleted = stage.completed;
@@ -1112,7 +1112,7 @@ const MainHub: React.FC = () => {
                   onMouseLeave={() => setHoveredRoadmapNode(null)}
                   style={{ '--node-color': meta.color, '--node-idx': idx } as React.CSSProperties}
                 >
-                  {}
+                  { }
                   {isNext && (
                     <>
                       <div className="roadmap-beacon" style={{ borderColor: meta.color }} />
@@ -1120,15 +1120,15 @@ const MainHub: React.FC = () => {
                     </>
                   )}
 
-                  {}
+                  { }
                   {isCompleted && (
                     <div className="roadmap-check-overlay">✓</div>
                   )}
 
-                  {}
+                  { }
                   <div className="roadmap-hover-ring" style={{ borderColor: meta.color }} />
 
-                  {}
+                  { }
                   <div
                     className="roadmap-node-shape"
                     style={{
@@ -1153,7 +1153,7 @@ const MainHub: React.FC = () => {
                     </span>
                   </div>
 
-                  {}
+                  { }
                   <div className="roadmap-node-label">
                     <span className="roadmap-planet-name" style={{
                       color: isCompleted ? '#5a8a6e' : isNext ? meta.color : '#3a4a5a'
@@ -1172,7 +1172,7 @@ const MainHub: React.FC = () => {
                     </span>
                   </div>
 
-                  {}
+                  { }
                   <div className="roadmap-hover-tooltip" style={{ '--accent': meta.color } as React.CSSProperties}>
                     <div className="roadmap-tooltip-arrow" />
                     <div className="roadmap-tooltip-header" style={{ borderBottomColor: `${meta.color}30` }}>
