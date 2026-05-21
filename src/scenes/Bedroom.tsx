@@ -45,7 +45,6 @@ type StepConfig = {
 
 const fieldStepOrder: IdentityStep[] = ['name', 'phone', 'school', 'major'];
 
-// ─── Typewriter Text Effect ──────────────────────────────────────────────────
 const TypewriterText: React.FC<{
   text: string;
   speed?: number;
@@ -339,6 +338,7 @@ const SpeakerSpotlight: React.FC<{ activeSpeaker: ActiveSpeaker }> = ({ activeSp
 const Bedroom: React.FC = () => {
   const navigate = useNavigate();
   const setPlayerData = useGameStore((state) => state.setPlayerData);
+  const character = useGameStore((state) => state.character);
 
   const [dialoguePhase, setDialoguePhase] = useState<DialoguePhase>(0);
   const [isLoading, setIsLoading] = useState(true);
@@ -359,11 +359,13 @@ const Bedroom: React.FC = () => {
   const [typingDone, setTypingDone] = useState(false);
   const [skipTyping, setSkipTyping] = useState(false);
   const [autoPlay, setAutoPlay] = useState(false);
+  const [skipModeActive, setSkipModeActive] = useState(false);
 
   const robotRef = useRef<THREE.Group | null>(null);
   const charRef = useRef<THREE.Group | null>(null);
   const navigateTimeoutRef = useRef<number | null>(null);
   const autoPlayTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isTransitioningRef = useRef(false);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -582,25 +584,34 @@ const Bedroom: React.FC = () => {
   );
 
   const startStep = useCallback(
-    (step: IdentityStep) => {
+    (step: IdentityStep, forceSkipMode: boolean = skipModeActive) => {
       const cfg = getStepConfig(step);
       setIdentityStep(step);
       setStepError('');
       setIsSubmittingStep(false);
-      setShowInputCard(false);
-      if (cfg) {
-        setStoryQueue(cfg.preDialogue);
-        setCurrentStoryIndex(0);
-      } else {
+      setTypingDone(false);
+      setSkipTyping(false);
+      
+      if (forceSkipMode && cfg?.field) {
+        setShowInputCard(true);
         setStoryQueue([]);
         setCurrentStoryIndex(0);
+      } else {
+        setShowInputCard(false);
+        if (cfg) {
+          setStoryQueue(cfg.preDialogue);
+          setCurrentStoryIndex(0);
+        } else {
+          setStoryQueue([]);
+          setCurrentStoryIndex(0);
+        }
       }
     },
-    [getStepConfig]
+    [getStepConfig, skipModeActive]
   );
 
   const goToNextFieldStep = useCallback(
-    (step: IdentityStep) => {
+    (step: IdentityStep, forceSkipMode: boolean = skipModeActive) => {
       const idx = fieldStepOrder.indexOf(step);
       if (idx === -1 || idx === fieldStepOrder.length - 1) {
         setIdentityStep('confirm');
@@ -609,9 +620,9 @@ const Bedroom: React.FC = () => {
         setShowInputCard(false);
         return;
       }
-      startStep(fieldStepOrder[idx + 1]);
+      startStep(fieldStepOrder[idx + 1], forceSkipMode);
     },
-    [startStep]
+    [startStep, skipModeActive]
   );
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -620,14 +631,26 @@ const Bedroom: React.FC = () => {
   };
 
   const handleContinueStory = useCallback(() => {
+    if (!typingDone) return;
+    if (isTransitioningRef.current) return;
     if (storyQueue.length === 0) {
       return;
     }
 
-    if (currentStoryIndex < storyQueue.length - 1) {
-      setCurrentStoryIndex((prev) => prev + 1);
+    // Safety: clamp index to valid range
+    const safeIndex = Math.min(currentStoryIndex, storyQueue.length - 1);
+
+    if (safeIndex < storyQueue.length - 1) {
+      // Reset typing state synchronously to prevent stale closure bypasses
+      setTypingDone(false);
+      setSkipTyping(false);
+      setCurrentStoryIndex(safeIndex + 1);
       return;
     }
+
+    // We're at the end of the story queue — prevent re-entrant transitions
+    isTransitioningRef.current = true;
+    setTimeout(() => { isTransitioningRef.current = false; }, 300);
 
     if (isSubmittingStep) {
       setIsSubmittingStep(false);
@@ -648,7 +671,33 @@ const Bedroom: React.FC = () => {
       setShowInputCard(true);
       return;
     }
-  }, [storyQueue, currentStoryIndex, isSubmittingStep, identityStep, goToNextFieldStep, getStepConfig]);
+  }, [storyQueue, currentStoryIndex, isSubmittingStep, identityStep, goToNextFieldStep, getStepConfig, typingDone]);
+
+  const handleSkipDialogue = useCallback(() => {
+    if (dialoguePhase >= 5) return;
+    
+    setSkipModeActive(true);
+
+    if (dialoguePhase < 3 || identityStep === 'intro') {
+      setDialoguePhase(3);
+      startStep('name', true);
+    } else if (identityStep !== 'confirm') {
+      if (isSubmittingStep) {
+        setIsSubmittingStep(false);
+        setStepError('');
+        if (identityStep === 'major') {
+          setIdentityStep('confirm');
+          setStoryQueue([]);
+          setCurrentStoryIndex(0);
+          setShowInputCard(false);
+        } else {
+          goToNextFieldStep(identityStep, true);
+        }
+      } else {
+        setShowInputCard(true);
+      }
+    }
+  }, [dialoguePhase, identityStep, isSubmittingStep, startStep, goToNextFieldStep]);
 
   const handleSendStep = () => {
     const cfg = getStepConfig(identityStep);
@@ -665,11 +714,23 @@ const Bedroom: React.FC = () => {
     }
 
     setStepError('');
-    const postLines = cfg.postSubmit(String(rawValue), formData);
-    setStoryQueue(postLines);
-    setCurrentStoryIndex(0);
-    setShowInputCard(false);
-    setIsSubmittingStep(true);
+    
+    if (skipModeActive) {
+      if (identityStep === 'major') {
+        setIdentityStep('confirm');
+        setStoryQueue([]);
+        setCurrentStoryIndex(0);
+        setShowInputCard(false);
+      } else {
+        goToNextFieldStep(identityStep, true);
+      }
+    } else {
+      const postLines = cfg.postSubmit(String(rawValue), formData);
+      setStoryQueue(postLines);
+      setCurrentStoryIndex(0);
+      setShowInputCard(false);
+      setIsSubmittingStep(true);
+    }
   };
 
   const handleEditData = () => {
@@ -729,6 +790,7 @@ const Bedroom: React.FC = () => {
   }, [dialoguePhase, currentDialogue, storyQueue, currentStoryIndex]);
 
   const handleDialogueClick = useCallback(() => {
+    if (isTransitioningRef.current) return;
     if (!typingDone) setSkipTyping(true);
   }, [typingDone]);
 
@@ -805,8 +867,11 @@ const Bedroom: React.FC = () => {
                 rotation={[-1, 0, 4.8]}
                 scale={dialoguePhase >= 3 ? 0.8 : 1}
               >
-                <SpacemanWhite scale={0.2} />
-                <SpacemanPink scale={0.2} />
+                {character === 'pink' ? (
+                  <SpacemanPink scale={0.2} />
+                ) : (
+                  <SpacemanWhite scale={0.2} />
+                )}
               </group>
 
               <group ref={robotRef} position={[2, -0.5, 0]} scale={dialoguePhase >= 1 ? 1 : 0}>
@@ -823,16 +888,49 @@ const Bedroom: React.FC = () => {
           <div className="dialogue-overlay">
             {/* Auto-play toggle button */}
             {dialoguePhase < 5 && (
-              <button
-                className={`auto-play-toggle ${autoPlay ? 'active' : ''}`}
-                onClick={() => setAutoPlay((prev) => !prev)}
-                title={autoPlay ? 'Auto-play ON' : 'Auto-play OFF'}
-              >
-                {autoPlay ? '⏸ AUTO' : '▶ AUTO'}
-              </button>
+              <>
+                <button
+                  className={`auto-play-toggle ${autoPlay ? 'active' : ''}`}
+                  onClick={() => setAutoPlay((prev) => !prev)}
+                  title={autoPlay ? 'Auto-play ON' : 'Auto-play OFF'}
+                >
+                  {autoPlay ? '⏸ AUTO' : '▶ AUTO'}
+                </button>
+                <button
+                  className={`skip-dialog-btn ${skipModeActive ? 'active' : ''}`}
+                  onClick={() => {
+                    if (skipModeActive) {
+                      setSkipModeActive(false);
+                    } else {
+                      handleSkipDialogue();
+                    }
+                  }}
+                  title="Toggle Fast Mode (skip all dialogues)"
+                  style={{
+                    position: 'absolute',
+                    top: '20px',
+                    right: '120px',
+                    padding: '8px 16px',
+                    backgroundColor: skipModeActive ? 'rgba(0, 255, 255, 0.2)' : 'rgba(0, 20, 30, 0.7)',
+                    color: '#00ffff',
+                    border: '1px solid rgba(0, 255, 255, 0.4)',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    pointerEvents: 'auto',
+                    zIndex: 1000,
+                    fontFamily: '"Orbitron", monospace',
+                    fontSize: '12px',
+                    letterSpacing: '1px',
+                    textTransform: 'uppercase',
+                    boxShadow: skipModeActive ? '0 0 10px rgba(0, 255, 255, 0.5)' : '0 0 10px rgba(0, 255, 255, 0.2)'
+                  }}
+                >
+                  {skipModeActive ? '⏩ FAST MODE ON' : '⏭ FAST MODE'}
+                </button>
+              </>
             )}
 
-            {/* Phase 0-2: intro dialogues — positioned by speaker */}
+            {}
             {dialoguePhase < 3 && currentDialogue && (
               <div className={`dialogue-bubble ${activeSpeaker === 'spaceman' ? 'pos-right' : 'pos-left'}`} onClick={handleDialogueClick}>
                 <div className="dialogue-holo-border" />
@@ -859,6 +957,9 @@ const Bedroom: React.FC = () => {
                       className="dialogue-btn"
                       onClick={(e) => {
                         e.stopPropagation();
+                        if (isTransitioningRef.current) return;
+                        isTransitioningRef.current = true;
+                        setTimeout(() => { isTransitioningRef.current = false; }, 300);
                         if (btn.action === 3) {
                           setDialoguePhase(3);
                           startStep('intro');
@@ -874,7 +975,7 @@ const Bedroom: React.FC = () => {
               </div>
             )}
 
-            {/* Phase 3: story dialogue bubbles — left for robot, right for spaceman */}
+            {}
             {dialoguePhase === 3 && inStoryboardStep && !showInputCard && identityStep !== 'confirm' && (
               <div
                 className={`dialogue-bubble ${activeSpeaker === 'spaceman' ? 'pos-right' : 'pos-left'}`}
@@ -918,7 +1019,7 @@ const Bedroom: React.FC = () => {
 
                 {identityStep === 'intro' && atStoryEnd && !isSubmittingStep && (
                   <div className={`dialogue-actions ${typingDone ? 'visible' : ''}`}>
-                    <button className="dialogue-btn blue-btn" onClick={(e) => { e.stopPropagation(); startStep('name'); }}>
+                    <button className="dialogue-btn blue-btn" onClick={(e) => { e.stopPropagation(); if (isTransitioningRef.current) return; isTransitioningRef.current = true; setTimeout(() => { isTransitioningRef.current = false; }, 300); startStep('name'); }}>
                       ▸ Mulai Verifikasi
                     </button>
                   </div>
@@ -926,7 +1027,7 @@ const Bedroom: React.FC = () => {
 
                 {canContinueStory && (
                   <div className={`dialogue-actions ${typingDone ? 'visible' : ''}`}>
-                    <button className="dialogue-btn" onClick={(e) => { e.stopPropagation(); handleContinueStory(); }}>
+                    <button className="dialogue-btn" onClick={(e) => { e.stopPropagation(); if (isTransitioningRef.current) return; handleContinueStory(); }}>
                       ▸ Lanjut Dialog
                     </button>
                   </div>
@@ -934,7 +1035,7 @@ const Bedroom: React.FC = () => {
               </div>
             )}
 
-            {/* Phase 3: input form — always centered */}
+            {}
             {dialoguePhase === 3 && showInputCard && currentStepConfig?.field && (
               <div className="dialogue-bubble pos-center">
                 <div className="dialogue-holo-border" />
@@ -979,7 +1080,7 @@ const Bedroom: React.FC = () => {
               </div>
             )}
 
-            {/* Phase 3: confirm summary — centered */}
+            {}
             {dialoguePhase === 3 && identityStep === 'confirm' && (
               <div className="dialogue-bubble pos-center">
                 <div className="dialogue-holo-border" />

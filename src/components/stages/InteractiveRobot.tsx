@@ -23,13 +23,11 @@ export const InteractiveRobot: React.FC<InteractiveRobotProps> = ({
   const prevReaction = useRef(reaction);
   const baseY = position[1];
 
-  // Reset animation timer when reaction changes
   useEffect(() => {
     if (reaction !== prevReaction.current) {
       reactionTimeRef.current = 0;
       prevReaction.current = reaction;
 
-      // Normalize rotation.y to prevent unwinding from accumulated spin
       if (groupRef.current) {
         const ry = groupRef.current.rotation.y % (Math.PI * 2);
         groupRef.current.rotation.y = ry > Math.PI ? ry - Math.PI * 2 : ry < -Math.PI ? ry + Math.PI * 2 : ry;
@@ -44,24 +42,20 @@ export const InteractiveRobot: React.FC<InteractiveRobotProps> = ({
     reactionTimeRef.current += delta;
     const rt = reactionTimeRef.current;
 
-    // Frame-rate independent smoothing helpers
     const smooth = (speed: number) => 1 - Math.exp(-speed * delta);
 
-    // Entry blend: 0→1 over first 0.3s for extra-smooth state transitions
     const entryBlend = Math.min(1, rt / 0.3);
 
-    // Lerp factors
-    const baseFactor = smooth(8) * entryBlend + 0.002; // general smoothing
-    const shakeFactor = smooth(30);                      // fast for vibration response
+    const baseFactor = smooth(8) * entryBlend + 0.002; 
+    const shakeFactor = smooth(30);                      
 
-    // ── Compute target transforms for current reaction ──
     let tY = baseY;
     let tRX = 0;
     let tRZ = 0;
     let tSX = scale, tSY = scale, tSZ = scale;
-    let tRY: number | null = null; // null = skip Y lerp (use additive spin instead)
-    let addRY = 0;                 // additive rotation.y per frame (for spinning)
-    let useShakeSmooth = false;    // whether to use fast smoothing for X/Z rotation
+    let tRY: number | null = null; 
+    let addRY = 0;                 
+    let useShakeSmooth = false;    
 
     switch (reaction) {
       case 'idle': {
@@ -82,7 +76,7 @@ export const InteractiveRobot: React.FC<InteractiveRobotProps> = ({
           tSY = scale / squash;
           tSZ = scale * squash;
         } else {
-          // Settle back to idle-like motion
+          
           tY = baseY + Math.sin(t * 1.5) * 0.15;
           tRY = Math.sin(t * 0.5) * 0.1;
           tRZ = Math.sin(t * 0.7) * 0.03;
@@ -100,10 +94,10 @@ export const InteractiveRobot: React.FC<InteractiveRobotProps> = ({
           tSX = scale * (2 - squeeze);
           tSY = scale * squeeze;
           tSZ = scale * (2 - squeeze);
-          tRY = g.rotation.y; // keep current Y rotation during shake
+          tRY = g.rotation.y; 
           useShakeSmooth = true;
         } else {
-          // Settle back to idle-like motion
+          
           tY = baseY + Math.sin(t * 1.5) * 0.15;
           tRY = Math.sin(t * 0.5) * 0.1;
           tRZ = Math.sin(t * 0.7) * 0.03;
@@ -128,7 +122,7 @@ export const InteractiveRobot: React.FC<InteractiveRobotProps> = ({
           tY = baseY + Math.sin(rt * 2.5) * 0.3;
           tRY = Math.sin(rt * 3) * 0.2;
         } else {
-          // Settle back to idle-like motion
+          
           tY = baseY + Math.sin(t * 1.5) * 0.15;
           tRY = Math.sin(t * 0.5) * 0.1;
           tRZ = Math.sin(t * 0.7) * 0.03;
@@ -145,24 +139,18 @@ export const InteractiveRobot: React.FC<InteractiveRobotProps> = ({
       }
     }
 
-    // ── Apply all transforms via smooth lerp ──
-
-    // Position Y
     g.position.y += (tY - g.position.y) * baseFactor;
 
-    // Rotation X & Z — use fast smoothing for shake, normal for everything else
     const rotXZFactor = useShakeSmooth ? shakeFactor : baseFactor;
     g.rotation.x += (tRX - g.rotation.x) * rotXZFactor;
     g.rotation.z += (tRZ - g.rotation.z) * rotXZFactor;
 
-    // Rotation Y — either additive (spinning) or lerp to target
     if (addRY !== 0) {
       g.rotation.y += addRY;
     } else if (tRY !== null) {
       g.rotation.y += (tRY - g.rotation.y) * baseFactor;
     }
 
-    // Scale
     g.scale.x += (tSX - g.scale.x) * baseFactor;
     g.scale.y += (tSY - g.scale.y) * baseFactor;
     g.scale.z += (tSZ - g.scale.z) * baseFactor;
@@ -176,7 +164,7 @@ export const InteractiveRobot: React.FC<InteractiveRobotProps> = ({
     >
       <Robot position={[0, 0, 0]} />
 
-      {/* Dynamic lighting based on reaction */}
+      {}
       {(reaction === 'correct' || reaction === 'celebrating') && (
         <pointLight
           position={[0, 2, 3]}

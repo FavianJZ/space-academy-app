@@ -13,9 +13,6 @@ interface UseIntroStoryProps {
   onComplete?: () => void;
 }
 
-/**
- * Hook to manage story sequences and narratives
- */
 export const useIntroStory = (props: UseIntroStoryProps) => {
   const {
     onDialogue,
@@ -34,13 +31,11 @@ export const useIntroStory = (props: UseIntroStoryProps) => {
     onWarpSpeed(0.5);
     onShake(false);
 
-    // Initial AI dialogue
     onDialogue(
       'Selamat datang kembali, Komandan. Sistem navigasi utama mengalami anomali. Kita tidak bisa menggunakan rute otomatis menuju Hub World.',
       8000
     );
 
-    // Second dialogue and show navigation
     setTimeout(() => {
       onDialogue(
         'Memindai rute manual... Ditemukan 4 jalur potensial. Silakan pilih rute pendekatan Anda melalui panel sistem di layar.',
@@ -56,8 +51,7 @@ export const useIntroStory = (props: UseIntroStoryProps) => {
   const handleEngineCrisis = useCallback(() => {
     onPhaseChange('crisis');
     onWarpSpeed(0.5);
-    
-    // Set interior light to orange
+
     if (onLightingChange) {
       onLightingChange(0xffaa00, 3);
     }
@@ -76,7 +70,6 @@ export const useIntroStory = (props: UseIntroStoryProps) => {
     onPhaseChange('crisis');
     onWarpSpeed(2);
 
-    // Set interior light to cyan
     if (onLightingChange) {
       onLightingChange(0x00ffff, 3);
     }
@@ -95,7 +88,6 @@ export const useIntroStory = (props: UseIntroStoryProps) => {
     onPhaseChange('crisis');
     onWarpSpeed(1);
 
-    // Set interior light to dark gray
     if (onLightingChange) {
       onLightingChange(0x555555, 3);
     }
@@ -115,7 +107,6 @@ export const useIntroStory = (props: UseIntroStoryProps) => {
     onWarpSpeed(3);
     onShake(true);
 
-    // Set interior light to purple
     if (onLightingChange) {
       onLightingChange(0x8800ff, 3);
     }
@@ -135,17 +126,15 @@ export const useIntroStory = (props: UseIntroStoryProps) => {
     onAlarm(true);
     onShake(true);
 
-    // Set interior light to red for danger
     if (onLightingChange) {
       onLightingChange(0xff0000, 4);
     }
 
-    // Show asteroid approaching after initial warning
     setTimeout(() => {
       if (onAsteroidShow) {
-        onAsteroidShow(true, true); // Show asteroid and start animation
+        onAsteroidShow(true, true); 
       }
-    }, 3000); // Asteroid appears 3 seconds into the warning
+    }, 3000); 
 
     onDialogue(
       'PERINGATAN KRITIS! Objek masif terdeteksi mendekat dengan kecepatan tinggi! Benturan tak terhindarkan dalam 3... 2... 1...',
@@ -153,7 +142,7 @@ export const useIntroStory = (props: UseIntroStoryProps) => {
     );
 
     setTimeout(() => {
-      // Trigger white flash and completion
+      
       if (onComplete) {
         onComplete();
       }

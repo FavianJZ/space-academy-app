@@ -91,7 +91,7 @@ const CockpitLightingRig: React.FC<{
       <pointLight ref={rightLightRef} position={[4.6, 12.3, 1.8]} distance={18} color="#ffb36b" intensity={2.0} />
       <pointLight ref={rearLightRef} position={[0, 15.6, -1.8]} distance={24} color="#bffcff" intensity={1.2} />
       
-      {/* Fill lights for better cabin illumination */}
+      {}
       <pointLight position={[0, 8.5, 2.0]} distance={20} color="#5effff" intensity={1.6} />
       <pointLight position={[-3.5, 11, 0]} distance={15} color="#87ceeb" intensity={1.2} />
       <pointLight position={[3.5, 11, 0]} distance={15} color="#ffb380" intensity={1.1} />
@@ -115,9 +115,6 @@ const CockpitLightingRig: React.FC<{
   );
 };
 
-/**
- * Main 3D Scene Component
- */
 const IntroScene3D: React.FC<{
   gameState: any;
   isShaking: boolean;
@@ -145,23 +142,20 @@ const IntroScene3D: React.FC<{
 
   useFrame(() => {
     if (controlsRef.current) {
-      // Update is called automatically in r3f, but we update target for damping
+      
       controlsRef.current.update();
     }
 
-    // Update interior light color and intensity dynamically
     if (interiorLightRef.current) {
       interiorLightRef.current.color.setHex(interiorLightColor);
       interiorLightRef.current.intensity = interiorLightIntensity;
-      
-      // Blinking effect when alarm is active
+
       if (gameState.isAlarmActive) {
         const kedip = Math.abs(Math.sin(Date.now() * 0.005));
         interiorLightRef.current.intensity = 5 + kedip * 20;
       }
     }
 
-    // Camera shaking when taking damage
     if (isShaking && camera) {
       if (!isShakingActive.current) {
         posisiAsliX.current = camera.position.x;
@@ -172,7 +166,7 @@ const IntroScene3D: React.FC<{
       camera.position.x = posisiAsliX.current + (Math.random() - 0.5) * intensity;
       camera.position.y = posisiAsliY.current + (Math.random() - 0.5) * intensity;
     } else if (camera && isShakingActive.current) {
-      // Restore camera when shaking stops
+      
       camera.position.x = posisiAsliX.current;
       camera.position.y = posisiAsliY.current;
       isShakingActive.current = false;
@@ -181,10 +175,10 @@ const IntroScene3D: React.FC<{
 
   return (
     <>
-      {/* POV Camera positioned inside cockpit looking outward */}
+      {}
       <PerspectiveCamera makeDefault position={[0, 16, 0]} fov={75} />
       
-      {/* Lighting Setup - Enhanced for bright cabin interior */}
+      {}
       <ambientLight intensity={0.55} color={0xffffff} />
       <directionalLight intensity={0.45} position={[5, 5, 5]} color={0xffffff} />
 
@@ -194,7 +188,7 @@ const IntroScene3D: React.FC<{
         interiorLightIntensity={interiorLightIntensity}
       />
       
-      {/* Interior cockpit light - Dynamic color and intensity */}
+      {}
       <pointLight 
         ref={interiorLightRef}
         position={[0, 13, 2.2]} 
@@ -206,7 +200,7 @@ const IntroScene3D: React.FC<{
       <SceneEffectsPro gameState={gameState} />
       <CockpitModel onLoaded={() => console.log('Cockpit loaded')} />
 
-      {/* OrbitControls - POV from cockpit center, stationary */}
+      {}
       <DreiOrbitControls
         ref={controlsRef}
         enableZoom={false}
@@ -220,7 +214,7 @@ const IntroScene3D: React.FC<{
         maxAzimuthAngle={Math.PI + Math.PI / 4}
       />
 
-      {/* Asteroid that approaches during crash sequence */}
+      {}
       <AsteroidObject 
         visible={asteroidVisible}
         isAnimating={asteroidAnimating}
@@ -229,9 +223,6 @@ const IntroScene3D: React.FC<{
   );
 };
 
-/**
- * Main Intro Scene Component with UI
- */
 export const NewIntroScene: React.FC<{
   onComplete?: () => void;
 }> = ({ onComplete }) => {
@@ -383,7 +374,7 @@ export const NewIntroScene: React.FC<{
         />
       </AdaptiveCanvas>
 
-      {/* UI Overlays */}
+      {}
       <SystemInitUI
         visible={initUIVisible}
         statusText={statusText}
@@ -403,7 +394,40 @@ export const NewIntroScene: React.FC<{
         isActive={gameState.phase !== 'idle'}
       />
 
-      {/* Flash overlay for transitions */}
+      {!initUIVisible && (
+        <button 
+          onClick={handleComplete}
+          style={{
+            position: 'absolute',
+            bottom: '20px',
+            right: '20px',
+            padding: '8px 16px',
+            backgroundColor: 'rgba(0, 20, 30, 0.7)',
+            color: '#00ffff',
+            border: '1px solid rgba(0, 255, 255, 0.4)',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            zIndex: 1000,
+            fontFamily: '"Orbitron", monospace',
+            fontSize: '12px',
+            letterSpacing: '1px',
+            textTransform: 'uppercase',
+            boxShadow: '0 0 10px rgba(0, 255, 255, 0.2)'
+          }}
+          onMouseOver={(e) => {
+            e.currentTarget.style.backgroundColor = 'rgba(0, 255, 255, 0.2)';
+            e.currentTarget.style.borderColor = '#00ffff';
+          }}
+          onMouseOut={(e) => {
+            e.currentTarget.style.backgroundColor = 'rgba(0, 20, 30, 0.7)';
+            e.currentTarget.style.borderColor = 'rgba(0, 255, 255, 0.4)';
+          }}
+        >
+          Skip Intro
+        </button>
+      )}
+
+      {}
       <div
         className="flash-overlay"
         style={{

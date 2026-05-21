@@ -1,17 +1,10 @@
-/* ═══════════════════════════════════════════════════════════
-   Leaderboard.css — Fully Responsive (deduplicated)
-   Targets: Android, iPhone SE→Pro Max, iPad, Tablets, Desktop
-   Breakpoints: 1200 / 1024 / 768 / 640 / 480 / 380 / 360
-   ═══════════════════════════════════════════════════════════ */
 
-/* ─── CSS Custom Properties ─── */
 :root {
   --lb-pad: clamp(1rem, 3vw, 2.5rem);
   --lb-radius: clamp(10px, 2vw, 15px);
   --lb-cell-pad: clamp(0.5rem, 1.2vw, 0.9375rem);
 }
 
-/* ─── Container ─── */
 .leaderboard-container {
   width: 100vw;
   height: 100vh;
@@ -91,14 +84,12 @@
   font-family: 'Roboto Mono', monospace;
 }
 
-/* ─── Table Section ─── */
 .leaderboard-section {
   margin-bottom: clamp(1rem, 3vh, 1.875rem);
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
 }
 
-/* ─── Table ─── */
 .leaderboard-table {
   width: 100%;
   border-collapse: collapse;
@@ -129,7 +120,6 @@
   color: #ffffff;
 }
 
-/* ─── Column Widths ─── */
 .rank-col {
   width: 10%;
   text-align: center;
@@ -151,7 +141,6 @@
   text-align: right;
 }
 
-/* ─── Badges ─── */
 .rank-badge {
   display: inline-block;
   padding: clamp(3px, 0.5vw, 5px) clamp(6px, 1vw, 10px);
@@ -176,7 +165,6 @@
   font-size: clamp(0.7rem, 1.3vw, 1rem);
 }
 
-/* ─── Row States ─── */
 .leaderboard-table tbody tr {
   transition: all 0.3s ease;
 }
@@ -214,7 +202,6 @@
   }
 }
 
-/* ─── Footer ─── */
 .leaderboard-footer {
   display: flex;
   justify-content: center;
@@ -222,7 +209,6 @@
   margin-top: clamp(1.25rem, 3vh, 2.5rem);
 }
 
-/* ─── Back Button ─── */
 .back-button {
   padding: clamp(0.6rem, 1.2vw, 0.875rem) clamp(1.25rem, 3vw, 2.5rem);
   font-size: clamp(0.75rem, 1.4vw, 1rem);
@@ -253,18 +239,12 @@
   transform: translateY(0) scale(0.97);
 }
 
-/* ═══════════════════════════════════════════════════════════
-   RESPONSIVE BREAKPOINTS
-   ═══════════════════════════════════════════════════════════ */
-
-/* ─── Large Tablets / Small Desktops ─── */
 @media (max-width: 1024px) {
   .leaderboard-content {
     max-width: 90%;
   }
 }
 
-/* ─── Tablets ─── */
 @media (max-width: 768px) {
   .leaderboard-content {
     max-width: 98%;
@@ -298,7 +278,6 @@
   }
 }
 
-/* ─── Large Phones ─── */
 @media (max-width: 640px) {
   .leaderboard-container {
     padding: 0.75rem;
@@ -318,7 +297,6 @@
   }
 }
 
-/* ─── Phones ─── */
 @media (max-width: 480px) {
   .leaderboard-container {
     padding: 0.5rem;
@@ -328,8 +306,7 @@
     padding: 0.75rem;
   }
 
-  /* Hide major column on small phones */
-  .major-col {
+    .major-col {
     display: none;
   }
 
@@ -351,7 +328,6 @@
   }
 }
 
-/* ─── Small Phones (iPhone SE, Galaxy S) ─── */
 @media (max-width: 380px) {
   .leaderboard-content {
     padding: 0.5rem;
@@ -380,7 +356,6 @@
   }
 }
 
-/* ─── Very Small Phones ─── */
 @media (max-width: 360px) {
   .leaderboard-header h1 {
     font-size: 0.9rem;
@@ -388,7 +363,6 @@
   }
 }
 
-/* ─── Landscape Mode ─── */
 @media (orientation: landscape) and (max-height: 500px) {
   .leaderboard-container {
     align-items: flex-start;
@@ -423,7 +397,6 @@
   }
 }
 
-/* ─── iPad-specific ─── */
 @media only screen
   and (min-device-width: 768px)
   and (max-device-width: 1024px)
@@ -437,7 +410,6 @@
   }
 }
 
-/* ─── Safe Area (notch phones) ─── */
 @supports (padding: env(safe-area-inset-bottom)) {
   .leaderboard-container {
     padding-left: max(var(--lb-pad), env(safe-area-inset-left, 0));
@@ -450,7 +422,6 @@
   }
 }
 
-/* ─── Touch Device Optimizations ─── */
 @media (hover: none) and (pointer: coarse) {
   .back-button {
     min-height: 48px;
@@ -480,7 +451,6 @@
   }
 }
 
-/* ─── Reduced Motion ─── */
 @media (prefers-reduced-motion: reduce) {
   .leaderboard-content {
     animation: none;

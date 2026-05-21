@@ -13,7 +13,6 @@ interface Stage6BugHuntProps {
   planetId: number;
 }
 
-/* ─── Code Snippet Data ─── */
 interface CodeSnippet {
   id: number;
   code: string;
@@ -67,7 +66,6 @@ const cleanSnippets: CodeSnippet[] = [
   { id: 120, code: 'array.push(item)', isBug: false, category: 'Typo' },
 ];
 
-/* ─── Active cell type ─── */
 interface ActiveCell {
   snippet: CodeSnippet;
   spawnTime: number;
@@ -76,13 +74,11 @@ interface ActiveCell {
   abducted?: boolean;
 }
 
-/* ─── Cell feedback animation ─── */
 interface CellFeedback {
   type: 'squash' | 'wrong' | 'miss' | 'abducted';
   time: number;
 }
 
-/* ─── Floating damage number ─── */
 interface DamageNumber {
   id: number;
   value: number;
@@ -91,24 +87,20 @@ interface DamageNumber {
   time: number;
 }
 
-/* ─── Ticker message ─── */
 interface TickerMessage {
   id: number;
   text: string;
   time: number;
 }
 
-/* ─── Constants ─── */
 const GAME_DURATION = 60;
-const GRID_COLS = 3;
-const GRID_ROWS = 3;
-const GRID_SIZE = GRID_COLS * GRID_ROWS;
+
 const BUG_RATIO = 0.6;
 const BOSS_BUG_RATIO = 0.55;
 const ABDUCTION_PENALTY = 300;
 const BOSS_DAMAGE_PER_BUG = 100;
 
-type CoopPlayerId = 'P1' | 'P2' | 'P3';
+type CoopPlayerId = 'P1' | 'P2';
 
 interface CoopPlayerSnapshot {
   hits: number;
@@ -128,12 +120,12 @@ interface CoopPlayerProfile {
   accent: string;
 }
 
-const COOP_PLAYER_ORDER: CoopPlayerId[] = ['P1', 'P2', 'P3'];
+const COOP_PLAYER_ORDER: CoopPlayerId[] = ['P1', 'P2'];
 
-const COOP_PLAYER_PROFILES: Record<CoopPlayerId, CoopPlayerProfile> = {
+const getCoopProfiles = (p1Name?: string, p2Name?: string): Record<CoopPlayerId, CoopPlayerProfile> => ({
   P1: {
     id: 'P1',
-    title: 'Mouse Pilot',
+    title: (p1Name?.toUpperCase() || 'MOUSE PILOT'),
     subtitle: 'Click to blast bugs instantly',
     inputHint: 'Mouse click',
     description: 'Click any active bug tile. This is the primary raid control for the lead player.',
@@ -142,33 +134,22 @@ const COOP_PLAYER_PROFILES: Record<CoopPlayerId, CoopPlayerProfile> = {
   },
   P2: {
     id: 'P2',
-    title: 'Number Runner',
-    subtitle: 'Top row and numpad 1-9',
-    inputHint: '1-9 / Numpad 1-9',
-    description: 'Use digits in grid order, from top-left to bottom-right.',
+    title: (p2Name?.toUpperCase() || 'NUMPAD RUNNER'),
+    subtitle: 'Numpad 1-9 keys',
+    inputHint: 'Numpad 1-9',
+    description: 'Use numpad digits in grid order, from top-left to bottom-right.',
     keyRows: [
-      ['1', '2', '3'],
-      ['4', '5', '6'],
       ['7', '8', '9'],
+      ['4', '5', '6'],
+      ['1', '2', '3'],
     ],
     accent: '#ffb703',
   },
-  P3: {
-    id: 'P3',
-    title: 'Letter Grid',
-    subtitle: 'QWE / ASD / ZXC layout',
-    inputHint: 'Q W E / A S D / Z X C',
-    description: 'Use letters laid out like a 3x3 grid so each key matches one tile.',
-    keyRows: [
-      ['Q', 'W', 'E'],
-      ['A', 'S', 'D'],
-      ['Z', 'X', 'C'],
-    ],
-    accent: '#ff4fd8',
-  },
-};
+});
 
-const NUMERIC_KEY_MAP: Record<string, number> = {
+const COOP_PLAYER_PROFILES = getCoopProfiles();
+
+const NUMPAD_KEY_MAP: Record<string, number> = {
   '1': 0,
   '2': 1,
   '3': 2,
@@ -180,32 +161,21 @@ const NUMERIC_KEY_MAP: Record<string, number> = {
   '9': 8,
 };
 
-const LETTER_KEY_MAP: Record<string, number> = {
-  q: 0,
-  w: 1,
-  e: 2,
-  a: 3,
-  s: 4,
-  d: 5,
-  z: 6,
-  x: 7,
-  c: 8,
-};
-
 const createDefaultCoopSnapshot = (): Record<CoopPlayerId, CoopPlayerSnapshot> => ({
   P1: { hits: 0, misses: 0, damage: 0, score: 0, lastAction: 'Ready' },
   P2: { hits: 0, misses: 0, damage: 0, score: 0, lastAction: 'Ready' },
-  P3: { hits: 0, misses: 0, damage: 0, score: 0, lastAction: 'Ready' },
 });
 
 const CoopLegend: React.FC<{
   compact?: boolean;
   stats?: Record<CoopPlayerId, CoopPlayerSnapshot>;
-}> = ({ compact = false, stats }) => {
+  profiles?: Record<CoopPlayerId, CoopPlayerProfile>;
+}> = ({ compact = false, stats, profiles }) => {
+  const activeProfiles = profiles || COOP_PLAYER_PROFILES;
   return (
     <div className={`coop-legend ${compact ? 'compact' : 'full'}`}>
       {COOP_PLAYER_ORDER.map((playerId) => {
-        const profile = COOP_PLAYER_PROFILES[playerId];
+        const profile = activeProfiles[playerId];
         const snapshot = stats?.[playerId];
 
         return (
@@ -267,16 +237,9 @@ const CoopLegend: React.FC<{
   );
 };
 
-/* ─── Helper: pick random from array ─── */
 function pickRandom<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)];
 }
-
-/* ================================================================
-   STAGE 6 — BUG HUNT: CODE DEBUG CHALLENGE
-   Normal Mode: Classic whack-a-mole code debugging.
-   Boss Mode:   Raid a UFO boss! Deal damage, avoid abduction beams.
-   ================================================================ */
 
 const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
   const navigate = useNavigate();
@@ -288,23 +251,25 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
   const playerData = useGameStore((state) => state.playerData);
   const stageStartRef = useRef(Date.now());
 
-  // Boss mode state from store
   const isBossMode = useGameStore((state) => state.bossMode);
   const bossGlobalHP = useGameStore((state) => state.bossGlobalHP);
   const bossMaxHP = useGameStore((state) => state.bossMaxHP);
   const dealBossDamage = useGameStore((state) => state.dealBossDamage);
+  const p2NameFromStore = useGameStore((state) => state.p2Name);
 
-  /* ─── Game phase ─── */
-  const [phase, setPhase] = useState<'intro' | 'countdown' | 'playing' | 'results' | 'completion'>('intro');
+  const coopProfiles = React.useMemo(
+    () => getCoopProfiles(playerData.name || undefined, p2NameFromStore || undefined),
+    [playerData.name, p2NameFromStore]
+  );
+
+    const [phase, setPhase] = useState<'intro' | 'countdown' | 'playing' | 'results' | 'completion'>('intro');
   const [countdown, setCountdown] = useState(3);
   const [timeLeft, setTimeLeft] = useState(GAME_DURATION);
 
-  /* ─── Grid state ─── */
-  const [cells, setCells] = useState<(ActiveCell | null)[]>(Array(GRID_SIZE).fill(null));
-  const [feedbacks, setFeedbacks] = useState<(CellFeedback | null)[]>(Array(GRID_SIZE).fill(null));
+    const [cells, setCells] = useState<(ActiveCell | null)[]>(Array(18).fill(null));
+  const [feedbacks, setFeedbacks] = useState<(CellFeedback | null)[]>(Array(18).fill(null));
 
-  /* ─── Score & stats ─── */
-  const [score, setScore] = useState(0);
+    const [score, setScore] = useState(0);
   const [combo, setCombo] = useState(0);
   const [maxCombo, setMaxCombo] = useState(0);
   const [bugsSquashed, setBugsSquashed] = useState(0);
@@ -312,8 +277,7 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
   const [wrongClicks, setWrongClicks] = useState(0);
   const [totalBugsSpawned, setTotalBugsSpawned] = useState(0);
 
-  /* ─── Boss mode state ─── */
-  const [bossDamageTaken, setBossDamageTaken] = useState(0);
+    const [bossDamageTaken, setBossDamageTaken] = useState(0);
   const [ufoHitFlash, setUfoHitFlash] = useState(false);
   const [damageNumbers, setDamageNumbers] = useState<DamageNumber[]>([]);
   const [tickerMessages, setTickerMessages] = useState<TickerMessage[]>([]);
@@ -325,8 +289,7 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
   const abductionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const tickerTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  /* ─── Robot companion state ─── */
-  const [robotReaction, setRobotReaction] = useState<RobotReaction>('idle');
+    const [robotReaction, setRobotReaction] = useState<RobotReaction>('idle');
   const [speechMessage, setSpeechMessage] = useState('');
   const [screenEffect, setScreenEffect] = useState('');
 
@@ -364,22 +327,20 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
   );
 
   const resolveCoopInput = useCallback((event: KeyboardEvent) => {
-    const key = event.key.toLowerCase();
-    const digitCell = NUMERIC_KEY_MAP[key];
-    if (digitCell !== undefined) {
-      return { playerId: 'P2' as CoopPlayerId, cellIdx: digitCell };
-    }
-
-    const letterCell = LETTER_KEY_MAP[key];
-    if (letterCell !== undefined) {
-      return { playerId: 'P3' as CoopPlayerId, cellIdx: letterCell };
+    const key = event.key;
+    // Check numpad keys OR normal number row keys
+    if (key >= '1' && key <= '9') {
+      const baseIdx = NUMPAD_KEY_MAP[key];
+      if (baseIdx !== undefined) {
+        const finalIdx = isBossMode ? baseIdx + 9 : baseIdx;
+        return { playerId: 'P2' as CoopPlayerId, cellIdx: finalIdx };
+      }
     }
 
     return null;
-  }, []);
+  }, [isBossMode]);
 
-  /* ─── Sound helper ─── */
-  const playSound = useCallback((type: 'squash' | 'wrong' | 'miss' | 'complete' | 'countdown' | 'go' | 'laser' | 'abduct') => {
+    const playSound = useCallback((type: 'squash' | 'wrong' | 'miss' | 'complete' | 'countdown' | 'go' | 'laser' | 'abduct') => {
     const sounds: Record<string, string> = {
       squash: '/sounds/success.mp3',
       wrong: '/sounds/error.mp3',
@@ -393,12 +354,11 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
     try {
       const audio = new Audio(sounds[type]);
       audio.volume = sfxVolume * (type === 'miss' ? 0.3 : type === 'laser' ? 0.5 : 1);
-      audio.play().catch(() => {});
-    } catch { /* silent */ }
+      audio.play().catch(() => { });
+    } catch {  }
   }, [sfxVolume]);
 
-  /* ─── Get a snippet not recently used ─── */
-  const getSnippet = useCallback((shouldBeBug: boolean) => {
+    const getSnippet = useCallback((shouldBeBug: boolean) => {
     const pool = shouldBeBug ? bugSnippets : cleanSnippets;
     const available = pool.filter(s => !usedSnippetIds.current.has(s.id));
     const pick = available.length > 0 ? pickRandom(available) : pickRandom(pool);
@@ -410,14 +370,13 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
     return pick;
   }, []);
 
-  /* ─── Difficulty scaling ─── */
-  const getDifficulty = useCallback(() => {
+    const getDifficulty = useCallback(() => {
     const elapsed = GAME_DURATION - timeRef.current;
     if (isBossMode) {
-      if (elapsed < 15) return { spawnInterval: 1800, lifetime: 3200, maxActive: 3 };
-      if (elapsed < 30) return { spawnInterval: 1400, lifetime: 2800, maxActive: 4 };
-      if (elapsed < 45) return { spawnInterval: 1100, lifetime: 2200, maxActive: 5 };
-      return { spawnInterval: 800, lifetime: 1800, maxActive: 6 };
+      if (elapsed < 15) return { spawnInterval: 900, lifetime: 3200, maxActive: 6 };
+      if (elapsed < 30) return { spawnInterval: 700, lifetime: 2800, maxActive: 8 };
+      if (elapsed < 45) return { spawnInterval: 550, lifetime: 2200, maxActive: 10 };
+      return { spawnInterval: 400, lifetime: 1800, maxActive: 12 };
     }
     if (elapsed < 15) return { spawnInterval: 2200, lifetime: 3500, maxActive: 2 };
     if (elapsed < 30) return { spawnInterval: 1800, lifetime: 3000, maxActive: 3 };
@@ -425,8 +384,7 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
     return { spawnInterval: 1000, lifetime: 2000, maxActive: 5 };
   }, [isBossMode]);
 
-  /* ─── Spawn a snippet in a random empty cell ─── */
-  const spawnSnippet = useCallback(() => {
+    const spawnSnippet = useCallback(() => {
     if (phaseRef.current !== 'playing') return;
 
     const diff = getDifficulty();
@@ -439,7 +397,10 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
     }
 
     const emptyCells: number[] = [];
-    currentCells.forEach((c, i) => { if (c === null) emptyCells.push(i); });
+    const maxIdx = isBossMode ? 18 : 9;
+    for (let i = 0; i < maxIdx; i++) {
+      if (currentCells[i] === null) emptyCells.push(i);
+    }
     if (emptyCells.length === 0) {
       spawnTimerRef.current = setTimeout(spawnSnippet, 500);
       return;
@@ -464,7 +425,6 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
     };
     setCells(newCells);
 
-    // Set entering → active
     setTimeout(() => {
       setCells(prev => {
         const updated = [...prev];
@@ -475,7 +435,6 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
       });
     }, 300);
 
-    // Auto-expire after lifetime
     setTimeout(() => {
       setCells(prev => {
         const updated = [...prev];
@@ -517,8 +476,7 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
     spawnTimerRef.current = setTimeout(spawnSnippet, diff.spawnInterval + jitter);
   }, [getDifficulty, getSnippet, isBossMode]);
 
-  /* ─── Boss Mode: Abduction Beam attack ─── */
-  const triggerAbduction = useCallback(() => {
+    const triggerAbduction = useCallback(() => {
     if (phaseRef.current !== 'playing' || !isBossMode) return;
 
     const currentCells = cellsRef.current;
@@ -561,11 +519,10 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
     abductionTimerRef.current = setTimeout(triggerAbduction, nextDelay);
   }, [isBossMode]);
 
-  /* ─── Boss Mode: Fake multiplayer ticker ─── */
-  const spawnTickerMessage = useCallback(() => {
+    const spawnTickerMessage = useCallback(() => {
     if (!isBossMode) return;
     const playerId = pickRandom(COOP_PLAYER_ORDER);
-    const profile = COOP_PLAYER_PROFILES[playerId];
+    const profile = coopProfiles[playerId];
     const snapshot = coopStatsRef.current[playerId];
     tickerIdRef.current += 1;
     const msg: TickerMessage = {
@@ -576,10 +533,9 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
       time: Date.now(),
     };
     setTickerMessages(prev => [...prev.slice(-4), msg]);
-  }, [isBossMode]);
+  }, [isBossMode, coopProfiles]);
 
-  /* ─── Add floating damage number ─── */
-  const addDamageNumber = useCallback((value: number) => {
+    const addDamageNumber = useCallback((value: number) => {
     damageIdRef.current += 1;
     const dn: DamageNumber = {
       id: damageIdRef.current,
@@ -594,8 +550,7 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
     }, 1200);
   }, []);
 
-  /* ─── Shared raid ticker ─── */
-  const pushTickerMessage = useCallback((text: string) => {
+    const pushTickerMessage = useCallback((text: string) => {
     tickerIdRef.current += 1;
     const msg: TickerMessage = {
       id: tickerIdRef.current,
@@ -605,17 +560,15 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
     setTickerMessages(prev => [...prev.slice(-4), msg]);
   }, []);
 
-  /* ─── Handle cell activation (mouse + keyboard co-op) ─── */
-  const handleCellAction = useCallback((cellIdx: number, playerId: CoopPlayerId = 'P1') => {
+    const handleCellAction = useCallback((cellIdx: number, playerId: CoopPlayerId = 'P1') => {
     if (phaseRef.current !== 'playing') return;
     const cell = cellsRef.current[cellIdx];
     if (!cell || cell.animState === 'exiting') return;
 
     const snippet = cell.snippet;
     const isAbducted = cell.abducted;
-    const playerProfile = COOP_PLAYER_PROFILES[playerId];
+    const playerProfile = coopProfiles[playerId];
 
-    // Clear the cell
     setCells(prev => {
       const updated = [...prev];
       updated[cellIdx] = null;
@@ -628,7 +581,7 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
     });
 
     if (snippet.isBug) {
-      // Correct! Squashed a bug
+      
       const newCombo = comboRef.current + 1;
       const comboMultiplier = Math.min(1 + (newCombo - 1) * 0.25, 3);
       const points = Math.round(100 * comboMultiplier);
@@ -644,7 +597,6 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
         lastAction: `+${points} score`,
       }));
 
-      // Boss mode: deal damage + laser
       if (isBossMode) {
         const dmg = Math.round(BOSS_DAMAGE_PER_BUG * comboMultiplier);
         setBossDamageTaken(d => d + dmg);
@@ -688,7 +640,7 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
       setTimeout(() => { setScreenEffect(''); setRobotReaction('idle'); }, 1200);
 
     } else if (isAbducted && isBossMode) {
-      // TRAP! Clicked abducted clean code in boss mode
+      
       setScore(s => Math.max(0, s - ABDUCTION_PENALTY));
       setCombo(0);
       setWrongClicks(w => w + 1);
@@ -719,7 +671,7 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
       setTimeout(() => { setScreenEffect(''); setRobotReaction('idle'); }, 1500);
 
     } else {
-      // Wrong! Clicked correct code
+      
       setScore(s => Math.max(0, s - 50));
       setCombo(0);
       setWrongClicks(w => w + 1);
@@ -749,10 +701,9 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
       setScreenEffect('screen-shake');
       setTimeout(() => { setScreenEffect(''); setRobotReaction('idle'); }, 1200);
     }
-  }, [playSound, isBossMode, addDamageNumber, dealBossDamage, pushTickerMessage, updateCoopStats]);
+  }, [playSound, isBossMode, addDamageNumber, dealBossDamage, pushTickerMessage, updateCoopStats, coopProfiles]);
 
-  /* ─── Robot click handler ─── */
-  const handleRobotClick = () => {
+    const handleRobotClick = () => {
     if (phase === 'playing') {
       setSpeechMessage(isBossMode ? "Attack the UFO! Squash those bugs! 🛸" : "Focus on the code! Squash those bugs! 🐛");
     } else {
@@ -762,15 +713,13 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
     setTimeout(() => setRobotReaction('idle'), 2000);
   };
 
-  /* ─── Start countdown ─── */
-  const startCountdown = () => {
+    const startCountdown = () => {
     setPhase('countdown');
     setCountdown(3);
     playSound('countdown');
   };
 
-  /* ─── Countdown effect ─── */
-  useEffect(() => {
+    useEffect(() => {
     if (phase !== 'countdown') return;
     if (countdown <= 0) {
       playSound('go');
@@ -784,8 +733,7 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
     return () => clearTimeout(timer);
   }, [phase, countdown, playSound]);
 
-  /* ─── Game timer ─── */
-  useEffect(() => {
+    useEffect(() => {
     if (phase !== 'playing') return;
 
     spawnTimerRef.current = setTimeout(spawnSnippet, 800);
@@ -800,7 +748,6 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
       });
     }, 1000);
 
-    // Boss mode: start abduction timer and ticker
     if (isBossMode) {
       abductionTimerRef.current = setTimeout(triggerAbduction, 5000);
       tickerTimerRef.current = setInterval(spawnTickerMessage, 3000 + Math.random() * 4000);
@@ -814,14 +761,13 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
     };
   }, [phase, spawnSnippet, isBossMode, triggerAbduction, spawnTickerMessage]);
 
-  /* ─── Cleanup on results ─── */
-  useEffect(() => {
+    useEffect(() => {
     if (phase === 'results') {
       if (gameTickRef.current) clearInterval(gameTickRef.current);
       if (spawnTimerRef.current) clearTimeout(spawnTimerRef.current);
       if (abductionTimerRef.current) clearTimeout(abductionTimerRef.current);
       if (tickerTimerRef.current) clearInterval(tickerTimerRef.current);
-      setCells(Array(GRID_SIZE).fill(null));
+      setCells(Array(18).fill(null));
       setAbductedCells(new Set());
 
       const accuracy = totalBugsRef.current > 0 ? bugsSquashed / totalBugsRef.current : 0;
@@ -843,8 +789,7 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
     }
   }, [phase, bugsSquashed, maxCombo, playSound, isBossMode, playerData.name]);
 
-  /* ─── Handle game completion ─── */
-  const handleComplete = useCallback(() => {
+    const handleComplete = useCallback(() => {
     markPlanetVisited(planetId as 1 | 2 | 3 | 4 | 5 | 6);
     const elapsed = Math.round((Date.now() - stageStartRef.current) / 1000);
     addPlanetScore(planetId as 1 | 2 | 3 | 4 | 5 | 6, 6, score, elapsed);
@@ -870,8 +815,7 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
     }, 4000);
   }, [planetId, score, markPlanetVisited, addPlanetScore, addLeaderboardEntry, navigate, visitedPlanets, playerData.name, playerData.major]);
 
-  /* ─── Replay handler ─── */
-  const handleReplay = () => {
+    const handleReplay = () => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
     setPhase('intro');
     setTimeLeft(GAME_DURATION);
@@ -890,8 +834,8 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
     setAbductedCells(new Set());
     setCoopStats(createDefaultCoopSnapshot());
     usedSnippetIds.current.clear();
-    setCells(Array(GRID_SIZE).fill(null));
-    setFeedbacks(Array(GRID_SIZE).fill(null));
+    setCells(Array(18).fill(null));
+    setFeedbacks(Array(18).fill(null));
     setRobotReaction('idle');
     setSpeechMessage('');
     setScreenEffect('');
@@ -935,8 +879,7 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [phase, resolveCoopInput, handleCellAction]);
 
-  /* ─── Computed values ─── */
-  const accuracy = totalBugsSpawned > 0 ? Math.round((bugsSquashed / totalBugsSpawned) * 100) : 0;
+    const accuracy = totalBugsSpawned > 0 ? Math.round((bugsSquashed / totalBugsSpawned) * 100) : 0;
   const timerPercent = (timeLeft / GAME_DURATION) * 100;
   const timerUrgent = timeLeft <= 10;
   const bossHPPercent = (bossGlobalHP / bossMaxHP) * 100;
@@ -948,8 +891,7 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
     return 0;
   };
 
-  /* =============== RENDER: COMPLETION SCREEN =============== */
-  if (phase === 'completion') {
+    if (phase === 'completion') {
     return (
       <div className="stage-completion">
         <div className="completion-card">
@@ -987,8 +929,7 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
     );
   }
 
-  /* =============== RENDER: INTRO SCREEN =============== */
-  if (phase === 'intro') {
+    if (phase === 'intro') {
     return (
       <div className={`stage-bug-hunt ${isBossMode ? 'boss-mode' : ''} ${screenEffect}`}>
         <div className="bughunt-canvas-corner">
@@ -1009,9 +950,28 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
         <div className="bughunt-intro-overlay">
           <div className={`bughunt-intro-layout ${isBossMode ? 'boss-mode' : ''}`}>
             <div className={`bughunt-intro-card ${isBossMode ? 'boss-intro' : ''}`}>
-              <div className="bughunt-intro-icon">{isBossMode ? '🛸' : '🐛'}</div>
-              <h1 className="bughunt-title">{isBossMode ? 'BOSS RAID' : 'BUG HUNT'}</h1>
-              <h2 className="bughunt-subtitle">{isBossMode ? 'UFO Invasion — Code Debug Raid' : 'Code Debug Challenge'}</h2>
+              {/* Scan line overlay */}
+              <div className="intro-scanline-overlay" />
+
+              {/* Decorative orbit rings */}
+              <div className="intro-orbit-ring intro-orbit-ring--1" />
+              <div className="intro-orbit-ring intro-orbit-ring--2" />
+
+              {/* Icon with pulse ring */}
+              <div className="intro-icon-wrapper">
+                <div className="intro-icon-pulse" />
+                <div className="bughunt-intro-icon">{isBossMode ? '🛸' : '🐛'}</div>
+              </div>
+
+              {/* Glitch-style title */}
+              <h1 className="bughunt-title" data-text={isBossMode ? 'BOSS RAID' : 'BUG HUNT'}>
+                {isBossMode ? 'BOSS RAID' : 'BUG HUNT'}
+              </h1>
+              <h2 className="bughunt-subtitle">
+                <span className="subtitle-line" />
+                {isBossMode ? 'UFO Invasion — Code Debug Raid' : 'Code Debug Challenge'}
+                <span className="subtitle-line" />
+              </h2>
 
               {isBossMode && (
                 <div className="boss-hp-preview">
@@ -1023,8 +983,10 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
                 </div>
               )}
 
+              {}
               <div className="bughunt-rules">
                 <div className="rule-item rule-good">
+                  <div className="rule-item-glow" />
                   <span className="rule-icon">🎯</span>
                   <div>
                     <strong>{isBossMode ? 'Squash bugs to damage UFO' : 'Tap buggy code'}</strong>
@@ -1032,6 +994,7 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
                   </div>
                 </div>
                 <div className="rule-item rule-bad">
+                  <div className="rule-item-glow" />
                   <span className="rule-icon">⚠️</span>
                   <div>
                     <strong>{isBossMode ? 'Watch for Abduction Beams!' : 'Avoid correct code'}</strong>
@@ -1039,6 +1002,7 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
                   </div>
                 </div>
                 <div className="rule-item rule-combo">
+                  <div className="rule-item-glow" />
                   <span className="rule-icon">🔥</span>
                   <div>
                     <strong>{isBossMode ? 'Combo = More damage' : 'Build combos'}</strong>
@@ -1049,23 +1013,71 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
 
               {isBossMode && (
                 <div className="boss-raid-note">
-                  <span>👥</span> All players share the boss HP. Your damage counts!
+                  <span className="boss-raid-note-icon">👥</span> All players share the boss HP. Your damage counts!
                 </div>
               )}
 
-              <p className="bughunt-timer-info">⏱ You have {GAME_DURATION} seconds. The clock is ticking!</p>
+              {}
+              <div className="intro-timer-preview">
+                <div className="timer-ring">
+                  <svg viewBox="0 0 40 40" className="timer-ring-svg">
+                    <circle cx="20" cy="20" r="17" className="timer-ring-bg" />
+                    <circle cx="20" cy="20" r="17" className="timer-ring-fill" />
+                  </svg>
+                  <span className="timer-ring-label">⏱</span>
+                </div>
+                <div className="timer-text-block">
+                  <span className="timer-big">{GAME_DURATION}s</span>
+                  <span className="timer-sub">mission time limit</span>
+                </div>
+              </div>
+
+              {!isBossMode && (
+                <div className="normal-tutorial-section">
+                  <div className="tutorial-header-line">
+                    <span className="tutorial-header-dash" />
+                    <span className="boss-coop-label">CONTROLLER TUTORIAL</span>
+                    <span className="tutorial-header-dash" />
+                  </div>
+                  <div className="tutorial-methods-grid">
+                    <div className="tutorial-method">
+                      <div className="method-icon">🖱️</div>
+                      <div className="method-details">
+                        <strong>Mouse</strong>
+                        <p>Click on bugs directly</p>
+                      </div>
+                    </div>
+                    <div className="tutorial-method">
+                      <div className="method-icon">🔢</div>
+                      <div className="method-details">
+                        <strong>Numbers / Numpad</strong>
+                        <p>Keys 1-9 to map grid</p>
+                      </div>
+                    </div>
+                    <div className="tutorial-method">
+                      <div className="method-icon">⌨️</div>
+                      <div className="method-details">
+                        <strong>Keyboard Letters</strong>
+                        <p>Q W E | A S D | Z X C</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               <button className={`bughunt-start-btn ${isBossMode ? 'boss-start' : ''}`} onClick={startCountdown}>
-                <span>{isBossMode ? 'ENGAGE BOSS' : 'LAUNCH MISSION'}</span>
+                <span className="btn-inner-text">{isBossMode ? 'ENGAGE BOSS' : 'LAUNCH MISSION'}</span>
                 <span className="btn-glow" />
+                <span className="btn-shimmer" />
               </button>
             </div>
 
             {isBossMode && (
               <div className="boss-coop-section">
-                <div className="boss-coop-label">3-PLAYER CO-OP CONTROLS</div>
-                <CoopLegend />
+                <div className="boss-coop-label">2-PLAYER CO-OP CONTROLS</div>
+                <CoopLegend profiles={coopProfiles} />
                 <div className="boss-coop-note">
-                  Shared raid session. P1 uses the mouse, P2 uses numbers/numpad, and P3 uses letters.
+                  Shared raid session. P1 uses the mouse, P2 uses the numpad.
                 </div>
               </div>
             )}
@@ -1075,8 +1087,7 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
     );
   }
 
-  /* =============== RENDER: COUNTDOWN =============== */
-  if (phase === 'countdown') {
+    if (phase === 'countdown') {
     return (
       <div className={`stage-bug-hunt ${isBossMode ? 'boss-mode' : ''}`}>
         <FloatingParticles />
@@ -1089,8 +1100,7 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
     );
   }
 
-  /* =============== RENDER: RESULTS SCREEN =============== */
-  if (phase === 'results') {
+    if (phase === 'results') {
     return (
       <div className={`stage-bug-hunt ${isBossMode ? 'boss-mode' : ''} ${screenEffect}`}>
         <div className="bughunt-canvas-corner">
@@ -1172,67 +1182,85 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
     );
   }
 
-  /* =============== RENDER: GAMEPLAY =============== */
+    const renderGameGrid = (panelPlayerId?: CoopPlayerId) => {
+    const offset = (isBossMode && panelPlayerId === 'P2') ? 9 : 0;
+    const gridCells = cells.slice(offset, offset + 9);
+    
+    return (
+      <div className="bughunt-grid">
+        {gridCells.map((cell, localIdx) => {
+          const idx = offset + localIdx;
+        const feedback = feedbacks[idx];
+        const isAbducted = abductedCells.has(idx);
+        return (
+          <div
+            key={idx}
+            className={`bughunt-cell ${cell ? 'has-snippet' : 'empty'} ${cell?.animState === 'entering' ? 'cell-enter' : ''} ${cell?.animState === 'exiting' ? 'cell-exit' : ''} ${feedback?.type === 'squash' ? 'cell-squash' : ''} ${feedback?.type === 'wrong' ? 'cell-wrong' : ''} ${feedback?.type === 'miss' ? 'cell-miss' : ''} ${feedback?.type === 'abducted' ? 'cell-abducted-hit' : ''} ${isAbducted ? 'cell-abduction-beam' : ''}`}
+            onClick={() => handleCellAction(idx, panelPlayerId || 'P1')}
+          >
+            {isAbducted && (
+              <div className="abduction-beam-overlay">
+                <div className="abduction-beam-ray" />
+              </div>
+            )}
+            <div className="cell-terminal-header">
+              <span className="terminal-dots">
+                <span className="dot red" />
+                <span className="dot yellow" />
+                <span className="dot green" />
+              </span>
+              {cell && <span className="cell-category">{cell.snippet.category}</span>}
+            </div>
+            <div className="cell-code-area">
+              {cell && (
+                <code className={`cell-code ${isAbducted ? 'code-blurred' : ''}`}>{cell.snippet.code}</code>
+              )}
+              {!cell && feedback?.type === 'squash' && (
+                <div className="squash-effect">✓ SQUASHED!</div>
+              )}
+              {!cell && feedback?.type === 'wrong' && (
+                <div className="wrong-effect">✗ CLEAN CODE!</div>
+              )}
+              {!cell && feedback?.type === 'abducted' && (
+                <div className="abducted-effect">🛸 ABDUCTED! −{ABDUCTION_PENALTY}</div>
+              )}
+              {feedback?.type === 'miss' && (
+                <div className="miss-effect">ESCAPED!</div>
+              )}
+            </div>
+            {cell && (
+              <div className="cell-lifetime-bar">
+                <div
+                  className="lifetime-fill"
+                  style={{ animationDuration: `${cell.lifetime}ms` }}
+                />
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+};
+
   return (
     <div className={`stage-bug-hunt ${isBossMode ? 'boss-mode' : ''} ${screenEffect}`}>
-      {/* Robot corner */}
-      <div className="bughunt-canvas-corner">
-        <AdaptiveCanvas camera={{ position: [0, 1, 5], fov: 50 }} dpr={[1, 1.1]} quality="low">
-          <ambientLight intensity={0.6} />
-          <pointLight position={[5, 5, 5]} intensity={100} color="#ffcc00" />
-          <InteractiveRobot reaction={robotReaction} scale={5} position={[0, -1.5, 0]} onClick={handleRobotClick} />
-          <Stars radius={100} depth={20} count={120} factor={3} saturation={0} fade speed={1} />
-        </AdaptiveCanvas>
-        {speechMessage && (
-          <SpeechBubble message={speechMessage} type="robot" duration={2500} onDone={() => setSpeechMessage('')} />
-        )}
-      </div>
+      {}
+      {!isBossMode && (
+        <div className="bughunt-canvas-corner">
+          <AdaptiveCanvas camera={{ position: [0, 1, 5], fov: 50 }} dpr={[1, 1.1]} quality="low">
+            <ambientLight intensity={0.6} />
+            <pointLight position={[5, 5, 5]} intensity={100} color="#ffcc00" />
+            <InteractiveRobot reaction={robotReaction} scale={3.2} position={[0, -1.5, 0]} onClick={handleRobotClick} />
+            <Stars radius={100} depth={20} count={120} factor={3} saturation={0} fade speed={1} />
+          </AdaptiveCanvas>
+          {speechMessage && (
+            <SpeechBubble message={speechMessage} type="robot" duration={2500} onDone={() => setSpeechMessage('')} />
+          )}
+        </div>
+      )}
 
       <FloatingParticles />
-
-      {/* ── Boss Mode: UFO 3D Scene ── */}
-      {isBossMode && (
-        <div className="boss-ufo-scene">
-          <AdaptiveCanvas camera={{ position: [0, 3.7, 14], fov: 34 }} dpr={[1, 1.2]} quality="low" gl={{ alpha: true, antialias: true }}>
-            <ambientLight intensity={0.9} />
-            <directionalLight position={[3, 6, 8]} intensity={1.8} color="#ffffff" />
-            <pointLight position={[0, 10, 5]} intensity={35} color="#00ffcc" />
-            <BossUFO
-              hp={bossGlobalHP}
-              maxHP={bossMaxHP}
-              hitFlash={ufoHitFlash}
-              position={[0, 0.85, 0]}
-              scale={1.05}
-            />
-            <Stars radius={100} depth={20} count={90} factor={3} saturation={0} fade speed={1} />
-          </AdaptiveCanvas>
-
-          {/* Floating damage numbers */}
-          {damageNumbers.map(dn => (
-            <div
-              key={dn.id}
-              className="damage-number"
-              style={{ left: `${dn.x}%`, top: `${dn.y}%` }}
-            >
-              −{dn.value}
-            </div>
-          ))}
-
-          {/* Laser effect overlay */}
-          {laserActive && <div className="laser-beam" />}
-        </div>
-      )}
-
-      {/* ── Boss HP Bar (visible during gameplay) ── */}
-      {isBossMode && (
-        <div className="boss-hp-hud">
-          <span className="boss-hp-icon">🛸</span>
-          <div className="boss-hp-bar-track">
-            <div className="boss-hp-bar-fill" style={{ width: `${bossHPPercent}%` }} />
-          </div>
-          <span className="boss-hp-value">{bossGlobalHP.toLocaleString()}</span>
-        </div>
-      )}
 
       {/* HUD */}
       <div className="bughunt-hud">
@@ -1253,13 +1281,18 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
         </div>
       </div>
 
+      {}
       {isBossMode && (
-        <div className="boss-coop-hud">
-          <CoopLegend compact stats={coopStats} />
+        <div className="boss-hp-hud">
+          <span className="boss-hp-icon">🛸</span>
+          <div className="boss-hp-bar-track">
+            <div className="boss-hp-bar-fill" style={{ width: `${bossHPPercent}%` }} />
+          </div>
+          <span className="boss-hp-value">{bossGlobalHP.toLocaleString()}</span>
         </div>
       )}
 
-      {/* ── Boss Mode: Ticker ── */}
+      {}
       {isBossMode && tickerMessages.length > 0 && (
         <div className="boss-ticker">
           {tickerMessages.slice(-3).map(msg => (
@@ -1268,65 +1301,90 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
         </div>
       )}
 
-      {/* Game Grid */}
-      <div className="bughunt-grid-wrapper">
-        <div className="bughunt-grid">
-          {cells.map((cell, idx) => {
-            const feedback = feedbacks[idx];
-            const isAbducted = abductedCells.has(idx);
-            return (
-              <div
-                key={idx}
-                className={`bughunt-cell ${cell ? 'has-snippet' : 'empty'} ${cell?.animState === 'entering' ? 'cell-enter' : ''} ${cell?.animState === 'exiting' ? 'cell-exit' : ''} ${feedback?.type === 'squash' ? 'cell-squash' : ''} ${feedback?.type === 'wrong' ? 'cell-wrong' : ''} ${feedback?.type === 'miss' ? 'cell-miss' : ''} ${feedback?.type === 'abducted' ? 'cell-abducted-hit' : ''} ${isAbducted ? 'cell-abduction-beam' : ''}`}
-                onClick={() => handleCellAction(idx, 'P1')}
-              >
-                {/* Abduction beam overlay */}
-                {isAbducted && (
-                  <div className="abduction-beam-overlay">
-                    <div className="abduction-beam-ray" />
-                  </div>
-                )}
-
-                <div className="cell-terminal-header">
-                  <span className="terminal-dots">
-                    <span className="dot red" />
-                    <span className="dot yellow" />
-                    <span className="dot green" />
-                  </span>
-                  {cell && <span className="cell-category">{cell.snippet.category}</span>}
-                </div>
-                <div className="cell-code-area">
-                  {cell && (
-                    <code className={`cell-code ${isAbducted ? 'code-blurred' : ''}`}>{cell.snippet.code}</code>
-                  )}
-                  {!cell && feedback?.type === 'squash' && (
-                    <div className="squash-effect">✓ SQUASHED!</div>
-                  )}
-                  {!cell && feedback?.type === 'wrong' && (
-                    <div className="wrong-effect">✗ CLEAN CODE!</div>
-                  )}
-                  {!cell && feedback?.type === 'abducted' && (
-                    <div className="abducted-effect">🛸 ABDUCTED! −{ABDUCTION_PENALTY}</div>
-                  )}
-                  {feedback?.type === 'miss' && (
-                    <div className="miss-effect">ESCAPED!</div>
-                  )}
-                </div>
-                {cell && (
-                  <div className="cell-lifetime-bar">
-                    <div
-                      className="lifetime-fill"
-                      style={{ animationDuration: `${cell.lifetime}ms` }}
-                    />
-                  </div>
-                )}
+      {}
+      {isBossMode ? (
+        <div className="boss-split-screen">
+          {}
+          <div className="split-panel split-panel-p1">
+            <div className="split-panel-header" style={{ borderColor: coopProfiles.P1.accent }}>
+              <div className="split-player-badge" style={{ background: coopProfiles.P1.accent, color: '#000' }}>P1</div>
+              <div className="split-player-info">
+                <span className="split-player-title" style={{ color: coopProfiles.P1.accent }}>{coopProfiles.P1.title}</span>
+                <span className="split-player-hint">{coopProfiles.P1.inputHint}</span>
               </div>
-            );
-          })}
-        </div>
-      </div>
+              <div className="split-player-stats">
+                <span className="split-stat">{coopStats.P1.hits} <small>HIT</small></span>
+                <span className="split-stat">{coopStats.P1.damage} <small>DMG</small></span>
+              </div>
+            </div>
+            <div className="split-grid-container">
+              {renderGameGrid('P1')}
+            </div>
+          </div>
 
-      {/* Stats bar */}
+          {}
+          <div className="split-center-ufo">
+            <div className="boss-ufo-scene-split">
+              <AdaptiveCanvas camera={{ position: [0, 3.7, 14], fov: 34 }} dpr={[1, 1.2]} quality="low" gl={{ alpha: true, antialias: true }}>
+                <ambientLight intensity={0.9} />
+                <directionalLight position={[3, 6, 8]} intensity={1.8} color="#ffffff" />
+                <pointLight position={[0, 10, 5]} intensity={35} color="#00ffcc" />
+                <BossUFO
+                  hp={bossGlobalHP}
+                  maxHP={bossMaxHP}
+                  hitFlash={ufoHitFlash}
+                  position={[0, 0.85, 0]}
+                  scale={1.05}
+                />
+                <Stars radius={100} depth={20} count={90} factor={3} saturation={0} fade speed={1} />
+              </AdaptiveCanvas>
+              {damageNumbers.map(dn => (
+                <div
+                  key={dn.id}
+                  className="damage-number"
+                  style={{ left: `${dn.x}%`, top: `${dn.y}%` }}
+                >
+                  −{dn.value}
+                </div>
+              ))}
+              {laserActive && <div className="laser-beam" />}
+            </div>
+
+            {}
+            <div className="boss-split-robot">
+              <AdaptiveCanvas camera={{ position: [0, 1, 5], fov: 50 }} dpr={[1, 1.1]} quality="low">
+                <ambientLight intensity={0.6} />
+                <pointLight position={[5, 5, 5]} intensity={100} color="#ffcc00" />
+                <InteractiveRobot reaction={robotReaction} scale={3.5} position={[0, -1.5, 0]} onClick={handleRobotClick} />
+              </AdaptiveCanvas>
+            </div>
+          </div>
+
+          {}
+          <div className="split-panel split-panel-p2">
+            <div className="split-panel-header" style={{ borderColor: coopProfiles.P2.accent }}>
+              <div className="split-player-badge" style={{ background: coopProfiles.P2.accent, color: '#000' }}>P2</div>
+              <div className="split-player-info">
+                <span className="split-player-title" style={{ color: coopProfiles.P2.accent }}>{coopProfiles.P2.title}</span>
+                <span className="split-player-hint">{coopProfiles.P2.inputHint}</span>
+              </div>
+              <div className="split-player-stats">
+                <span className="split-stat">{coopStats.P2.hits} <small>HIT</small></span>
+                <span className="split-stat">{coopStats.P2.damage} <small>DMG</small></span>
+              </div>
+            </div>
+            <div className="split-grid-container">
+              {renderGameGrid('P2')}
+            </div>
+          </div>
+        </div>
+      ) : (
+                <div className="bughunt-grid-wrapper">
+          {renderGameGrid()}
+        </div>
+      )}
+
+      {}
       <div className="bughunt-stats">
         <span>🐛 {bugsSquashed}</span>
         <span>❌ {wrongClicks}</span>

@@ -90,6 +90,10 @@ interface GameState {
   dealBossDamage: (damage: number, playerName: string) => void;
   bossDamageLog: Array<{ playerName: string; damage: number; timestamp: number }>;
   resetBossHP: () => void;
+
+  // Co-Op Player 2
+  p2Name: string;
+  setP2Name: (name: string) => void;
 }
 
 const storage = createJSONStorage<GameState>(() => localStorage, {
@@ -162,14 +166,14 @@ export const useGameStore = create<GameState>()(
           (e) => e.playerName === playerName && e.planetId === planetId
         );
         if (existingIdx >= 0) {
-          // Update if higher score (or same score but faster time)
+          
           const prev = boards[existingIdx];
           if (score > prev.score || (score === prev.score && elapsed < prev.completionTime)) {
             boards[existingIdx] = { playerName, planetId, score, completionTime: elapsed, timestamp: Date.now() };
             set({ planetLeaderboards: boards });
           }
         } else {
-          // New entry
+          
           boards.push({ playerName, planetId, score, completionTime: elapsed, timestamp: Date.now() });
           set({ planetLeaderboards: boards });
         }
@@ -187,7 +191,7 @@ export const useGameStore = create<GameState>()(
         return entry ? entry.score : 0;
       },
       isPlanetCompleted: (planetId) => {
-        // Check if all 5 stages of a planet are completed (for now just stage 1)
+        
         return get().visitedPlanets.has(planetId);
       },
       getStageCompleted: (planetId, stageId) => {
@@ -204,7 +208,7 @@ export const useGameStore = create<GameState>()(
 
         if (existingIdx >= 0) {
           const prev = newLeaderboard[existingIdx];
-          // Keep the best score; if tie, keep the latest timestamp.
+          
           if (entry.totalScore > prev.totalScore || (entry.totalScore === prev.totalScore && entry.timestamp > prev.timestamp)) {
             newLeaderboard[existingIdx] = entry;
           }
@@ -212,9 +216,8 @@ export const useGameStore = create<GameState>()(
           newLeaderboard.push(entry);
         }
 
-        // Sort by score descending
         newLeaderboard.sort((a, b) => b.totalScore - a.totalScore);
-        // Keep top 100
+        
         set({ leaderboard: newLeaderboard.slice(0, 100) });
       },
       getLeaderboardEntries: () => {
@@ -284,6 +287,10 @@ export const useGameStore = create<GameState>()(
       },
       bossDamageLog: [],
       resetBossHP: () => set({ bossGlobalHP: BOSS_MAX_HP, bossMaxHP: BOSS_MAX_HP, bossDamageLog: [] }),
+
+      // Co-Op Player 2
+      p2Name: '',
+      setP2Name: (name) => set({ p2Name: name }),
     }),
     {
       name: 'space-academy-storage',

@@ -42,7 +42,6 @@ body {
   overflow: hidden;
 }
 
-/* Global Typography */
 h1, h2, h3, h4, h5, h6 {
   font-family: 'Orbitron', sans-serif;
   font-weight: 700;
@@ -55,12 +54,10 @@ p, span, a, button {
   font-family: 'Roboto Mono', monospace;
 }
 
-/* Smooth Scrolling */
 html {
   scroll-behavior: smooth;
 }
 
-/* Selection Styling */
 ::selection {
   background-color: rgba(0, 255, 255, 0.3);
   color: #00ffff;
@@ -83,7 +80,6 @@ html {
   background: rgba(0, 255, 255, 0.8);
 }
 
-/* Button Global Styles */
 button {
   cursor: pointer;
   transition: all 0.3s ease;
@@ -98,7 +94,6 @@ button:disabled {
   cursor: not-allowed;
 }
 
-/* Input Global Styles */
 input, select, textarea {
   font-family: 'Roboto Mono', monospace;
   background: rgba(0, 0, 0, 0.5);
@@ -119,7 +114,6 @@ input::placeholder {
   color: rgba(0, 255, 255, 0.5);
 }
 
-/* Loading Animation */
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
@@ -152,7 +146,6 @@ input::placeholder {
   animation: pulse 2s infinite;
 }
 
-/* Responsive */
 @media (max-width: 768px) {
   h1 { font-size: 24px; }
   h2 { font-size: 20px; }

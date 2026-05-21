@@ -1,9 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import type { AudioAssets } from '../types/threejs-intro.types';
 
-/**
- * Hook to manage audio assets for the intro scene
- */
 export const useIntroAudio = () => {
   const [audioLoaded, setAudioLoaded] = useState(false);
   const audioRef = useRef<AudioAssets>({
@@ -27,8 +24,7 @@ export const useIntroAudio = () => {
   useEffect(() => {
     const loadAudioAssets = () => {
       const assets = audioRef.current;
-      
-      // Create audio elements
+
       assets.bgm = new Audio('/audio/space_bgm.wav');
       assets.bgm.loop = true;
       assets.bgm.volume = 0.2;
@@ -78,7 +74,7 @@ export const useIntroAudio = () => {
     loadAudioAssets();
 
     return () => {
-      // Cleanup
+      
       Object.values(audioRef.current).forEach((audio) => {
         if (audio) {
           audio.pause();

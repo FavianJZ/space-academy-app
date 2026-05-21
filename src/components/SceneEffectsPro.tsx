@@ -635,11 +635,6 @@ const MeteorShower = ({ count = 3, warpSpeed, isAlarmActive, phase }: MeteorShow
   );
 };
 
-/**
- * SceneEffectsPro - upgraded environmental motion for the intro cockpit.
- *
- * Focuses on depth, acceleration response, and a more realistic meteor pass.
- */
 export const SceneEffectsPro = ({ gameState }: SceneEffectsProProps) => {
   const { starCount, warpCount, meteorCount } = useMemo(() => {
     if (typeof window === 'undefined') {

@@ -1,4 +1,3 @@
-/* New Intro Scene Styling */
 .new-intro-scene-container {
   position: relative;
   width: 100%;
@@ -23,19 +22,16 @@
   z-index: 9999;
 }
 
-/* Ensure Three.js canvas fills the viewport */
 canvas {
   display: block !important;
   width: 100% !important;
   height: 100% !important;
 }
 
-/* Disable default scrolling */
 body {
   overflow: hidden;
 }
 
-/* Responsive adjustments */
 @media (max-width: 768px) {
   .new-intro-scene-container {
     height: 100vh;

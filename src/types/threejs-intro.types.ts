@@ -1,6 +1,3 @@
-/**
- * Types and interfaces for the intro scene from friend's THREE JS project
- */
 
 export type GamePhase = 
   | 'idle'

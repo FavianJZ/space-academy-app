@@ -10,7 +10,6 @@ import AdaptiveCanvas from '../components/AdaptiveCanvas';
 import { useGameStore } from '../stores/useGameStore';
 import './CharacterSelection.css';
 
-/* ====== Floating Particles Around Characters ====== */
 const FloatingParticles: React.FC<{ color: string; count?: number; radius?: number; isActive?: boolean }> = ({ 
   color, count = 30, radius = 3, isActive = false 
 }) => {
@@ -53,7 +52,6 @@ const FloatingParticles: React.FC<{ color: string; count?: number; radius?: numb
   );
 };
 
-/* ====== Holographic Floor Ring ====== */
 const HoloRing: React.FC<{ color: string; isActive: boolean }> = ({ color, isActive }) => {
   const ringRef = useRef<THREE.Mesh>(null);
   const outerRingRef = useRef<THREE.Mesh>(null);
@@ -89,7 +87,6 @@ const HoloRing: React.FC<{ color: string; isActive: boolean }> = ({ color, isAct
   );
 };
 
-/* ====== Energy Beam from Platform ====== */
 const EnergyBeam: React.FC<{ color: string; isActive: boolean }> = ({ color, isActive }) => {
   const beamRef = useRef<THREE.Mesh>(null);
   
@@ -110,7 +107,6 @@ const EnergyBeam: React.FC<{ color: string; isActive: boolean }> = ({ color, isA
   );
 };
 
-/* ====== Magnetic Spaceman Response ====== */
 const SpacemanMagneticResponse: React.FC<{ charRef: React.RefObject<THREE.Group | null>; baseRotY?: number; isActive?: boolean }> = ({ 
   charRef, baseRotY = 0, isActive = false 
 }) => {
@@ -161,7 +157,6 @@ const SpacemanMagneticResponse: React.FC<{ charRef: React.RefObject<THREE.Group 
   return null;
 };
 
-/* ====== Cursor Aura ====== */
 const CursorAura: React.FC<{ activeCharacter: 'pink' | 'white' | null }> = ({ activeCharacter }) => {
   const glowRef = useRef<THREE.Mesh>(null);
   const ringRef = useRef<THREE.Mesh>(null);
@@ -227,7 +222,6 @@ const CursorAura: React.FC<{ activeCharacter: 'pink' | 'white' | null }> = ({ ac
   );
 };
 
-/* ====== Character Stage with Platform & Effects ====== */
 const CharacterStage: React.FC<{
   charType: 'pink' | 'white';
   position: [number, number, number];
@@ -280,7 +274,7 @@ const CharacterStage: React.FC<{
         {isPink ? <SpacemanPink scale={modelScale} /> : <SpacemanWhite scale={modelScale} />}
       </group>
 
-      {/* Invisible click hitbox */}
+      {}
       <mesh
         visible={false}
         onClick={onSelect}
@@ -293,7 +287,6 @@ const CharacterStage: React.FC<{
   );
 };
 
-/* ====== Selection Spark Burst ====== */
 const SelectionBurst: React.FC<{ active: boolean; color: string; position: [number, number, number] }> = ({ 
   active, color, position 
 }) => {
@@ -350,7 +343,6 @@ const SelectionBurst: React.FC<{ active: boolean; color: string; position: [numb
   );
 };
 
-/* ====== Nebula Background ====== */
 const NebulaBackground: React.FC = () => {
   const ref = useRef<THREE.Mesh>(null);
   useFrame((state) => {
@@ -376,7 +368,6 @@ const NebulaBackground: React.FC = () => {
   );
 };
 
-/* ====== Camera Sway ====== */
 const CameraSway: React.FC = () => {
   const { camera } = useThree();
   useFrame((state) => {
@@ -387,9 +378,6 @@ const CameraSway: React.FC = () => {
   return null;
 };
 
-/* ============================================================
-   MAIN COMPONENT
-   ============================================================ */
 const CharacterSelection: React.FC = () => {
   const navigate = useNavigate();
   const setCharacter = useGameStore((state) => state.setCharacter);
@@ -495,7 +483,7 @@ const CharacterSelection: React.FC = () => {
 
   return (
     <div className="cs-container">
-      {/* 3D Scene */}
+      {}
       <AdaptiveCanvas
         dpr={[1, isMobile ? 1.15 : 1.35]}
         className="cs-canvas"
@@ -548,9 +536,9 @@ const CharacterSelection: React.FC = () => {
         </Suspense>
       </AdaptiveCanvas>
 
-      {/* HTML Overlay UI */}
+      {}
       <div className={`cs-overlay ${showUI ? 'visible' : ''} ${isTransitioning ? 'transitioning' : ''}`}>
-        {/* Title */}
+        {}
         <div className="cs-title-section">
           <h1 className="cs-title">
             <span className="cs-title-main">SPACE ACADEMY</span>
@@ -582,7 +570,7 @@ const CharacterSelection: React.FC = () => {
           </div>
         </div>
 
-        {/* Character Cards */}
+        {}
         <div className="cs-cards-container">
           {(['pink', 'white'] as const).map((type) => {
             const info = charInfo[type];
@@ -629,7 +617,7 @@ const CharacterSelection: React.FC = () => {
           })}
         </div>
 
-        {/* Transition overlay */}
+        {}
         {isTransitioning && (
           <div className="cs-transition-overlay">
             <div className="cs-transition-flash" />
@@ -638,7 +626,7 @@ const CharacterSelection: React.FC = () => {
         )}
       </div>
 
-      {/* Scanline effect */}
+      {}
       <div className="cs-scanlines" />
     </div>
   );

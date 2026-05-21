@@ -7,6 +7,7 @@ import { InteractiveRobot, type RobotReaction } from './InteractiveRobot';
 import { FloatingParticles } from './FloatingParticles';
 import { SpeechBubble, robotMessages, getRandomMessage } from './SpeechBubble';
 import './StageStyle.css';
+import './AdvancedHUD.css';
 
 interface Stage1IntroductionProps {
   planetId: number;
@@ -24,6 +25,9 @@ const Stage1Introduction: React.FC<Stage1IntroductionProps> = ({ planetId }) => 
   const stageStartRef = useRef(Date.now());
   const [displayedText, setDisplayedText] = useState('');
   const [isTyping, setIsTyping] = useState(true);
+  
+  // 3D Tilt State
+  const [tilt, setTilt] = useState({ x: 0, y: 0 });
 
   // Interactive companion state
   const [robotReaction, setRobotReaction] = useState<RobotReaction>('idle');
@@ -57,7 +61,6 @@ const Stage1Introduction: React.FC<Stage1IntroductionProps> = ({ planetId }) => 
     },
   ];
 
-  // Typewriter effect
   useEffect(() => {
     setDisplayedText('');
     setIsTyping(true);
@@ -80,7 +83,7 @@ const Stage1Introduction: React.FC<Stage1IntroductionProps> = ({ planetId }) => 
   }, [currentStep]);
 
   const handleContinue = () => {
-    // Robot waves on each continue
+    
     setRobotReaction('waving');
     setTimeout(() => setRobotReaction('idle'), 1500);
 
@@ -88,7 +91,7 @@ const Stage1Introduction: React.FC<Stage1IntroductionProps> = ({ planetId }) => 
       setCurrentStep(currentStep + 1);
       setShowContinue(false);
     } else {
-      // Mark planet as visited and add score (always 500 for completing intro)
+      
       markPlanetVisited(planetId as 1 | 2 | 3 | 4 | 5 | 6);
       const elapsed = Math.round((Date.now() - stageStartRef.current) / 1000);
       addPlanetScore(planetId as 1 | 2 | 3 | 4 | 5 | 6, 1, 500, elapsed);
@@ -112,7 +115,7 @@ const Stage1Introduction: React.FC<Stage1IntroductionProps> = ({ planetId }) => 
     setTimeout(() => setScreenEffect(''), 500);
     const audio = new Audio('/sounds/stage_complete.mp3');
     audio.volume = sfxVolume;
-    audio.play().catch(() => {});
+    audio.play().catch(() => { });
     timeoutRef.current = setTimeout(() => {
       navigate('/mainhub');
     }, 4000);
@@ -145,7 +148,7 @@ const Stage1Introduction: React.FC<Stage1IntroductionProps> = ({ planetId }) => 
             <AdaptiveCanvas camera={{ position: [0, 1, 5], fov: 50 }} dpr={[1, 1.1]} quality="low">
               <ambientLight intensity={0.8} />
               <pointLight position={[5, 5, 5]} intensity={100} color="#00ffff" />
-              <InteractiveRobot reaction="celebrating" scale={3.5} position={[0, -1.5, 0]} />
+              <InteractiveRobot reaction="celebrating" scale={4} position={[0, -1.5, 0]} />
               <Stars radius={100} depth={20} count={220} factor={5} saturation={0} fade speed={1} />
             </AdaptiveCanvas>
           </div>
@@ -156,22 +159,34 @@ const Stage1Introduction: React.FC<Stage1IntroductionProps> = ({ planetId }) => 
 
   const currentIntro = introSteps[currentStep];
 
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const { clientX, clientY, currentTarget } = e;
+    const { left, top, width, height } = currentTarget.getBoundingClientRect();
+    const x = (clientX - left) / width - 0.5;
+    const y = (clientY - top) / height - 0.5;
+    setTilt({ x: y * 5, y: -x * 5 }); 
+  };
+
+  const handleMouseLeave = () => {
+    setTilt({ x: 0, y: 0 });
+  };
+
   return (
     <div className={`stage-introduction ${screenEffect}`}>
-      <div className="intro-canvas-container">
+      <div className="canvas-container">
         <AdaptiveCanvas camera={{ position: [0, 1, 5], fov: 50 }} dpr={[1, 1.1]} quality="low">
           <ambientLight intensity={0.6} />
           <pointLight position={[5, 5, 5]} intensity={100} color="#00ff88" />
           <InteractiveRobot
             reaction={robotReaction}
-            scale={3.6}
-            position={[0, -1.5, 0]}
+            scale={5.5}
+            position={[0, -1.8, 0]}
             onClick={handleRobotClick}
           />
-          <Stars radius={100} depth={20} count={220} factor={5} saturation={0} fade speed={1} />
+          <Stars radius={100} depth={20} count={300} factor={6} saturation={0} fade speed={1.5} />
         </AdaptiveCanvas>
 
-        {/* Speech Bubble Overlay */}
+        {}
         {speechMessage && (
           <SpeechBubble
             message={speechMessage}
@@ -184,8 +199,19 @@ const Stage1Introduction: React.FC<Stage1IntroductionProps> = ({ planetId }) => 
 
       <FloatingParticles />
 
-      <div className="stage-content">
-        <div className="intro-card">
+      <div className="stage-content hud-content-layer">
+        <div 
+          className="intro-card hud-3d-card"
+          onMouseMove={handleMouseMove}
+          onMouseLeave={handleMouseLeave}
+          style={{ 
+            transform: `perspective(1200px) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)`,
+            transition: tilt.x === 0 && tilt.y === 0 ? 'transform 0.5s cubic-bezier(0.25, 1, 0.5, 1)' : 'transform 0.1s linear',
+          }}
+        >
+          {}
+          <div className="card-scanline" />
+
           <div className="step-indicators">
             {introSteps.map((_, idx) => (
               <div key={idx} className={`step-dot ${idx === currentStep ? 'active' : ''} ${idx < currentStep ? 'completed' : ''}`} />
@@ -194,17 +220,17 @@ const Stage1Introduction: React.FC<Stage1IntroductionProps> = ({ planetId }) => 
 
           <div className="intro-header">
             <h1>{currentIntro.title}</h1>
-            <div className="speaker-badge">🤖 {currentIntro.speaker}</div>
+            <div className="speaker-badge hud-speaker-badge">🤖 {currentIntro.speaker}</div>
           </div>
 
-          <div className="intro-body">
-            <p>{displayedText}<span className="typewriter-cursor" style={{ opacity: isTyping ? 1 : 0 }}>|</span></p>
+          <div className="intro-body hud-terminal-body">
+            <p className="typewriter-text">{displayedText}<span className="typewriter-cursor" style={{ opacity: isTyping ? 1 : 0 }}>|</span></p>
           </div>
 
           <div className="intro-progress">
-            <div className="progress-bar">
+            <div className="progress-bar hud-progress-bar">
               <div
-                className="progress-fill"
+                className="progress-fill hud-progress-fill"
                 style={{
                   width: `${((currentStep + 1) / introSteps.length) * 100}%`,
                 }}
@@ -216,9 +242,11 @@ const Stage1Introduction: React.FC<Stage1IntroductionProps> = ({ planetId }) => 
           </div>
 
           {showContinue && (
-            <button className="continue-btn" onClick={handleContinue}>
-              {currentStep === introSteps.length - 1 ? 'COMPLETE' : 'CONTINUE'}
-            </button>
+            <div className="continue-wrapper hud-sweep-btn-wrapper">
+              <button className="continue-btn hud-sweep-btn" onClick={handleContinue}>
+                {currentStep === introSteps.length - 1 ? 'INITIATE PROTOCOL 🚀' : 'NEXT SEQUENCE ▸'}
+              </button>
+            </div>
           )}
         </div>
       </div>
@@ -227,3 +255,4 @@ const Stage1Introduction: React.FC<Stage1IntroductionProps> = ({ planetId }) => 
 };
 
 export default Stage1Introduction;
+

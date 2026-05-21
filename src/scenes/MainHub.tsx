@@ -8,7 +8,6 @@ import AdaptiveCanvas from '../components/AdaptiveCanvas';
 
 import { useGameStore } from '../stores/useGameStore';
 
-// Import all the models
 import { SpacemanPink } from '../components/SpacemanPink';
 import { SpacemanWhite } from '../components/SpacemanWhite';
 import { Planet1 } from '../components/Planet1';
@@ -48,8 +47,8 @@ const planetMeta: Record<PlanetId, PlanetMeta> = {
   6: { name: 'Ultimara', type: 'Dark Matter', description: 'The final frontier only the worthy may pass.', missions: 6, difficulty: 'Expert', color: '#ffcc00' },
 };
 
-const CameraFollowPlanet: React.FC<{ 
-  selectedPlanet: PlanetId | null; 
+const CameraFollowPlanet: React.FC<{
+  selectedPlanet: PlanetId | null;
   planetRefs: { [key in PlanetId]?: React.RefObject<THREE.Group | null> }
 }> = ({ selectedPlanet, planetRefs }) => {
   const { camera } = useThree();
@@ -59,11 +58,9 @@ const CameraFollowPlanet: React.FC<{
     if (selectedPlanet !== null && planetRefs[selectedPlanet]?.current) {
       const planetPos = new THREE.Vector3();
       planetRefs[selectedPlanet]!.current!.getWorldPosition(planetPos);
-      
-      // Calculate camera position relative to planet
+
       const cameraPos = planetPos.clone().add(cameraOffsetRef.current);
-      
-      // Smoothly move camera to follow planet
+
       camera.position.lerp(cameraPos, 0.1);
       camera.lookAt(planetPos);
     }
@@ -104,12 +101,13 @@ const PlanetWrapper: React.FC<{
   meta: PlanetMeta;
   orbitFrozen: boolean;
   activePlayers: number;
+  isNext: boolean;
   occluderRefs: React.RefObject<THREE.Object3D>[];
   onSelect: (id: PlanetId) => void;
   onHover: (id: PlanetId | null) => void;
   onRefReady?: (ref: React.RefObject<THREE.Group | null>) => void;
   onMeshRefReady?: (ref: React.RefObject<THREE.Group | null>) => void;
-}> = ({ planet, radius, angle, scale, planetId, isVisited, isSelected, showNameLabel, meta, orbitFrozen, activePlayers, occluderRefs, onSelect, onHover, onRefReady, onMeshRefReady }) => {
+}> = ({ planet, radius, angle, scale, planetId, isVisited, isSelected, showNameLabel, meta, orbitFrozen, activePlayers, isNext, occluderRefs, onSelect, onHover, onRefReady, onMeshRefReady }) => {
   const ref = useRef<THREE.Group>(null);
   const groupRef = useRef<THREE.Group>(null);
   const planetMeshRef = useRef<THREE.Group>(null);
@@ -117,10 +115,9 @@ const PlanetWrapper: React.FC<{
   const [isHovered, setIsHovered] = useState(false);
   const [labelPosition, setLabelPosition] = useState<[number, number, number]>([0, -scale * 1.12, 0]);
   const hoverTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  // Cumulative orbit angle — only advances when NOT frozen, so resume is seamless
+  
   const orbitAngleRef = useRef<number>(angle);
 
-  // Cleanup timeout on unmount
   useEffect(() => {
     return () => {
       if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
@@ -139,8 +136,6 @@ const PlanetWrapper: React.FC<{
     }
   }, [onMeshRefReady]);
 
-  // Anchor label using the planet model bounds so it stays below each planet,
-  // even when camera moves to a selected target.
   useEffect(() => {
     let rafId = 0;
     const updateLabelPosition = () => {
@@ -164,10 +159,9 @@ const PlanetWrapper: React.FC<{
     return () => window.cancelAnimationFrame(rafId);
   }, [planetId, scale]);
 
-  // Stable hover handlers to prevepnt jitter
   const handlePointerOver = useCallback((e: any) => {
     e.stopPropagation();
-    // Cancel any pending pointer-out
+    
     if (hoverTimeoutRef.current) {
       clearTimeout(hoverTimeoutRef.current);
       hoverTimeoutRef.current = null;
@@ -184,7 +178,7 @@ const PlanetWrapper: React.FC<{
 
   const handlePointerOut = useCallback((e: any) => {
     e.stopPropagation();
-    // Delay pointer-out to prevent edge jitter
+    
     if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
     hoverTimeoutRef.current = setTimeout(() => {
       setIsHovered(false);
@@ -201,18 +195,16 @@ const PlanetWrapper: React.FC<{
     if (!ref.current) return;
     const t = state.clock.getElapsedTime();
 
-    // Orbit motion: only advance the angle when NOT frozen
     if (!(orbitFrozen || isSelected)) {
       orbitAngleRef.current += delta * 0.1;
     }
     ref.current.position.x = Math.cos(orbitAngleRef.current) * radius;
     ref.current.position.z = Math.sin(orbitAngleRef.current) * radius;
 
-    // Self-rotation always
     if (planetMeshRef.current) {
       planetMeshRef.current.rotation.y += 0.005;
     }
-    // Glow ring pulse
+    
     if (glowRef.current && isHovered) {
       const pulse = 1 + Math.sin(t * 4) * 0.08;
       glowRef.current.scale.setScalar(pulse);
@@ -224,10 +216,9 @@ const PlanetWrapper: React.FC<{
   };
 
   const ringRadius = Math.max(scale * 0.7, 0.8);
-  // Hit area sphere radius: slightly bigger than planet for stable hover
+  
   const hitRadius = scale * 1.535;
 
-  // Only show tooltip when hovered AND not currently selected (avoid double info)
   const showTooltip = isHovered && !isSelected;
   const isLabelActive = isHovered || isSelected;
 
@@ -237,7 +228,7 @@ const PlanetWrapper: React.FC<{
       onClick={handleClick}
     >
       <group ref={ref}>
-        {/* Invisible hit-area sphere - stable hover detection */}
+        {}
         <mesh
           onPointerOver={handlePointerOver}
           onPointerOut={handlePointerOut}
@@ -247,12 +238,12 @@ const PlanetWrapper: React.FC<{
           <meshBasicMaterial transparent opacity={0} />
         </mesh>
 
-        {/* Planet with self-rotation */}
+        {}
         <group ref={planetMeshRef} scale={scale}>
           {planet}
         </group>
 
-        {/* Glow Ring - Inner (always rendered, opacity controlled) */}
+        {}
         <mesh ref={glowRef} rotation={[Math.PI / 2, 0, 0]} visible={showTooltip}>
           <torusGeometry args={[ringRadius, 0.04, 16, 100]} />
           <meshStandardMaterial
@@ -264,7 +255,7 @@ const PlanetWrapper: React.FC<{
           />
         </mesh>
 
-        {/* Glow Ring - Outer Halo (always rendered) */}
+        {}
         <mesh rotation={[Math.PI / 2, 0, 0]} visible={showTooltip}>
           <torusGeometry args={[ringRadius, 0.15, 16, 100]} />
           <meshStandardMaterial
@@ -276,12 +267,12 @@ const PlanetWrapper: React.FC<{
           />
         </mesh>
 
-        {/* Hover Point Light */}
+        {}
         {showTooltip && (
           <pointLight color={meta.color} intensity={5} distance={scale * 4} />
         )}
 
-        {/* Planet Label - visible only when no planet is selected */}
+        {}
         {showNameLabel && (
           <Html
             position={labelPosition}
@@ -296,18 +287,44 @@ const PlanetWrapper: React.FC<{
           </Html>
         )}
 
-        {/* Hologram Tooltip - above the planet, scales with zoom */}
+        {}
+        {isNext && showNameLabel && !showTooltip && (
+          <Html
+            position={[0, scale * 2.5, 0]}
+            center
+            distanceFactor={6}
+            zIndexRange={[25, 0]}
+            occlude={occluderRefs.length > 0 ? occluderRefs : undefined}
+            style={{ pointerEvents: 'none' }}
+          >
+            <div className="planet-start-here-indicator" style={{ '--accent': meta.color } as React.CSSProperties}>
+              <div className="indicator-text">YOUR HERE</div>
+              <div className="indicator-arrows">
+                <span>▼</span><span>▼</span><span>▼</span>
+              </div>
+            </div>
+          </Html>
+        )}
+
+        {}
         {showTooltip && (
-          <Html position={[0, scale * 1.8, 0]} center distanceFactor={4} zIndexRange={[10, 0]} style={{ pointerEvents: 'none' }}>
+          <Html
+            position={[0, scale * 1.8, 0]}
+            center
+            distanceFactor={4}
+            zIndexRange={[30, 0]}
+            occlude={occluderRefs.length > 0 ? occluderRefs : undefined}
+            style={{ pointerEvents: 'none' }}
+          >
             <div className="planet-tooltip-hologram" style={{ '--accent': meta.color } as React.CSSProperties}>
               <div className="hologram-card" style={{ borderColor: meta.color, boxShadow: `0 0 20px ${meta.color}30, inset 0 0 30px ${meta.color}08` }}>
-                {/* Corner accents */}
+                {}
                 <div className="tooltip-corner tl" style={{ borderColor: meta.color }} />
                 <div className="tooltip-corner tr" style={{ borderColor: meta.color }} />
                 <div className="tooltip-corner bl" style={{ borderColor: meta.color }} />
                 <div className="tooltip-corner br" style={{ borderColor: meta.color }} />
 
-                {/* Active Players Badge */}
+                {}
                 {activePlayers > 0 && (
                   <div className="hologram-players-badge">
                     <div className="hologram-players-avatar">
@@ -333,7 +350,7 @@ const PlanetWrapper: React.FC<{
                   {isVisited ? '✓ COMPLETED' : 'CLICK TO BEGIN MISSION'}
                 </div>
               </div>
-              {/* Arrow pointing down to planet */}
+              {}
               <div className="hologram-arrow" style={{ borderTopColor: meta.color }} />
             </div>
           </Html>
@@ -343,12 +360,11 @@ const PlanetWrapper: React.FC<{
   );
 };
 
-// Rotating character model inside the avatar
 const AvatarCharacterModel: React.FC<{ CharacterModel: React.FC<any> }> = ({ CharacterModel }) => {
   const groupRef = useRef<THREE.Group>(null);
   useFrame((state) => {
     if (groupRef.current) {
-      // Gentle floating + rotation animation
+      
       groupRef.current.rotation.y = state.clock.getElapsedTime() * 0.5;
       groupRef.current.position.y = Math.sin(state.clock.getElapsedTime() * 1.5) * 0.08;
     }
@@ -376,6 +392,8 @@ const MainHub: React.FC = () => {
   const bossMode = useGameStore((state) => state.bossMode);
   const setBossMode = useGameStore((state) => state.setBossMode);
   const resetBossHP = useGameStore((state) => state.resetBossHP);
+  const p2Name = useGameStore((state) => state.p2Name);
+  const setP2Name = useGameStore((state) => state.setP2Name);
   const getPlanetLeaderboard = useGameStore((state) => state.getPlanetLeaderboard);
   const addPlanetLeaderboardEntry = useGameStore((state) => state.addPlanetLeaderboardEntry);
   const planetLeaderboards = useGameStore((state) => state.planetLeaderboards);
@@ -386,9 +404,10 @@ const MainHub: React.FC = () => {
   const [hoveredPlanet, setHoveredPlanet] = useState<PlanetId | null>(null);
   const [showPlanetUI, setShowPlanetUI] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
-  const [showLevelInfo, setShowLevelInfo] = useState(true); // Toggle for level-info box
-  const [hoveredLevelInfo, setHoveredLevelInfo] = useState(false); // Hover effect
   const [avatarHovered, setAvatarHovered] = useState(false);
+  const [hoveredRoadmapNode, setHoveredRoadmapNode] = useState<PlanetId | null>(null);
+  const [showP2Modal, setShowP2Modal] = useState(false);
+  const [p2FormName, setP2FormName] = useState(p2Name || '');
 
   // Leaderboard toggle per planet selection
   const [showLeaderboard, setShowLeaderboard] = useState(false);
@@ -403,7 +422,7 @@ const MainHub: React.FC = () => {
     ];
     const entries: Array<{ playerName: string; planetId: PlanetId; score: number; completionTime: number; timestamp: number }> = [];
     for (let pid = 1; pid <= 6; pid++) {
-      const count = 3; // 3 dummy entries per planet
+      const count = 3; 
       for (let i = 0; i < count; i++) {
         const name = sampleNames[Math.floor(Math.random() * sampleNames.length)];
         const baseScore = (7 - pid) * 150 + Math.floor(Math.random() * 300);
@@ -446,26 +465,24 @@ const MainHub: React.FC = () => {
     }, 8000 + Math.random() * 7000);
     return () => clearInterval(interval);
   }, []);
-  
+
   // Planet refs for camera following
   const planetRefs = useRef<{ [key in PlanetId]?: React.RefObject<THREE.Group | null> }>({}).current;
   const planetMeshRefs = useRef<{ [key in PlanetId]?: React.RefObject<THREE.Group | null> }>({}).current;
   const [, setPlanetMeshRefsVersion] = useState(0);
-  
+
   // Intro States: 'story' -> 'character' -> 'input' -> 'hub'
-  // Fix: Check if playerData exists to skip intro loop
+  
   const [hubPhase, setHubPhase] = useState<'story' | 'character' | 'input' | 'hub'>(
     introCompleted || (playerData.name && playerData.major) ? 'hub' : 'story'
   );
 
-  // Ensure introCompleted is true if we have player data
   useEffect(() => {
     if (playerData.name && playerData.major && !introCompleted) {
       setIntroCompleted(true);
     }
   }, [playerData, introCompleted, setIntroCompleted]);
 
-  // Form State
   const [formData, setFormData] = useState({
     name: playerData.name || '',
     phone: playerData.phone || '',
@@ -511,20 +528,19 @@ const MainHub: React.FC = () => {
     setShowLeaderboard(false);
   };
 
-  // Get stage completion status
   const getStageStatus = () => {
     const completedCount = visitedPlanets.size;
     const totalStages = 6;
     const remainingStages = totalStages - completedCount;
-    
-    const stageList: Array<{id: PlanetId; completed: boolean}> = [];
+
+    const stageList: Array<{ id: PlanetId; completed: boolean }> = [];
     for (let i = 1; i <= 6; i++) {
       stageList.push({
         id: i as PlanetId,
         completed: visitedPlanets.has(i as PlanetId)
       });
     }
-    
+
     return {
       completedCount,
       totalStages,
@@ -547,15 +563,13 @@ const MainHub: React.FC = () => {
     }
   };
 
-  // --- INTRO RENDERERS ---
-
   if (hubPhase === 'story') {
     return (
       <div className="intro-story-container">
         <div className="story-content">
           <h1 className="story-warning-title">⚠️ WARNING: COLLISION DETECTED ⚠️</h1>
           <p className="story-text">
-            Your rocket has collided with an asteroid field! <br/>
+            Your rocket has collided with an asteroid field! <br />
             Emergency landing initiated on Unknown Planet Sector 7...
           </p>
           <div className="story-actions">
@@ -571,7 +585,7 @@ const MainHub: React.FC = () => {
   if (hubPhase === 'character') {
     return (
       <div className="mh-charselect-container">
-        {/* Background 3D Scene */}
+        {}
         <AdaptiveCanvas
           className="mh-charselect-canvas"
           dpr={[1, 1.25]}
@@ -583,20 +597,20 @@ const MainHub: React.FC = () => {
             <pointLight position={[-4, 3, 2]} intensity={10} color="#ff69b4" distance={10} />
             <pointLight position={[4, 3, 2]} intensity={10} color="#6ce7ff" distance={10} />
             <Stars radius={200} depth={60} count={1400} factor={6} saturation={0.8} fade speed={0.5} />
-            
-            {/* Pink Character Preview */}
+
+            {}
             <group position={[-2.5, -0.5, 0]}>
               <AvatarCharacterModel CharacterModel={SpacemanPink} />
             </group>
-            
-            {/* White Character Preview */}
+
+            {}
             <group position={[2.5, -0.5, 0]}>
               <AvatarCharacterModel CharacterModel={SpacemanWhite} />
             </group>
           </Suspense>
         </AdaptiveCanvas>
 
-        {/* Overlay UI */}
+        {}
         <div className="mh-charselect-overlay">
           <div className="mh-charselect-title">
             <h1>SELECT YOUR PILOT</h1>
@@ -655,37 +669,37 @@ const MainHub: React.FC = () => {
           <form onSubmit={handleFormSubmit}>
             <div className="form-group">
               <label>PILOT NAME</label>
-              <input 
-                type="text" 
-                value={formData.name} 
-                onChange={(e) => setFormData({...formData, name: e.target.value})}
+              <input
+                type="text"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 placeholder="Enter your name"
                 required
               />
             </div>
             <div className="form-group">
               <label>PHONE NUMBER</label>
-              <input 
-                type="tel" 
-                value={formData.phone} 
-                onChange={(e) => setFormData({...formData, phone: e.target.value})}
+              <input
+                type="tel"
+                value={formData.phone}
+                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                 placeholder="08..."
               />
             </div>
             <div className="form-group">
               <label>SCHOOL / ACADEMY</label>
-              <input 
-                type="text" 
-                value={formData.school} 
-                onChange={(e) => setFormData({...formData, school: e.target.value})}
+              <input
+                type="text"
+                value={formData.school}
+                onChange={(e) => setFormData({ ...formData, school: e.target.value })}
                 placeholder="High School Name"
               />
             </div>
             <div className="form-group form-group-last">
               <label>SPECIALIZATION (MAJOR)</label>
-              <select 
-                value={formData.major} 
-                onChange={(e) => setFormData({...formData, major: e.target.value})}
+              <select
+                value={formData.major}
+                onChange={(e) => setFormData({ ...formData, major: e.target.value })}
                 required
               >
                 <option value="">Select Major...</option>
@@ -708,40 +722,46 @@ const MainHub: React.FC = () => {
           <pointLight position={[0, 10, 0]} intensity={1000} color="#ffdfb3" />
           <Stars radius={300} depth={50} count={1800} factor={10} saturation={0} fade speed={1} />
 
-          {/* Planets Orbiting */}
-          {planetData.map((data, index) => (
-            <PlanetWrapper
-              key={index}
-              planet={data.component}
-              radius={data.radius}
-              angle={data.initialAngle}
-              scale={data.scale}
-              planetId={data.id}
-              isVisited={visitedPlanets.has(data.id)}
-              isSelected={selectedPlanet === data.id}
-              showNameLabel={selectedPlanet === null}
-              meta={planetMeta[data.id]}
-              orbitFrozen={hoveredPlanet !== null || selectedPlanet !== null}
-              activePlayers={activePlayers[data.id]}
-              occluderRefs={PLANET_IDS
-                .filter((id) => id !== data.id)
-                .map((id) => planetMeshRefs[id])
-                .filter((ref): ref is React.RefObject<THREE.Group | null> => !!ref)
-                .map((ref) => ref as unknown as React.RefObject<THREE.Object3D>)}
-              onSelect={handlePlanetSelect}
-              onHover={setHoveredPlanet}
-              onRefReady={(ref) => {
-                planetRefs[data.id] = ref;
-              }}
-              onMeshRefReady={(ref) => {
-                const currentRef = planetMeshRefs[data.id];
-                if (currentRef !== ref) {
-                  planetMeshRefs[data.id] = ref;
-                  setPlanetMeshRefsVersion((version) => version + 1);
-                }
-              }}
-            />
-          ))}
+          {}
+          {planetData.map((data, index) => {
+            const firstUncompleted = stageStatus.stageList.find(s => !s.completed);
+            const isNext = firstUncompleted?.id === data.id;
+
+            return (
+              <PlanetWrapper
+                key={index}
+                planet={data.component}
+                radius={data.radius}
+                angle={data.initialAngle}
+                scale={data.scale}
+                planetId={data.id}
+                isVisited={visitedPlanets.has(data.id)}
+                isSelected={selectedPlanet === data.id}
+                showNameLabel={selectedPlanet === null}
+                meta={planetMeta[data.id]}
+                orbitFrozen={hoveredPlanet !== null || selectedPlanet !== null}
+                activePlayers={activePlayers[data.id]}
+                isNext={isNext}
+                occluderRefs={PLANET_IDS
+                  .filter((id) => id !== data.id)
+                  .map((id) => planetMeshRefs[id])
+                  .filter((ref): ref is React.RefObject<THREE.Group | null> => !!ref)
+                  .map((ref) => ref as unknown as React.RefObject<THREE.Object3D>)}
+                onSelect={handlePlanetSelect}
+                onHover={setHoveredPlanet}
+                onRefReady={(ref) => {
+                  planetRefs[data.id] = ref;
+                }}
+                onMeshRefReady={(ref) => {
+                  const currentRef = planetMeshRefs[data.id];
+                  if (currentRef !== ref) {
+                    planetMeshRefs[data.id] = ref;
+                    setPlanetMeshRefsVersion((version) => version + 1);
+                  }
+                }}
+              />
+            );
+          })}
 
           <CameraControl selectedPlanet={selectedPlanet} />
           <CameraFollowPlanet selectedPlanet={selectedPlanet} planetRefs={planetRefs} />
@@ -749,10 +769,10 @@ const MainHub: React.FC = () => {
         <OrbitControls />
       </AdaptiveCanvas>
 
-      {/* Planet Selection UI */}
+      {}
       {showPlanetUI && selectedPlanet && (
         <div className="planet-selection-ui" style={{ borderColor: planetMeta[selectedPlanet].color, boxShadow: `0 0 30px ${planetMeta[selectedPlanet].color}50, inset 0 0 20px ${planetMeta[selectedPlanet].color}15` }}>
-          {/* Boss Mode Toggle — only for Planet 6 */}
+          {}
           {selectedPlanet === 6 && (
             <button
               className={`boss-mode-toggle ${bossMode ? 'active' : ''}`}
@@ -767,7 +787,7 @@ const MainHub: React.FC = () => {
             </button>
           )}
           <div className="planet-info">
-            {/* Completed badge with track record */}
+            {}
             {selectedPlanet && visitedPlanets.has(selectedPlanet) && (() => {
               const score = getPlanetScore(selectedPlanet, selectedPlanet);
               const totalScore = getTotalScore();
@@ -795,7 +815,7 @@ const MainHub: React.FC = () => {
                 </div>
               );
             })()}
-            {/* Active players indicator */}
+            {}
             {activePlayers[selectedPlanet] > 0 && (
               <div className="planet-ui-players">
                 <span className="planet-ui-players-icon">👾</span>
@@ -813,26 +833,25 @@ const MainHub: React.FC = () => {
 
             {/* Per-Planet Leaderboard (hidden for planet 1 - intro stage) */}
             {selectedPlanet !== 1 && (
-            <button
-              className={`planet-lb-toggle ${showLeaderboard ? 'active' : ''}`}
-              style={{ borderColor: `${planetMeta[selectedPlanet].color}66`, color: planetMeta[selectedPlanet].color }}
-              onClick={() => setShowLeaderboard(!showLeaderboard)}
-            >
-              🏆 {showLeaderboard ? 'HIDE LEADERBOARD' : 'VIEW LEADERBOARD'}
-            </button>
+              <button
+                className={`planet-lb-toggle ${showLeaderboard ? 'active' : ''}`}
+                style={{ borderColor: `${planetMeta[selectedPlanet].color}66`, color: planetMeta[selectedPlanet].color }}
+                onClick={() => setShowLeaderboard(!showLeaderboard)}
+              >
+                🏆 {showLeaderboard ? 'HIDE LEADERBOARD' : 'VIEW LEADERBOARD'}
+              </button>
             )}
 
             {selectedPlanet !== 1 && showLeaderboard && (() => {
               const fullLb = getPlanetLeaderboard(selectedPlanet);
               const top10 = fullLb.slice(0, 10);
               const currentPlayerName = playerData.name || 'CADET';
-              // Find current player's position in full leaderboard
+              
               const playerIdx = fullLb.findIndex(e => e.playerName === currentPlayerName);
               const playerInTop10 = playerIdx >= 0 && playerIdx < 10;
               const playerEntry = playerIdx >= 0 ? fullLb[playerIdx] : null;
               const playerRank = playerIdx >= 0 ? playerIdx + 1 : null;
 
-              // Also check if player has a score for this planet (from planetScores)
               const playerPlanetScore = getPlanetScore(selectedPlanet, selectedPlanet);
               const showPlayerRow = !playerInTop10 && (playerEntry || playerPlanetScore > 0);
 
@@ -891,7 +910,14 @@ const MainHub: React.FC = () => {
             })()}
 
             <div className="button-group">
-              <button className="depart-btn" style={{ borderColor: planetMeta[selectedPlanet].color, color: planetMeta[selectedPlanet].color, boxShadow: `0 0 10px ${planetMeta[selectedPlanet].color}30` }} onClick={handleDepart}>
+              <button className="depart-btn" style={{ borderColor: planetMeta[selectedPlanet].color, color: planetMeta[selectedPlanet].color, boxShadow: `0 0 10px ${planetMeta[selectedPlanet].color}30` }} onClick={() => {
+                if (selectedPlanet === 6 && bossMode) {
+                  setP2FormName(p2Name || '');
+                  setShowP2Modal(true);
+                } else {
+                  handleDepart();
+                }
+              }}>
                 {visitedPlanets.has(selectedPlanet) ? 'REPLAY' : 'DEPART'}
               </button>
               <button className="back-btn" onClick={handleBack}>
@@ -902,31 +928,101 @@ const MainHub: React.FC = () => {
         </div>
       )}
 
-      {/* Settings Modal */}
+      {}
+      {showP2Modal && (
+        <div className="p2-modal-overlay" onClick={() => setShowP2Modal(false)}>
+          <div className="p2-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="p2-modal-header">
+              <div className="p2-modal-icon">🎮</div>
+              <h3 className="p2-modal-title">CO-OP MODE</h3>
+              <p className="p2-modal-subtitle">Enter Player 2 Identity</p>
+            </div>
+
+            <div className="p2-modal-body">
+              <div className="p2-modal-player p2-modal-p1">
+                <div className="p2-player-badge" style={{ borderColor: '#00ffff' }}>
+                  <span className="p2-player-id" style={{ color: '#00ffff' }}>P1</span>
+                  <span className="p2-player-role">Mouse Pilot</span>
+                </div>
+                <div className="p2-player-name" style={{ color: '#00ffff' }}>{(playerData.name || 'CADET').toUpperCase()}</div>
+              </div>
+
+              <div className="p2-modal-vs">VS</div>
+
+              <div className="p2-modal-player p2-modal-p2">
+                <div className="p2-player-badge" style={{ borderColor: '#ffb703' }}>
+                  <span className="p2-player-id" style={{ color: '#ffb703' }}>P2</span>
+                  <span className="p2-player-role">Numpad Runner</span>
+                </div>
+                <input
+                  className="p2-name-input"
+                  type="text"
+                  placeholder="Enter P2 Name..."
+                  value={p2FormName}
+                  onChange={(e) => setP2FormName(e.target.value)}
+                  maxLength={20}
+                  autoFocus
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && p2FormName.trim()) {
+                      setP2Name(p2FormName.trim());
+                      setShowP2Modal(false);
+                      handleDepart();
+                    }
+                  }}
+                />
+              </div>
+            </div>
+
+            <div className="p2-modal-actions">
+              <button
+                className="p2-start-btn"
+                disabled={!p2FormName.trim()}
+                onClick={() => {
+                  if (p2FormName.trim()) {
+                    setP2Name(p2FormName.trim());
+                    setShowP2Modal(false);
+                    handleDepart();
+                  }
+                }}
+              >
+                🚀 START RAID
+              </button>
+              <button className="p2-skip-btn" onClick={() => {
+                setShowP2Modal(false);
+                handleDepart();
+              }}>
+                Skip → Solo Mode
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {}
       {showSettings && (
         <div className="settings-modal-overlay">
           <div className="settings-modal">
             <h2>SYSTEM SETTINGS</h2>
             <div className="settings-group">
               <label>MUSIC VOLUME: {Math.round(musicVolume * 100)}%</label>
-              <input 
-                type="range" 
-                min="0" 
-                max="1" 
-                step="0.1" 
-                value={musicVolume} 
-                onChange={(e) => setMusicVolume(parseFloat(e.target.value))} 
+              <input
+                type="range"
+                min="0"
+                max="1"
+                step="0.1"
+                value={musicVolume}
+                onChange={(e) => setMusicVolume(parseFloat(e.target.value))}
               />
             </div>
             <div className="settings-group">
               <label>SFX VOLUME: {Math.round(sfxVolume * 100)}%</label>
-              <input 
-                type="range" 
-                min="0" 
-                max="1" 
-                step="0.1" 
-                value={sfxVolume} 
-                onChange={(e) => setSfxVolume(parseFloat(e.target.value))} 
+              <input
+                type="range"
+                min="0"
+                max="1"
+                step="0.1"
+                value={sfxVolume}
+                onChange={(e) => setSfxVolume(parseFloat(e.target.value))}
               />
             </div>
             <button className="close-settings-btn" onClick={() => setShowSettings(false)}>
@@ -936,7 +1032,7 @@ const MainHub: React.FC = () => {
         </div>
       )}
 
-      {/* Welcome Message */}
+      {}
       <div className="welcome-message">
         <h1>WELCOME, {playerData.name || 'CADET'}</h1>
         <p>CLICK A PLANET TO BEGIN YOUR MISSION</p>
@@ -950,10 +1046,10 @@ const MainHub: React.FC = () => {
         </div>
       </div>
 
-      {/* Top-Right Area: Avatar + Progress Panel */}
+      {}
       <div className="top-right-area">
-        {/* Character Avatar - Circular Profile */}
-        <div 
+        {}
+        <div
           className={`character-avatar-wrapper ${avatarHovered ? 'hovered' : ''}`}
           onMouseEnter={() => setAvatarHovered(true)}
           onMouseLeave={() => setAvatarHovered(false)}
@@ -979,67 +1075,142 @@ const MainHub: React.FC = () => {
           <div className={`avatar-pulse-ring ${character}`} />
         </div>
 
-        {/* Level Indicator - Compact Progress Bar (stays in top-right) */}
-        {!showLevelInfo && (
-          <div 
-            className={`level-info ${hoveredLevelInfo ? 'hovered' : ''}`}
-            onMouseEnter={() => setHoveredLevelInfo(true)}
-            onMouseLeave={() => setHoveredLevelInfo(false)}
-          >
-            <div className="level-info-compact" onClick={() => setShowLevelInfo(true)}>
-              <div className="progress-title">Progress Mission</div>
-              <div className="progress-bar-track">
-                <div className="progress-bar-fill" style={{ width: `${stageStatus.completionPercentage}%` }} />
-              </div>
-              <div className="progress-text">
-                {stageStatus.completedCount} of {stageStatus.totalStages} COMPLETED ({stageStatus.completionPercentage}%)
-              </div>
-              {hoveredLevelInfo && (
-                <div className="progress-hint">Click to show pending missions</div>
-              )}
-            </div>
+      </div> {}
+
+      {}
+      {!showPlanetUI && (
+        <div className="level-roadmap-bar">
+          {}
+          <div className="roadmap-connector-track">
+            <div
+              className="roadmap-connector-fill"
+              style={{ width: `${Math.max(0, ((stageStatus.completedCount) / (stageStatus.totalStages - 1)) * 100)}%` }}
+            />
           </div>
-        )}
-      </div> {/* End top-right-area */}
 
-      {/* Expanded Missions Panel - fullscreen overlay on mobile */}
-      {showLevelInfo && (
-        <div className="missions-overlay" onClick={() => setShowLevelInfo(false)}>
-          <div className="missions-panel" onClick={(e) => e.stopPropagation()}>
-            <div className="expanded-header">
-              <h3>Pending Missions</h3>
-              <button className="back-missions-btn" onClick={() => setShowLevelInfo(false)}>✕ Close</button>
-            </div>
-            
-            {/* Progress summary */}
-            <div className="missions-progress-summary">
-              <div className="progress-bar-track">
-                <div className="progress-bar-fill" style={{ width: `${stageStatus.completionPercentage}%` }} />
-              </div>
-              <div className="progress-text">
-                {stageStatus.completedCount} of {stageStatus.totalStages} COMPLETED ({stageStatus.completionPercentage}%)
-              </div>
-            </div>
+          <div className="roadmap-nodes">
+            {stageStatus.stageList.map((stage, idx) => {
+              const meta = planetMeta[stage.id];
+              const desc = stageDescriptions[stage.id];
+              
+              const firstUncompleted = stageStatus.stageList.find(s => !s.completed);
+              const isNext = firstUncompleted?.id === stage.id;
+              const isCompleted = stage.completed;
+              const diffIcons: Record<string, string> = {
+                'Easy': '★',
+                'Medium': '★★',
+                'Hard': '★★★',
+                'Expert': '★★★★',
+              };
 
-            <div className="stages-list">
-              {stageStatus.stageList
-                .filter(stage => !stage.completed)
-                .map((stage) => (
-                  <div key={stage.id} className="stage-item" onClick={() => navigate(`/stage/${stage.id}`)}>
-                    <div className="stage-info">
-                      <div className="stage-title">LEVEL {stage.id} - {stageDescriptions[stage.id].displayTitle}</div>
-                      <div className="stage-desc">{stageDescriptions[stage.id].description}</div>
-                    </div>
-                    <button className="start-mission-btn" onClick={(e) => { e.stopPropagation(); navigate(`/stage/${stage.id}`); }}>START →</button>
+              return (
+                <div
+                  key={stage.id}
+                  className={`roadmap-node ${isCompleted ? 'completed' : ''} ${isNext ? 'next-level' : ''} ${!isCompleted && !isNext ? 'locked' : ''} ${hoveredRoadmapNode === stage.id ? 'hovered' : ''}`}
+                  onClick={() => handlePlanetSelect(stage.id)}
+                  onMouseEnter={() => setHoveredRoadmapNode(stage.id)}
+                  onMouseLeave={() => setHoveredRoadmapNode(null)}
+                  style={{ '--node-color': meta.color, '--node-idx': idx } as React.CSSProperties}
+                >
+                  {}
+                  {isNext && (
+                    <>
+                      <div className="roadmap-beacon" style={{ borderColor: meta.color }} />
+                      <div className="roadmap-beacon roadmap-beacon-2" style={{ borderColor: meta.color }} />
+                    </>
+                  )}
+
+                  {}
+                  {isCompleted && (
+                    <div className="roadmap-check-overlay">✓</div>
+                  )}
+
+                  {}
+                  <div className="roadmap-hover-ring" style={{ borderColor: meta.color }} />
+
+                  {}
+                  <div
+                    className="roadmap-node-shape"
+                    style={{
+                      borderColor: isCompleted ? 'rgba(0,255,136,0.6)' : isNext ? meta.color : 'rgba(100,120,140,0.4)',
+                      background: isCompleted
+                        ? 'rgba(0,255,136,0.1)'
+                        : isNext
+                          ? `linear-gradient(135deg, ${meta.color}22, ${meta.color}08)`
+                          : 'rgba(10,20,35,0.7)',
+                      boxShadow: isCompleted
+                        ? '0 0 15px rgba(0,255,136,0.3), inset 0 0 10px rgba(0,255,136,0.05)'
+                        : isNext
+                          ? `0 0 20px ${meta.color}40, 0 0 40px ${meta.color}15`
+                          : 'none'
+                    }}
+                  >
+                    <span className="roadmap-node-number" style={{
+                      color: isCompleted ? '#00ff88' : isNext ? meta.color : '#4a5a6a',
+                      textShadow: isCompleted ? '0 0 8px rgba(0,255,136,0.5)' : isNext ? `0 0 10px ${meta.color}80` : 'none'
+                    }}>
+                      {stage.id}
+                    </span>
                   </div>
-                ))}
-            </div>
-            {stageStatus.remainingStages === 0 && (
-              <div className="completion-message">🎉 All missions completed! Check the leaderboard! 🎉</div>
-            )}
+
+                  {}
+                  <div className="roadmap-node-label">
+                    <span className="roadmap-planet-name" style={{
+                      color: isCompleted ? '#5a8a6e' : isNext ? meta.color : '#3a4a5a'
+                    }}>
+                      {meta.name}
+                    </span>
+                    <span className="roadmap-stage-type" style={{
+                      color: isCompleted ? '#4a6a5e' : isNext ? '#8ab8cc' : '#2a3a4a'
+                    }}>
+                      {desc.displayTitle}
+                    </span>
+                    <span className="roadmap-diff" style={{
+                      color: isCompleted ? '#3a6a4e' : isNext ? meta.color : '#2a3a4a'
+                    }}>
+                      {diffIcons[meta.difficulty] || '★'}
+                    </span>
+                  </div>
+
+                  {}
+                  <div className="roadmap-hover-tooltip" style={{ '--accent': meta.color } as React.CSSProperties}>
+                    <div className="roadmap-tooltip-arrow" />
+                    <div className="roadmap-tooltip-header" style={{ borderBottomColor: `${meta.color}30` }}>
+                      <span className="roadmap-tooltip-stage">LEVEL {stage.id}</span>
+                      <span className="roadmap-tooltip-status" style={{
+                        color: isCompleted ? '#00ff88' : isNext ? meta.color : '#6a7a8a',
+                        background: isCompleted ? 'rgba(0,255,136,0.1)' : isNext ? `${meta.color}15` : 'rgba(100,120,140,0.1)',
+                        borderColor: isCompleted ? 'rgba(0,255,136,0.3)' : isNext ? `${meta.color}40` : 'rgba(100,120,140,0.2)',
+                      }}>
+                        {isCompleted ? '✓ CLEARED' : isNext ? '▶ NEXT' : '⏳ PENDING'}
+                      </span>
+                    </div>
+                    <div className="roadmap-tooltip-name" style={{ color: meta.color }}>{meta.name}</div>
+                    <div className="roadmap-tooltip-type">{meta.type}</div>
+                    <div className="roadmap-tooltip-diff">
+                      <span>Difficulty:</span>
+                      <span style={{ color: meta.color }}>{meta.difficulty} {diffIcons[meta.difficulty] || '★'}</span>
+                    </div>
+                    {isCompleted && getPlanetScore(stage.id, stage.id) > 0 && (
+                      <div className="roadmap-tooltip-score">
+                        <span>Score:</span>
+                        <span style={{ color: '#00ff88' }}>{getPlanetScore(stage.id, stage.id).toLocaleString()}</span>
+                      </div>
+                    )}
+                    <div className="roadmap-tooltip-action" style={{
+                      color: isCompleted ? '#00ff88' : isNext ? meta.color : '#4a5a6a',
+                      borderColor: isCompleted ? 'rgba(0,255,136,0.3)' : isNext ? `${meta.color}40` : 'rgba(100,120,140,0.15)',
+                    }}>
+                      {isCompleted ? '↻ REPLAY MISSION' : isNext ? '→ START MISSION' : 'COMPLETE PREVIOUS'}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       )}
+
     </div>
   );
 };

@@ -1,10 +1,4 @@
-/* ═══════════════════════════════════════════════════════════
-   GameStage.css — Fully Responsive
-   Targets: Android, iPhone SE→Pro Max, iPad, Tablets, Desktop
-   Breakpoints: 1200 / 1024 / 768 / 640 / 480 / 380 / 360
-   ═══════════════════════════════════════════════════════════ */
 
-/* ─── CSS Custom Properties ─── */
 :root {
   --gs-pad-x: clamp(1rem, 3vw, 2.5rem);
   --gs-pad-y: clamp(1.5rem, 4vh, 3.75rem);
@@ -12,7 +6,6 @@
   --gs-gap: clamp(1rem, 2.5vw, 2.5rem);
 }
 
-/* ─── Container ─── */
 .game-stage-container {
   width: 100vw;
   height: 100vh;
@@ -21,7 +14,6 @@
   overflow: hidden;
 }
 
-/* ─── Error State ─── */
 .game-stage-error {
   display: flex;
   flex-direction: column;
@@ -67,7 +59,6 @@
   transform: scale(0.97);
 }
 
-/* ─── Loading ─── */
 .loading {
   display: flex;
   align-items: center;
@@ -87,7 +78,6 @@
   50% { opacity: 0.5; }
 }
 
-/* ─── Completion Screen ─── */
 .completion-screen {
   width: 100vw;
   height: 100vh;
@@ -146,7 +136,6 @@
   font-family: 'Roboto Mono', monospace;
 }
 
-/* ─── Score Board ─── */
 .score-board {
   background: rgba(0, 100, 200, 0.3);
   border: 2px solid #00ffff;
@@ -180,7 +169,6 @@
   font-family: 'Roboto Mono', monospace;
 }
 
-/* ─── Leaderboard Preview ─── */
 .leaderboard-preview {
   background: rgba(0, 50, 100, 0.5);
   border: 1px solid #00ffff;
@@ -198,7 +186,6 @@
   font-family: 'Orbitron', sans-serif;
 }
 
-/* ─── Mini Leaderboard ─── */
 .mini-leaderboard {
   display: flex;
   flex-direction: column;
@@ -238,7 +225,6 @@
   flex-shrink: 0;
 }
 
-/* ─── Menu Button ─── */
 .menu-button {
   padding: clamp(0.6rem, 1.5vw, 0.9375rem) clamp(1.5rem, 4vw, 2.5rem);
   font-size: clamp(0.8rem, 1.5vw, 1rem);
@@ -266,7 +252,6 @@
   transform: scale(0.97);
 }
 
-/* ─── Explanation Box ─── */
 .explanation-box {
   margin-top: clamp(0.8rem, 2vw, 1.25rem);
   padding: clamp(0.7rem, 1.5vw, 0.9375rem);
@@ -300,18 +285,12 @@
   font-weight: bold;
 }
 
-/* ═══════════════════════════════════════════════════════════
-   RESPONSIVE BREAKPOINTS
-   ═══════════════════════════════════════════════════════════ */
-
-/* ─── Large Tablets / Small Desktops ─── */
 @media (max-width: 1024px) {
   .completion-content {
     max-width: 600px;
   }
 }
 
-/* ─── Tablets (iPad, etc.) ─── */
 @media (max-width: 768px) {
   .completion-content {
     max-width: 95%;
@@ -324,7 +303,6 @@
   }
 }
 
-/* ─── Large Phones / Small Tablets ─── */
 @media (max-width: 640px) {
   .completion-screen {
     padding: 1rem;
@@ -344,7 +322,6 @@
   }
 }
 
-/* ─── Phones ─── */
 @media (max-width: 480px) {
   .completion-screen {
     padding: 0.75rem;
@@ -369,7 +346,6 @@
   }
 }
 
-/* ─── Small Phones (iPhone SE, Galaxy S) ─── */
 @media (max-width: 380px) {
   .completion-content {
     padding: 1rem 0.75rem;
@@ -380,14 +356,12 @@
   }
 }
 
-/* ─── Very Small Phones ─── */
 @media (max-width: 360px) {
   .completion-content {
     padding: 0.75rem 0.6rem;
   }
 }
 
-/* ─── Landscape Mode ─── */
 @media (orientation: landscape) and (max-height: 500px) {
   .completion-screen {
     align-items: flex-start;
@@ -428,7 +402,6 @@
   }
 }
 
-/* ─── iPad-specific ─── */
 @media only screen
   and (min-device-width: 768px)
   and (max-device-width: 1024px)
@@ -438,7 +411,6 @@
   }
 }
 
-/* ─── Safe Area (notch phones) ─── */
 @supports (padding: env(safe-area-inset-bottom)) {
   .completion-screen {
     padding-left: max(var(--gs-pad-x), env(safe-area-inset-left, 0));
@@ -451,7 +423,6 @@
   }
 }
 
-/* ─── Touch Device Optimizations ─── */
 @media (hover: none) and (pointer: coarse) {
   .menu-button {
     min-height: 48px;
@@ -481,7 +452,6 @@
   }
 }
 
-/* ─── Reduced Motion ─── */
 @media (prefers-reduced-motion: reduce) {
   .completion-content {
     animation: none;

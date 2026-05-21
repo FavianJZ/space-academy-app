@@ -7,9 +7,6 @@ interface CockpitModelProps {
   onLoaded?: (model: THREE.Group) => void;
 }
 
-/**
- * CockpitModel component - loads and renders the GLTF cockpit model
- */
 export const CockpitModel: React.FC<CockpitModelProps> = ({
   visible = true,
   onLoaded,
@@ -29,7 +26,6 @@ export const CockpitModel: React.FC<CockpitModelProps> = ({
   const cockpit = useMemo(() => {
     const scene = gltf.scene.clone();
 
-    // Apply cockpit-friendly materials that respond to the new interior lighting
     scene.traverse((child: any) => {
     if (child instanceof THREE.Mesh) {
       const namePart = child.name.toLowerCase();
@@ -45,13 +41,11 @@ export const CockpitModel: React.FC<CockpitModelProps> = ({
         flatShading: true,
       });
 
-      // Hide glass
       if (namePart.includes('glass')) {
         child.visible = false;
         return;
       }
 
-      // Dark cockpit controls
       if (
         namePart.includes('handle') ||
         namePart.includes('ball') ||
@@ -71,7 +65,6 @@ export const CockpitModel: React.FC<CockpitModelProps> = ({
         });
       }
 
-      // Emissive screens (Neon Green - Matrix effect)
       if (
         namePart.includes('screen') ||
         namePart.includes('monitor') ||
@@ -91,7 +84,6 @@ export const CockpitModel: React.FC<CockpitModelProps> = ({
         });
       }
 
-      // Frame and structure - keep lambert material for shading
       if (
         namePart.includes('frame') ||
         namePart.includes('structure') ||
@@ -108,7 +100,6 @@ export const CockpitModel: React.FC<CockpitModelProps> = ({
         });
       }
 
-      // Cockpit seat (gray)
       if (
         namePart.includes('seat') ||
         namePart.includes('back') ||

@@ -48,7 +48,6 @@ export const SpeechBubble: React.FC<SpeechBubbleProps> = ({
   );
 };
 
-// Helper: Random messages for different contexts
 export const robotMessages = {
   idle: [
     "Click me! I'm bored 🤖",

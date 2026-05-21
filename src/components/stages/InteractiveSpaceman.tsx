@@ -32,12 +32,12 @@ export const InteractiveSpaceman: React.FC<InteractiveSpacemanProps> = ({
   }, [emote]);
 
   const handleClick = () => {
-    if (emote !== 'idle') return; // Don't interrupt ongoing emote
+    if (emote !== 'idle') return; 
     const nextEmote = emoteSequence[emoteIndexRef.current % emoteSequence.length];
     emoteIndexRef.current++;
     setEmote(nextEmote);
     onEmote?.(nextEmote);
-    // Reset to idle after animation completes
+    
     setTimeout(() => setEmote('idle'), 2200);
   };
 
@@ -47,12 +47,11 @@ export const InteractiveSpaceman: React.FC<InteractiveSpacemanProps> = ({
     emoteTimeRef.current += delta;
     const et = emoteTimeRef.current;
 
-    // Always ensure scale stays consistent
     groupRef.current.scale.setScalar(scale);
 
     switch (emote) {
       case 'idle': {
-        // Gentle float + slow rotation
+        
         groupRef.current.position.x = basePos[0];
         groupRef.current.position.y = basePos[1] + Math.sin(t * 1.2 + 1) * 0.15;
         groupRef.current.position.z = basePos[2];
@@ -63,7 +62,7 @@ export const InteractiveSpaceman: React.FC<InteractiveSpacemanProps> = ({
       }
 
       case 'flip': {
-        // Backflip with moderate height
+        
         if (et < 1.5) {
           const progress = et / 1.5;
           groupRef.current.rotation.x = progress * Math.PI * 2;
@@ -76,7 +75,7 @@ export const InteractiveSpaceman: React.FC<InteractiveSpacemanProps> = ({
       }
 
       case 'wave': {
-        // Side-to-side sway + bounce
+        
         if (et < 2) {
           groupRef.current.rotation.z = Math.sin(et * 6) * 0.2 * Math.max(0, 1 - et / 2);
           groupRef.current.position.y = basePos[1] + Math.sin(et * 3) * 0.2;
@@ -88,7 +87,7 @@ export const InteractiveSpaceman: React.FC<InteractiveSpacemanProps> = ({
       }
 
       case 'jump': {
-        // Jump + spin (reduced height)
+        
         if (et < 1.2) {
           const progress = et / 1.2;
           groupRef.current.position.y = basePos[1] + Math.sin(progress * Math.PI) * 1.2;
@@ -100,7 +99,7 @@ export const InteractiveSpaceman: React.FC<InteractiveSpacemanProps> = ({
       }
 
       case 'dance': {
-        // Fun wiggle dance (contained movement)
+        
         if (et < 2) {
           groupRef.current.rotation.z = Math.sin(et * 10) * 0.15;
           groupRef.current.position.y = basePos[1] + Math.abs(Math.sin(et * 5)) * 0.3;
@@ -127,7 +126,7 @@ export const InteractiveSpaceman: React.FC<InteractiveSpacemanProps> = ({
         <SpacemanWhite />
       )}
 
-      {/* Subtle glow around spaceman */}
+      {}
       <pointLight
         position={[0, 1, 1]}
         intensity={10}
@@ -135,7 +134,7 @@ export const InteractiveSpaceman: React.FC<InteractiveSpacemanProps> = ({
         distance={4}
       />
 
-      {/* Emote burst light */}
+      {}
       {emote !== 'idle' && (
         <pointLight
           position={[0, 1.5, 0]}

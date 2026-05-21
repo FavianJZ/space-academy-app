@@ -6,9 +6,6 @@ interface DistanceOdometerProps {
   isActive: boolean;
 }
 
-/**
- * DistanceOdometer - Displays distance traveled in light years
- */
 const DistanceOdometer: React.FC<DistanceOdometerProps> = ({ warpSpeed, isActive }) => {
   const [totalDistance, setTotalDistance] = useState(0);
 
@@ -19,10 +16,9 @@ const DistanceOdometer: React.FC<DistanceOdometerProps> = ({ warpSpeed, isActive
     }
 
     const interval = setInterval(() => {
-      // Accumulate distance based on warp speed
-      // Each interval tick represents traveled distance
+
       setTotalDistance((prev) => {
-        const increment = warpSpeed * 0.1; // Scale factor for distance increment
+        const increment = warpSpeed * 0.1; 
         return prev + increment;
       });
     }, 100);

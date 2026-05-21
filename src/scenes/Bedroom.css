@@ -1,10 +1,4 @@
-/* ═══════════════════════════════════════════════════════════
-   Bedroom.css — Fully Responsive
-   Targets: Android, iPhone SE→Pro Max, iPad, Tablets, Desktop
-   Breakpoints: 1200 / 1024 / 768 / 640 / 480 / 380 / 360
-   ═══════════════════════════════════════════════════════════ */
 
-/* ─── Auto-Play Toggle ─── */
 .auto-play-toggle {
   position: fixed;
   top: clamp(0.5rem, 2vh, 1rem);
@@ -52,7 +46,6 @@
   transform: scale(0.95);
 }
 
-/* ─── Scene Container ─── */
 .bedroom-scene-container {
   width: 100%;
   height: 100vh;
@@ -65,7 +58,6 @@
   justify-content: center;
 }
 
-/* ─── Loading Screen ─── */
 .loading-screen {
   position: fixed;
   top: 0;
@@ -173,7 +165,6 @@
   left: 0;
 }
 
-/* ─── Dialogue Overlay ─── */
 .dialogue-overlay {
   position: absolute;
   inset: 0;
@@ -181,7 +172,6 @@
   pointer-events: none;
 }
 
-/* ─── Dialogue Bubble ─── */
 .dialogue-bubble {
   position: absolute;
   bottom: 4%;
@@ -244,7 +234,6 @@
   }
 }
 
-/* Completion message — centered */
 .dialogue-overlay .completion-message {
   position: absolute;
   bottom: 5%;
@@ -255,7 +244,6 @@
   pointer-events: auto;
 }
 
-/* ─── Holographic Border ─── */
 .dialogue-bubble .dialogue-holo-border {
   position: absolute;
   inset: -1.5px;
@@ -265,7 +253,6 @@
   opacity: 0.5;
 }
 
-/* ─── Scanline Overlay ─── */
 .dialogue-bubble .dialogue-scanline {
   position: absolute;
   inset: 0;
@@ -297,7 +284,6 @@
   }
 }
 
-/* ─── Speaker ─── */
 .dialogue-bubble .dialogue-speaker {
   display: flex;
   align-items: center;
@@ -307,7 +293,6 @@
   z-index: 2;
 }
 
-/* ─── Speaker Avatars ─── */
 .speaker-avatar {
   width: clamp(28px, 4vw, 36px);
   height: clamp(28px, 4vw, 36px);
@@ -338,7 +323,6 @@
   50% { transform: scale(1.08); }
 }
 
-/* ─── Sound Wave Visualizer ─── */
 .sound-wave {
   display: flex;
   align-items: center;
@@ -400,7 +384,6 @@
   25%, 75% { opacity: 0.3; }
 }
 
-/* ─── Dialogue Text ─── */
 .dialogue-text {
   color: #00ff88;
   font-family: 'Roboto Mono', monospace;
@@ -412,7 +395,6 @@
   z-index: 2;
 }
 
-/* ─── Typewriter Cursor ─── */
 .tw-cursor {
   display: inline-block;
   color: #00ff88;
@@ -427,7 +409,6 @@
   50% { opacity: 0; }
 }
 
-/* ─── Dialogue Actions ─── */
 .dialogue-actions {
   display: flex;
   flex-direction: column;
@@ -454,7 +435,6 @@
   margin-top: clamp(0.75rem, 2vh, 1.5rem);
 }
 
-/* ─── Dialogue Buttons ─── */
 .dialogue-btn {
   background: rgba(0, 255, 136, 0.1);
   border: 1px solid #00ff88;
@@ -496,7 +476,6 @@
   box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
 }
 
-/* ─── Story Chat Log ─── */
 .story-chat-log {
   display: flex;
   flex-direction: column;
@@ -574,7 +553,6 @@
   font-size: clamp(0.75rem, 1.3vw, 0.88rem);
 }
 
-/* ─── Story Line Header ─── */
 .story-line-header {
   display: flex;
   align-items: center;
@@ -604,7 +582,6 @@
   border-color: #ffaa64;
 }
 
-/* ─── Step Card ─── */
 .dialogue-bubble .step-card {
   margin-top: 0;
   padding: clamp(0.6rem, 1.5vw, 1rem);
@@ -638,7 +615,6 @@
   text-transform: uppercase;
 }
 
-/* ─── Send Button ─── */
 .send-btn {
   width: 100%;
   margin-top: clamp(0.5rem, 1.5vh, 0.9rem);
@@ -665,7 +641,6 @@
   transform: scale(0.98);
 }
 
-/* ─── Skip Story Button ─── */
 .skip-story-btn {
   background: rgba(255, 80, 80, 0.12);
   border: 1px solid #ff8080;
@@ -688,7 +663,6 @@
   transform: scale(0.97);
 }
 
-/* ─── Inline Error ─── */
 .inline-error {
   margin-top: clamp(0.4rem, 1vh, 0.7rem);
   color: #ff8f8f;
@@ -696,7 +670,6 @@
   font-size: clamp(0.7rem, 1.1vw, 0.8rem);
 }
 
-/* ─── Confirm Summary ─── */
 .confirm-summary {
   display: flex;
   flex-direction: column;
@@ -726,7 +699,6 @@
   font-size: clamp(0.72rem, 1.15vw, 0.84rem);
 }
 
-/* ─── Identity Form ─── */
 .identity-form {
   display: flex;
   flex-direction: column;
@@ -759,8 +731,7 @@
   font-size: clamp(0.8rem, 1.3vw, 0.9rem);
   transition: all 0.3s ease;
   min-height: 44px;
-  /* Prevent iOS zoom on focus */
-  font-size: max(0.8rem, 16px);
+    font-size: max(0.8rem, 16px);
 }
 
 .form-input::placeholder {
@@ -808,7 +779,6 @@
   font-style: italic;
 }
 
-/* ─── Completion Message ─── */
 .completion-message {
   display: flex;
   align-items: center;
@@ -869,7 +839,6 @@
   margin-top: clamp(0.5rem, 1.5vh, 1rem);
 }
 
-/* ─── Hyperspace Loading Bar ─── */
 .hyperspace-bar {
   width: min(80%, 300px);
   height: clamp(4px, 0.8vh, 6px);
@@ -895,11 +864,6 @@
   100% { width: 100%; }
 }
 
-/* ═══════════════════════════════════════════════════════════
-   RESPONSIVE BREAKPOINTS
-   ═══════════════════════════════════════════════════════════ */
-
-/* ─── Large Tablets / Small Desktops ─── */
 @media (max-width: 1024px) {
   .dialogue-bubble {
     width: 48%;
@@ -911,7 +875,6 @@
   }
 }
 
-/* ─── Tablets (iPad, etc.) ─── */
 @media (max-width: 768px) {
   .dialogue-bubble {
     width: 60%;
@@ -939,7 +902,6 @@
   }
 }
 
-/* ─── Large Phones ─── */
 @media (max-width: 640px) {
   .dialogue-bubble {
     width: 68%;
@@ -961,7 +923,6 @@
   }
 }
 
-/* ─── Phones ─── */
 @media (max-width: 480px) {
   .dialogue-bubble {
     width: 75%;
@@ -1003,7 +964,6 @@
   }
 }
 
-/* ─── Small Phones (iPhone SE, Galaxy S) ─── */
 @media (max-width: 380px) {
   .dialogue-bubble {
     width: 82%;
@@ -1039,7 +999,6 @@
   }
 }
 
-/* ─── Very Small Phones ─── */
 @media (max-width: 360px) {
   .dialogue-bubble {
     width: 88%;
@@ -1052,7 +1011,6 @@
   }
 }
 
-/* ─── Landscape Mode ─── */
 @media (orientation: landscape) and (max-height: 500px) {
   .dialogue-bubble {
     bottom: 2%;
@@ -1116,7 +1074,6 @@
   }
 }
 
-/* ─── iPad-specific ─── */
 @media only screen
   and (min-device-width: 768px)
   and (max-device-width: 1024px)
@@ -1136,7 +1093,6 @@
   }
 }
 
-/* ─── Safe Area (notch phones) ─── */
 @supports (padding: env(safe-area-inset-bottom)) {
   .dialogue-bubble {
     padding-bottom: max(0.8rem, env(safe-area-inset-bottom, 0));
@@ -1156,7 +1112,6 @@
   }
 }
 
-/* ─── Touch Device Optimizations ─── */
 @media (hover: none) and (pointer: coarse) {
   .dialogue-btn {
     min-height: 48px;
@@ -1200,7 +1155,6 @@
   }
 }
 
-/* ─── Reduced Motion ─── */
 @media (prefers-reduced-motion: reduce) {
   .dialogue-bubble {
     animation: none;

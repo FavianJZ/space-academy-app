@@ -1,14 +1,8 @@
-/* ============================================================
-   CHARACTER SELECTION - Full Redesign
-   Responsive: iPhone SE → 4K Desktop
-   ============================================================ */
 
-/* ===== Container & Canvas ===== */
 .cs-container {
   width: 100vw;
   height: 100vh;
-  height: 100dvh; /* dynamic viewport for mobile */
-  overflow: hidden;
+  height: 100dvh;   overflow: hidden;
   position: relative;
   background:
     radial-gradient(circle at 50% 22%, rgba(0, 212, 255, 0.14), transparent 26%),

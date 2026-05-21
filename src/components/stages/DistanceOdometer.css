@@ -42,7 +42,6 @@
   font-weight: bold;
 }
 
-/* Glitch effect on distance change */
 @keyframes odometer-glitch {
   0% {
     text-shadow: 

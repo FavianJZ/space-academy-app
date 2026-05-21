@@ -35,9 +35,6 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
   }
 };
 
-/**
- * Hook to manage game state for the intro scene
- */
 export const useIntroGameState = () => {
   const [state, dispatch] = useReducer(gameReducer, initialState);
 

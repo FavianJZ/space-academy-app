@@ -1,10 +1,4 @@
-/* ═══════════════════════════════════════════════════════════
-   IntroCutscene.css — Fully Responsive
-   Targets: Android, iPhone SE→Pro Max, iPad, Tablets, Desktop
-   Breakpoints: 1200 / 1024 / 768 / 640 / 480 / 380 / 360
-   ═══════════════════════════════════════════════════════════ */
 
-/* ─── Container ─── */
 .intro-cutscene-container {
   width: 100vw;
   height: 100vh;
@@ -69,7 +63,6 @@
   transform: scale(0.95);
 }
 
-/* ─── Play Button (center screen) ─── */
 .play-button {
   position: fixed;
   top: 50%;
@@ -117,7 +110,6 @@
   transform: translate(-50%, -50%) scale(0.97);
 }
 
-/* ─── Play Float (below story box) ─── */
 .play-float {
   position: absolute;
   left: 50%;
@@ -154,7 +146,6 @@
   transform: translateX(-50%) scale(0.95);
 }
 
-/* ─── Story Overlay ─── */
 .story-overlay {
   position: fixed;
   top: clamp(2vh, 5vh, 6vh);
@@ -167,7 +158,6 @@
   pointer-events: none;
 }
 
-/* ─── Story Text Box ─── */
 .story-text-box {
   background: rgba(0, 15, 30, 0.9);
   border: 2px solid #00ffff;
@@ -200,7 +190,6 @@
   }
 }
 
-/* ─── Story Narration Text ─── */
 .story-narration {
   font-family: 'Orbitron', monospace;
   font-size: clamp(0.75rem, 2vw, 1.3rem);
@@ -214,11 +203,6 @@
   word-break: break-word;
 }
 
-/* ═══════════════════════════════════════════════════════════
-   RESPONSIVE BREAKPOINTS
-   ═══════════════════════════════════════════════════════════ */
-
-/* ─── Tablets ─── */
 @media (max-width: 768px) {
   .story-overlay {
     width: min(94vw, 600px);
@@ -230,7 +214,6 @@
   }
 }
 
-/* ─── Large Phones ─── */
 @media (max-width: 640px) {
   .story-overlay {
     width: 96vw;
@@ -247,7 +230,6 @@
   }
 }
 
-/* ─── Phones ─── */
 @media (max-width: 480px) {
   .skip-button {
     top: 0.5rem;
@@ -274,7 +256,6 @@
   }
 }
 
-/* ─── Small Phones (iPhone SE, Galaxy S) ─── */
 @media (max-width: 380px) {
   .story-text-box {
     padding: 0.6rem 0.7rem;
@@ -289,7 +270,6 @@
   }
 }
 
-/* ─── Very Small Phones ─── */
 @media (max-width: 360px) {
   .skip-button {
     padding: 0.35rem 0.6rem;
@@ -297,7 +277,6 @@
   }
 }
 
-/* ─── Landscape Mode ─── */
 @media (orientation: landscape) and (max-height: 500px) {
   .story-overlay {
     top: 1vh;
@@ -332,7 +311,6 @@
   }
 }
 
-/* ─── iPad-specific ─── */
 @media only screen
   and (min-device-width: 768px)
   and (max-device-width: 1024px)
@@ -346,7 +324,6 @@
   }
 }
 
-/* ─── Safe Area (notch phones) ─── */
 @supports (padding: env(safe-area-inset-bottom)) {
   .skip-button {
     top: max(0.6rem, env(safe-area-inset-top, 0));
@@ -358,7 +335,6 @@
   }
 }
 
-/* ─── Touch Device Optimizations ─── */
 @media (hover: none) and (pointer: coarse) {
   .skip-button {
     min-height: 48px;
@@ -403,7 +379,6 @@
   }
 }
 
-/* ─── Reduced Motion ─── */
 @media (prefers-reduced-motion: reduce) {
   .play-button {
     animation: none;

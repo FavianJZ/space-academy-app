@@ -7,9 +7,6 @@ interface AsteroidObjectProps {
   isAnimating: boolean;
 }
 
-/**
- * AsteroidObject - Large asteroid that approaches during crash sequence
- */
 export const AsteroidObject: React.FC<AsteroidObjectProps> = ({
   visible,
   isAnimating,
@@ -19,12 +16,10 @@ export const AsteroidObject: React.FC<AsteroidObjectProps> = ({
   useFrame(() => {
     if (!groupRef.current || !visible || !isAnimating) return;
 
-    // Asteroid bergerak mendekat ke kamera dengan kecepatan tinggi
-    groupRef.current.position.x -= 1.5; // Bergeser ke kiri
-    groupRef.current.position.y -= 1.2; // Bergeser ke bawah
-    groupRef.current.position.z -= 8.0; // Mendekat SANGAT CEPAT
+    groupRef.current.position.x -= 1.5; 
+    groupRef.current.position.y -= 1.2; 
+    groupRef.current.position.z -= 8.0; 
 
-    // Rotasi asteroid yang mengerikan
     groupRef.current.rotation.x -= 0.02;
     groupRef.current.rotation.y += 0.03;
   });
@@ -33,11 +28,11 @@ export const AsteroidObject: React.FC<AsteroidObjectProps> = ({
 
   return (
     <group ref={groupRef} position={[150, 120, 800]}>
-      {/* Illuminate the asteroid slightly so its color and flat planes are visible */}
+      {}
       <ambientLight intensity={0.5} color={0xffffff} />
       <directionalLight position={[-1, 1, 1]} intensity={0.8} />
       
-      {/* Asteroid low-poly dodecahedron */}
+      {}
       <mesh>
         <dodecahedronGeometry args={[80, 0]} />
         <meshStandardMaterial

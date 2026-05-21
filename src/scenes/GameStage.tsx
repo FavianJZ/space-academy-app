@@ -59,7 +59,7 @@ export const CompletionScreen: React.FC = () => {
   const visitedPlanets = useGameStore((state) => state.visitedPlanets);
 
   React.useEffect(() => {
-    // Add player to leaderboard on completion
+    
     addLeaderboardEntry({
       playerName: playerData.name,
       totalScore,

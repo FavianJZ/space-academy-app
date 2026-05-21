@@ -12,7 +12,7 @@ const Leaderboard: React.FC = () => {
   const totalScore = useGameStore((state) => state.getTotalScore)();
 
   useEffect(() => {
-    // Auto-scroll to top
+    
     window.scrollTo(0, 0);
   }, []);
 

@@ -7,9 +7,6 @@ interface StarFieldProps {
   count?: number;
 }
 
-/**
- * StarField component - creates a cartoon-style star field with recycling
- */
 export const StarField = ({ count = 220 }: StarFieldProps) => {
   const groupRef = useRef<THREE.Group>(null);
   const updateBudgetRef = useRef(0);
@@ -49,7 +46,6 @@ export const StarField = ({ count = 220 }: StarFieldProps) => {
     };
   }, [count]);
 
-  // Animate stars moving towards camera and recycle them
   useFrame((_, delta) => {
     if (!groupRef.current) return;
     updateBudgetRef.current += delta;
@@ -64,7 +60,6 @@ export const StarField = ({ count = 220 }: StarFieldProps) => {
       const child = group.children[i];
       child.position.z -= moveStep;
 
-      // Recycle stars that pass behind camera (Z < -200)
       if (child.position.z < -200) {
         child.position.z = 1500;
         child.position.x = (Math.random() - 0.5) * 2000;
@@ -80,9 +75,6 @@ interface WarpLinesProps {
   count?: number;
 }
 
-/**
- * WarpLines component - creates warp speed effect lines
- */
 export const WarpLines = ({ count = 420 }: WarpLinesProps) => {
   const geometryRef = useRef<THREE.BufferGeometry>(null);
   const materialRef = useRef<THREE.LineBasicMaterial>(null);
@@ -114,7 +106,6 @@ export const WarpLines = ({ count = 420 }: WarpLinesProps) => {
     };
   }, [count]);
 
-  // Animate warp lines
   useFrame((_, delta) => {
     if (!geometryRef.current || !materialRef.current || !geometryRef.current.attributes.position) return;
     updateBudgetRef.current += delta;
@@ -126,7 +117,6 @@ export const WarpLines = ({ count = 420 }: WarpLinesProps) => {
 
     const posisiGaris = geometryRef.current.attributes.position.array as Float32Array;
 
-    // Move lines towards camera and recycle
     for (let i = 0; i < count; i++) {
       const indexZ1 = i * 6 + 2;
       const indexZ2 = i * 6 + 5;
@@ -134,7 +124,6 @@ export const WarpLines = ({ count = 420 }: WarpLinesProps) => {
       posisiGaris[indexZ1] -= moveStep;
       posisiGaris[indexZ2] -= moveStep;
 
-      // Recycle lines that pass in front (Z < -5)
       if (posisiGaris[indexZ1] < -5) {
         const newZ = 200;
         const panjangGaris = Math.random() * 20 + 10;
@@ -146,7 +135,6 @@ export const WarpLines = ({ count = 420 }: WarpLinesProps) => {
 
     geometryRef.current.attributes.position.needsUpdate = true;
 
-    // Fade warp lines in/out based on warp speed
     if (gameState.kecepatanWarp > 0.1) {
       materialRef.current.opacity = Math.min(gameState.kecepatanWarp * 0.5, 1);
     } else {
@@ -169,9 +157,6 @@ export const WarpLines = ({ count = 420 }: WarpLinesProps) => {
   );
 };
 
-/**
- * SceneEffects component - combines all environmental effects
- */
 export const SceneEffects = () => {
   const { starCount, warpCount } = useMemo(() => {
     if (typeof window === 'undefined') {

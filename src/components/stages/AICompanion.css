@@ -1,4 +1,3 @@
-/* AI Companion - Bottom Center Position (sesuai desain temanmu) */
 #ai-companion {
   position: absolute;
   bottom: 40px;
@@ -14,8 +13,7 @@
   align-items: center;
   box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
   z-index: 20;
-  font-family: monospace; /* Mengikuti style monospace persis seperti temanmu */
-}
+  font-family: monospace; }
 
 .ai-avatar {
   display: flex;
@@ -61,8 +59,7 @@
 
 #ai-text {
   margin: 0;
-  color: #ffffff; /* Ubah ke warna putih sesuai style original project temanmu */
-}
+  color: #ffffff; }
 
 .cursor {
   animation: blink 0.6s infinite;
@@ -80,7 +77,6 @@
   }
 }
 
-/* Responsive */
 @media (max-width: 768px) {
   #ai-companion {
     width: 90%;
