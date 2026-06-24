@@ -1,0 +1,235 @@
+.hud-content-layer {
+  position: relative;
+  z-index: 5;
+}
+
+.hud-3d-card {
+  position: relative;
+  overflow: hidden;
+  transform-style: preserve-3d;
+  border: 1px solid rgba(0, 255, 255, 0.35);
+  box-shadow:
+    0 0 24px rgba(0, 255, 255, 0.18),
+    inset 0 0 24px rgba(0, 255, 255, 0.08);
+  backdrop-filter: blur(14px);
+}
+
+.hud-3d-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(
+      120deg,
+      transparent 0%,
+      rgba(0, 255, 255, 0.08) 45%,
+      rgba(255, 255, 255, 0.18) 50%,
+      rgba(0, 255, 255, 0.08) 55%,
+      transparent 100%
+    );
+  transform: translateX(-120%);
+  animation: hud-shine 5s ease-in-out infinite;
+}
+
+.card-scanline {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    repeating-linear-gradient(
+      to bottom,
+      rgba(255, 255, 255, 0.04) 0,
+      rgba(255, 255, 255, 0.04) 1px,
+      transparent 2px,
+      transparent 6px
+    );
+  opacity: 0.35;
+  mix-blend-mode: screen;
+}
+
+.hud-speaker-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: 1px solid rgba(0, 255, 255, 0.4);
+  border-radius: 999px;
+  color: #00ffff;
+  background: rgba(0, 20, 35, 0.65);
+  box-shadow: 0 0 14px rgba(0, 255, 255, 0.18);
+  letter-spacing: 1px;
+}
+
+.hud-terminal-body {
+  position: relative;
+  padding: 18px;
+  border: 1px solid rgba(0, 255, 255, 0.18);
+  border-radius: 14px;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(0, 255, 255, 0.08),
+      rgba(0, 20, 35, 0.5)
+    );
+  box-shadow: inset 0 0 20px rgba(0, 255, 255, 0.08);
+}
+
+.hud-progress-bar {
+  overflow: hidden;
+  position: relative;
+  border: 1px solid rgba(0, 255, 255, 0.35);
+  background: rgba(0, 20, 35, 0.65);
+  box-shadow: inset 0 0 12px rgba(0, 255, 255, 0.1);
+}
+
+.hud-progress-fill {
+  position: relative;
+  background:
+    linear-gradient(
+      90deg,
+      rgba(0, 255, 136, 0.7),
+      rgba(0, 255, 255, 0.95),
+      rgba(255, 255, 255, 0.85)
+    );
+  box-shadow: 0 0 16px rgba(0, 255, 255, 0.55);
+}
+
+.hud-progress-fill::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    repeating-linear-gradient(
+      45deg,
+      rgba(255, 255, 255, 0.3) 0,
+      rgba(255, 255, 255, 0.3) 6px,
+      transparent 6px,
+      transparent 12px
+    );
+  animation: hud-progress-move 1s linear infinite;
+}
+
+.hud-sweep-btn-wrapper {
+  position: relative;
+}
+
+.hud-sweep-btn {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(0, 255, 255, 0.5);
+  background:
+    linear-gradient(
+      135deg,
+      rgba(0, 255, 136, 0.18),
+      rgba(0, 255, 255, 0.22)
+    );
+  color: #eaffff;
+  box-shadow:
+    0 0 18px rgba(0, 255, 255, 0.28),
+    inset 0 0 12px rgba(255, 255, 255, 0.08);
+}
+
+.hud-sweep-btn::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -80%;
+  width: 55%;
+  height: 100%;
+  background:
+    linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.38),
+      transparent
+    );
+  transform: skewX(-24deg);
+  transition: left 0.45s ease;
+}
+
+.hud-sweep-btn:hover::before {
+  left: 130%;
+}
+
+.hud-sweep-btn:hover {
+  border-color: #00ffff;
+  box-shadow:
+    0 0 26px rgba(0, 255, 255, 0.5),
+    inset 0 0 16px rgba(255, 255, 255, 0.1);
+}
+
+.screen-flash-green {
+  animation: screen-flash-green 0.5s ease;
+}
+
+.screen-flash-red {
+  animation: screen-flash-red 0.5s ease;
+}
+
+@keyframes hud-shine {
+  0% {
+    transform: translateX(-120%);
+  }
+
+  45% {
+    transform: translateX(-120%);
+  }
+
+  65% {
+    transform: translateX(120%);
+  }
+
+  100% {
+    transform: translateX(120%);
+  }
+}
+
+@keyframes hud-progress-move {
+  from {
+    background-position: 0 0;
+  }
+
+  to {
+    background-position: 24px 0;
+  }
+}
+
+@keyframes screen-flash-green {
+  0% {
+    box-shadow: inset 0 0 0 rgba(0, 255, 136, 0);
+  }
+
+  40% {
+    box-shadow: inset 0 0 120px rgba(0, 255, 136, 0.45);
+  }
+
+  100% {
+    box-shadow: inset 0 0 0 rgba(0, 255, 136, 0);
+  }
+}
+
+@keyframes screen-flash-red {
+  0% {
+    box-shadow: inset 0 0 0 rgba(255, 50, 80, 0);
+  }
+
+  40% {
+    box-shadow: inset 0 0 120px rgba(255, 50, 80, 0.45);
+  }
+
+  100% {
+    box-shadow: inset 0 0 0 rgba(255, 50, 80, 0);
+  }
+}
+
+@media (max-width: 768px) {
+  .hud-terminal-body {
+    padding: 14px;
+  }
+
+  .hud-speaker-badge {
+    font-size: 12px;
+    padding: 5px 10px;
+  }
+}

@@ -1,11 +1,13 @@
-import { Routes, Route } from 'react-router-dom';
-import CharacterSelection from './scenes/CharacterSelection';
-import IntroCutscene from './scenes/IntroCutscene';
-import Bedroom from './scenes/Bedroom';
-import MainHub from './scenes/MainHub';
-import GameStage from './scenes/GameStage';
-import Leaderboard from './scenes/Leaderboard';
-import './App.css';
+import { Route, Routes } from "react-router-dom";
+import {
+  Bedroom,
+  CharacterSelection,
+  GameStage,
+  IntroCutscene,
+  Leaderboard,
+  MainHub,
+} from "./scenes";
+import "./App.css";
 
 function App() {
   return (
@@ -16,6 +18,8 @@ function App() {
       <Route path="/mainhub" element={<MainHub />} />
       <Route path="/stage/:stageId" element={<GameStage />} />
       <Route path="/leaderboard" element={<Leaderboard />} />
+
+      <Route path="*" element={<CharacterSelection />} />
     </Routes>
   );
 }
