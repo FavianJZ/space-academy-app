@@ -711,9 +711,18 @@ const handleSelectCharacter = useCallback((char: 'pink' | 'white') => {
         </div>
 
         {/* --- KOTAK CAPTCHA MUNCUL DI SINI --- */}
+                {/* --- KOTAK CAPTCHA MUNCUL DI SINI --- */}
         <div 
           ref={recaptchaRef} 
-          style={{ marginTop: '20px', zIndex: 50, position: 'relative', display: 'flex', justifyContent: 'center' }}
+          style={{ 
+            marginTop: '20px', 
+            zIndex: 999, 
+            position: 'relative', 
+            display: 'flex', 
+            justifyContent: 'center',
+            pointerEvents: 'auto', // INI YANG MEMBUATNYA BISA DIKLIK
+            cursor: 'pointer'
+          }}
         ></div>
 
         {/* Transition Overlay */}
