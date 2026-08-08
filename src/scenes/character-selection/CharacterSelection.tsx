@@ -409,6 +409,40 @@ const CharacterSelection: React.FC = () => {
   const [isMobile, setIsMobile] = useState(false);
   const [isCompactHeight, setIsCompactHeight] = useState(false);
 
+  const recaptchaRef = useRef<HTMLDivElement>(null);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  
+  // NANTI GANTI INI DENGAN SITE KEY CHECKBOX YANG BARU DARI GOOGLE CLOUD
+  const CHECKBOX_SITE_KEY = '6Lf6snstAAAAAITdD8GWZkYM3cg4piXdOwA0zTb5'; 
+
+  useEffect(() => {
+    let checkInterval: any;
+    const renderCaptcha = () => {
+      if (window.grecaptcha && window.grecaptcha.enterprise && recaptchaRef.current) {
+        try {
+          // Render visual checkbox
+          window.grecaptcha.enterprise.render(recaptchaRef.current, {
+            sitekey: CHECKBOX_SITE_KEY,
+            theme: 'dark', // Tema gelap agar cocok dengan galaxy
+            callback: (token: string) => {
+              setCaptchaToken(token);
+            },
+            'expired-callback': () => {
+              setCaptchaToken(null);
+            }
+          });
+          clearInterval(checkInterval);
+        } catch (e) {
+          console.log("Captcha error/already rendered");
+          clearInterval(checkInterval);
+        }
+      }
+    };
+    checkInterval = setInterval(renderCaptcha, 500);
+    return () => clearInterval(checkInterval);
+  }, []);
+
+
   useEffect(() => {
     const updateViewportFlags = () => {
       setIsMobile(window.innerWidth <= 768 || 'ontouchstart' in window);
@@ -427,6 +461,11 @@ const CharacterSelection: React.FC = () => {
 
 const handleSelectCharacter = useCallback((char: 'pink' | 'white') => {
     if (isTransitioning) return;
+
+    if (!captchaToken) {
+      alert("Tolong centang 'I'm not a robot' terlebih dahulu!");
+      return;
+    }
 
     const proceedWithSelection = () => {
       setSelectedChar(char);
@@ -447,47 +486,37 @@ const handleSelectCharacter = useCallback((char: 'pink' | 'white') => {
       setTimeout(() => navigate('/intro'), 1200);
     };
 
-    if (window.grecaptcha) {
-      window.grecaptcha.enterprise.ready(async () => {
-        try {
-          const token = await window.grecaptcha.enterprise.execute('6LeqqHstAAAAAOZJk-wusa0Cxq5n7vQyi4rvRFJ9', {
-            action: 'CHARACTER_SELECTION',
-          });
-          
-          console.log('Token didapat, sedang memverifikasi ke server...');
-          
-          // Kirim token ke Vercel Serverless Function
-          const verifyResponse = await fetch('/api/verify-captcha', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-              token: token, 
-              action: 'CHARACTER_SELECTION' 
-            })
-          });
+    const verifyToken = async () => {
+      try {
+        console.log('Sedang memverifikasi ke server...');
+        const verifyResponse = await fetch('/api/verify-captcha', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            token: captchaToken, 
+            action: 'CHARACTER_SELECTION' 
+          })
+        });
 
-          const verifyResult = await verifyResponse.json();
+        const verifyResult = await verifyResponse.json();
 
-          if (verifyResult.success) {
-            console.log(`Verifikasi Sukses! Skor Human: ${verifyResult.score}`);
-            proceedWithSelection(); // Lanjut ke intro jika skor aman
-          } else {
-            console.error('Verifikasi Gagal:', verifyResult.message);
-            alert("Sistem mendeteksi aktivitas mencurigakan (Bot).");
-            setIsTransitioning(false); 
-          }
-
-        } catch (error) {
-          console.error('Gagal memproses reCAPTCHA:', error);
-          alert("Terjadi kesalahan sistem saat memproses Captcha.");
-          setIsTransitioning(false);
+        if (verifyResult.success) {
+          console.log(`Verifikasi Sukses!`);
+          proceedWithSelection(); 
+        } else {
+          console.error('Verifikasi Gagal:', verifyResult.message);
+          alert("Sistem mendeteksi aktivitas mencurigakan.");
+          setIsTransitioning(false); 
         }
-      });
-    } else {
-      console.warn('Script reCAPTCHA belum selesai di-load.');
-      alert("Sistem keamanan belum siap, coba lagi sebentar.");
-    }
-  }, [isTransitioning, navigate, setCharacter]);
+      } catch (error) {
+        console.error('Gagal memproses reCAPTCHA:', error);
+        alert("Terjadi kesalahan sistem saat memproses Captcha.");
+        setIsTransitioning(false);
+      }
+    };
+
+    verifyToken();
+  }, [isTransitioning, navigate, setCharacter, captchaToken]);
 
   const handleHover = useCallback((char: 'pink' | 'white') => {
     if (isTransitioning) return;
@@ -678,9 +707,16 @@ const handleSelectCharacter = useCallback((char: 'pink' | 'white') => {
               </button>
             );
           })}
+        
         </div>
 
-        {}
+        {/* --- KOTAK CAPTCHA MUNCUL DI SINI --- */}
+        <div 
+          ref={recaptchaRef} 
+          style={{ marginTop: '20px', zIndex: 50, position: 'relative', display: 'flex', justifyContent: 'center' }}
+        ></div>
+
+        {/* Transition Overlay */}
         {isTransitioning && (
           <div className="cs-transition-overlay">
             <div className="cs-transition-flash" />
