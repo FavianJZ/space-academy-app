@@ -22,6 +22,13 @@ import { useGameStore } from "../../stores/useGameStore";
 
 import "./CharacterSelection.css";
 
+// Deklarasi global untuk reCAPTCHA agar TypeScript tidak error
+declare global {
+  interface Window {
+    grecaptcha: any;
+  }
+}
+
 const FloatingParticles: React.FC<{ color: string; count?: number; radius?: number; isActive?: boolean }> = ({ 
   color, count = 30, radius = 3, isActive = false 
 }) => {
@@ -418,24 +425,68 @@ const CharacterSelection: React.FC = () => {
     return () => clearTimeout(timer);
   }, []);
 
-  const handleSelectCharacter = useCallback((char: 'pink' | 'white') => {
+const handleSelectCharacter = useCallback((char: 'pink' | 'white') => {
     if (isTransitioning) return;
-    setSelectedChar(char);
-    setCharacter(char);
-    setIsTransitioning(true);
 
-    const selectedRef = char === 'pink' ? pinkRef : whiteRef;
-    const otherRef = char === 'pink' ? whiteRef : pinkRef;
+    const proceedWithSelection = () => {
+      setSelectedChar(char);
+      setCharacter(char);
+      setIsTransitioning(true);
 
-    if (selectedRef.current) {
-      gsap.to(selectedRef.current.scale, { x: 1.5, y: 1.5, z: 1.5, duration: 0.6, ease: 'back.out(1.7)' });
-      gsap.to(selectedRef.current.position, { z: 2, duration: 0.6, ease: 'power2.out' });
+      const selectedRef = char === 'pink' ? pinkRef : whiteRef;
+      const otherRef = char === 'pink' ? whiteRef : pinkRef;
+
+      if (selectedRef.current) {
+        gsap.to(selectedRef.current.scale, { x: 1.5, y: 1.5, z: 1.5, duration: 0.6, ease: 'back.out(1.7)' });
+        gsap.to(selectedRef.current.position, { z: 2, duration: 0.6, ease: 'power2.out' });
+      }
+      if (otherRef.current) {
+        gsap.to(otherRef.current.scale, { x: 0.5, y: 0.5, z: 0.5, duration: 0.5, ease: 'power2.in' });
+      }
+
+      setTimeout(() => navigate('/intro'), 1200);
+    };
+
+    if (window.grecaptcha) {
+      window.grecaptcha.enterprise.ready(async () => {
+        try {
+          const token = await window.grecaptcha.enterprise.execute('6LeqqHstAAAAAOZJk-wusa0Cxq5n7vQyi4rvRFJ9', {
+            action: 'CHARACTER_SELECTION',
+          });
+          
+          console.log('Token didapat, sedang memverifikasi ke server...');
+          
+          // Kirim token ke Vercel Serverless Function
+          const verifyResponse = await fetch('/api/verify-captcha', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+              token: token, 
+              action: 'CHARACTER_SELECTION' 
+            })
+          });
+
+          const verifyResult = await verifyResponse.json();
+
+          if (verifyResult.success) {
+            console.log(`Verifikasi Sukses! Skor Human: ${verifyResult.score}`);
+            proceedWithSelection(); // Lanjut ke intro jika skor aman
+          } else {
+            console.error('Verifikasi Gagal:', verifyResult.message);
+            alert("Sistem mendeteksi aktivitas mencurigakan (Bot).");
+            setIsTransitioning(false); 
+          }
+
+        } catch (error) {
+          console.error('Gagal memproses reCAPTCHA:', error);
+          alert("Terjadi kesalahan sistem saat memproses Captcha.");
+          setIsTransitioning(false);
+        }
+      });
+    } else {
+      console.warn('Script reCAPTCHA belum selesai di-load.');
+      alert("Sistem keamanan belum siap, coba lagi sebentar.");
     }
-    if (otherRef.current) {
-      gsap.to(otherRef.current.scale, { x: 0.5, y: 0.5, z: 0.5, duration: 0.5, ease: 'power2.in' });
-    }
-
-    setTimeout(() => navigate('/intro'), 1200);
   }, [isTransitioning, navigate, setCharacter]);
 
   const handleHover = useCallback((char: 'pink' | 'white') => {
