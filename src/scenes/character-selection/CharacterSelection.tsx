@@ -22,6 +22,13 @@ import { useGameStore } from "../../stores/useGameStore";
 
 import "./CharacterSelection.css";
 
+// Deklarasi global untuk reCAPTCHA agar TypeScript tidak error
+declare global {
+  interface Window {
+    grecaptcha: any;
+  }
+}
+
 const FloatingParticles: React.FC<{ color: string; count?: number; radius?: number; isActive?: boolean }> = ({ 
   color, count = 30, radius = 3, isActive = false 
 }) => {
@@ -420,22 +427,49 @@ const CharacterSelection: React.FC = () => {
 
   const handleSelectCharacter = useCallback((char: 'pink' | 'white') => {
     if (isTransitioning) return;
-    setSelectedChar(char);
-    setCharacter(char);
-    setIsTransitioning(true);
 
-    const selectedRef = char === 'pink' ? pinkRef : whiteRef;
-    const otherRef = char === 'pink' ? whiteRef : pinkRef;
+    // Fungsi utama untuk lanjut ke scene intro setelah captcha
+    const proceedWithSelection = () => {
+      setSelectedChar(char);
+      setCharacter(char);
+      setIsTransitioning(true);
 
-    if (selectedRef.current) {
-      gsap.to(selectedRef.current.scale, { x: 1.5, y: 1.5, z: 1.5, duration: 0.6, ease: 'back.out(1.7)' });
-      gsap.to(selectedRef.current.position, { z: 2, duration: 0.6, ease: 'power2.out' });
+      const selectedRef = char === 'pink' ? pinkRef : whiteRef;
+      const otherRef = char === 'pink' ? whiteRef : pinkRef;
+
+      if (selectedRef.current) {
+        gsap.to(selectedRef.current.scale, { x: 1.5, y: 1.5, z: 1.5, duration: 0.6, ease: 'back.out(1.7)' });
+        gsap.to(selectedRef.current.position, { z: 2, duration: 0.6, ease: 'power2.out' });
+      }
+      if (otherRef.current) {
+        gsap.to(otherRef.current.scale, { x: 0.5, y: 0.5, z: 0.5, duration: 0.5, ease: 'power2.in' });
+      }
+
+      setTimeout(() => navigate('/intro'), 1200);
+    };
+
+    // Eksekusi reCAPTCHA sebelum animasi dan perpindahan scene
+    if (window.grecaptcha) {
+      window.grecaptcha.enterprise.ready(async () => {
+        try {
+          const token = await window.grecaptcha.enterprise.execute('6LeqqHstAAAAAOZJk-wusa0Cxq5n7vQyi4rvRFJ9', {
+            action: 'CHARACTER_SELECTION',
+          });
+          
+          console.log('reCAPTCHA Token Berhasil Didapat:', token);
+          
+          // Lanjutkan perpindahan scene
+          proceedWithSelection();
+        } catch (error) {
+          console.error('Gagal memproses reCAPTCHA:', error);
+          // Fallback: Tetap lanjut meskipun gagal (karena belum ada backend/server untuk validasi strict)
+          proceedWithSelection();
+        }
+      });
+    } else {
+      console.warn('Script reCAPTCHA belum selesai di-load.');
+      proceedWithSelection();
     }
-    if (otherRef.current) {
-      gsap.to(otherRef.current.scale, { x: 0.5, y: 0.5, z: 0.5, duration: 0.5, ease: 'power2.in' });
-    }
-
-    setTimeout(() => navigate('/intro'), 1200);
   }, [isTransitioning, navigate, setCharacter]);
 
   const handleHover = useCallback((char: 'pink' | 'white') => {
