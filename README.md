@@ -4,7 +4,7 @@ SpaceAcademy adalah aplikasi web gamifikasi interaktif bertema luar angkasa untu
 
 Project ini dibuat sebagai pengalaman belajar berbasis game: pemain menjalani perjalanan antariksa, menyelesaikan misi pemrograman dan software engineering, lalu mengumpulkan progres serta skor melalui beberapa planet dengan karakter dan lingkungan 3D.
 
-> Project scope: frontend prototype / frontend implementation. Backend, autentikasi server, database, dan integrasi operasional tim marketing belum termasuk dalam repository ini.
+> Project scope: frontend prototype / frontend implementation.
 
 ## Tujuan Project
 
