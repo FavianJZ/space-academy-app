@@ -169,9 +169,3 @@ Beberapa pengembangan frontend yang dapat dilakukan selanjutnya:
 npm run build
 npm run lint
 ```
-
-## Kredit
-
-Project internship kampus untuk branding **SOCS — Software Engineering, BINUS University Bekasi**.
-
-Current implementation focus: **Frontend, React, TypeScript, Three.js, UI/UX, game flow, dan interactive learning experience**.
