@@ -1,26 +1,64 @@
-# Space Academy
+# SpaceAcademy
 
-Space Academy is a React + TypeScript space-themed learning game built with Vite, Three.js, React Three Fiber, and Zustand. Players create a cadet, watch the intro cutscene, choose a character, explore the main hub, and complete planet-based stages that feed into score and leaderboard tracking.
+SpaceAcademy adalah aplikasi web gamifikasi interaktif bertema luar angkasa untuk memperkenalkan bidang **Software Engineering** di **School of Computer Science (SOCS), BINUS University Bekasi**.
 
-## Overview
+Project ini dibuat sebagai pengalaman belajar berbasis game: pemain menjalani perjalanan antariksa, menyelesaikan misi pemrograman dan software engineering, lalu mengumpulkan progres serta skor melalui beberapa planet dengan karakter dan lingkungan 3D.
 
-The app is structured as a story-driven progression:
+> Project scope: frontend prototype / frontend implementation. Backend, autentikasi server, database, dan integrasi operasional tim marketing belum termasuk dalam repository ini.
 
-1. Character selection to pick the cadet avatar.
-2. Intro cutscene that sets up the mission.
-3. Bedroom scene for early game progression and setup.
-4. Main hub with orbiting planets and mission selection.
-5. Stage scenes for the gameplay challenges tied to each planet.
-6. Leaderboard for score tracking and competition.
+## Tujuan Project
 
-## Key Features
+- Membuat pengenalan Software Engineering terasa interaktif dan mudah dipahami.
+- Mengubah konsep dasar software engineering menjadi misi permainan yang singkat dan bertahap.
+- Menampilkan branding SOCS melalui dunia, karakter, planet, dan antarmuka bertema sci-fi.
+- Menyediakan fondasi frontend yang dapat dikembangkan untuk event kampus, demo, atau kegiatan promosi akademik.
 
-- 3D space UI powered by React Three Fiber and Drei.
-- Persistent player state with Zustand and local storage.
-- Character customization and progression tracking.
-- Planet-based missions with score handling.
-- Audio system for BGM and SFX control.
-- Leaderboard support for total score and per-planet results.
+## Fitur Utama
+
+- Character selection dan avatar customization.
+- Kustomisasi warna spaceman, hat/headgear, dan pet.
+- Intro cinematic dengan perjalanan pesawat, keadaan darurat, serta pilihan recovery route.
+- Bedroom onboarding dengan dialog AI robot, text-to-speech, autentikasi identitas, dan animasi karakter.
+- Main hub dengan planet yang mengorbit dan pemilihan misi interaktif.
+- Enam stage pembelajaran dengan tema dan mekanisme berbeda:
+  - Multiple choice.
+  - Image puzzle.
+  - Flowchart fixer.
+  - Logic flow.
+  - Pipeline / logic circuit.
+  - Bug Hunt sebagai final challenge.
+- Mode solo dan boss co-op pada final challenge.
+- Audio background music, sound effect, volume settings, dan audio director.
+- Penyimpanan progres frontend menggunakan Zustand dan `localStorage`.
+- Leaderboard lokal dan ringkasan skor pemain.
+- Responsive sci-fi HUD dengan animasi transisi dan elemen 3D berbasis Three.js.
+
+## Alur Pengalaman Pemain
+
+```text
+Character Selection
+        ↓
+Intro Cinematic & Recovery Route
+        ↓
+Bedroom Onboarding & Identity Setup
+        ↓
+Main Hub / Planet Selection
+        ↓
+Stage 1–6 Learning Missions
+        ↓
+Score, Progress & Local Leaderboard
+```
+
+## Planet dan Stage
+
+| Stage | Planet | Tema | Tingkat |
+| --- | --- | --- | --- |
+| 1 | Novaris | Introduction to Software Engineering | Easy |
+| 2 | Quizara | Multiple Choice | Medium |
+| 3 | Puzzlon | Image Puzzle | Medium |
+| 4 | Flowra | Flowchart | Hard |
+| 5 | Logitron | Logic Flow | Hard |
+| 6 | Ultimara | Final Challenge / Bug Hunt | Expert |
 
 ## Tech Stack
 
@@ -28,58 +66,112 @@ The app is structured as a story-driven progression:
 - TypeScript
 - Vite
 - Three.js
-- @react-three/fiber
-- @react-three/drei
-- GSAP
+- `@react-three/fiber`
+- `@react-three/drei`
 - Zustand
+- GSAP
 - React Router
+- ESLint
 
-## Main Routes
+## Struktur Folder
 
-- `/` - Character selection
-- `/intro` - Intro cutscene
-- `/bedroom` - Bedroom scene
-- `/mainhub` - Main hub with planet navigation
-- `/stage/:stageId` - Stage gameplay
-- `/leaderboard` - Scoreboard view
-
-## Project Structure
-
-- `src/scenes` - Main game screens and scene logic.
-- `src/components` - Shared UI and 3D model components.
-- `src/hooks` - Reusable gameplay and audio hooks.
-- `src/stores` - Global persisted game state.
-- `src/audio` - Audio catalog and playback helpers.
-- `public/models` - Optimized GLB assets and textures.
-- `public/audio` - Background music and sound effects.
-
-## Getting Started
-
-Install dependencies:
-
-```bash
-npm install
+```text
+.
+├── public/
+│   ├── assets/          # Gambar dan aset UI
+│   ├── audio/           # Background music dan sound effects runtime
+│   └── models/          # Model 3D yang digunakan aplikasi
+├── src/
+│   ├── components/      # Komponen UI, model, dan stage
+│   ├── constants/       # Konfigurasi planet, stage, dan data game
+│   ├── hooks/           # Custom React hooks
+│   ├── scenes/          # Character selection, intro, bedroom, hub, stage
+│   ├── stores/          # Zustand stores dan state persisten
+│   ├── types/           # TypeScript types dan interfaces
+│   ├── App.tsx          # Routing utama aplikasi
+│   └── main.tsx         # Entry point React
+├── index.html
+├── package.json
+├── tsconfig*.json
+└── vite.config.ts
 ```
 
-Run the development server:
+## Prasyarat
+
+- Node.js versi LTS terbaru.
+- npm.
+- Browser modern dengan dukungan WebGL, seperti Chrome atau Edge.
+
+## Instalasi dan Menjalankan Project
 
 ```bash
+git clone <repository-url>
+cd space-academy-app-main
+npm install
 npm run dev
 ```
 
-Create a production build:
+Buka alamat yang ditampilkan Vite, biasanya `http://localhost:5173`.
+
+## NPM Scripts
+
+```bash
+npm run dev       # Menjalankan development server
+npm run build     # Type-check dan membuat production build
+npm run lint      # Menjalankan ESLint
+npm run preview   # Preview hasil production build
+```
+
+## Route Utama
+
+| Route | Halaman |
+| --- | --- |
+| `/` | Character selection |
+| `/intro` | Intro cinematic |
+| `/bedroom` | Bedroom onboarding |
+| `/mainhub` | Main hub dan planet selection |
+| `/stage/:stageId` | Halaman stage pembelajaran |
+| `/leaderboard` | Leaderboard lokal |
+
+## Data dan Batasan Frontend
+
+Saat ini progres pemain disimpan pada browser melalui Zustand persist dan `localStorage` dengan key `space-academy-storage`.
+
+Konsekuensinya:
+
+- Data belum tersinkronisasi antar perangkat.
+- Leaderboard masih bersifat lokal pada browser.
+- Tidak ada akun server atau database pada project frontend ini.
+- Integrasi pengumpulan data minat pengguna untuk kebutuhan marketing belum diimplementasikan dan perlu disepakati bersama tim backend/marketing jika akan dibuat.
+
+## Catatan Asset
+
+Asset yang dipakai saat aplikasi berjalan sebaiknya berada di dalam `public/assets`, `public/models`, dan `public/audio`. Folder kerja seperti file sumber Blender, export percobaan, screenshot, prompt audio, dan backup rollback tidak dibutuhkan oleh runtime kecuali memang sedang digunakan untuk proses development atau pemeliharaan asset.
+
+## Pengembangan Berikutnya
+
+Beberapa pengembangan frontend yang dapat dilakukan selanjutnya:
+
+- Menambahkan ringkasan minat atau skill pemain berdasarkan stage yang diselesaikan.
+- Menambahkan halaman informasi SOCS dan Software Engineering setelah onboarding.
+- Menambahkan accessibility controls dan responsive layout yang lebih luas.
+- Menyediakan export ringkasan progres yang dapat dibagikan pengguna.
+- Menyambungkan frontend ke API apabila backend dan kebutuhan privasi data sudah disiapkan.
+
+## Kontribusi
+
+1. Buat branch baru untuk perubahan.
+2. Pastikan TypeScript build dan lint berhasil.
+3. Uji route yang terdampak di browser.
+4. Buat pull request dengan ringkasan perubahan dan screenshot jika perubahan bersifat visual.
 
 ```bash
 npm run build
-```
-
-Run linting:
-
-```bash
 npm run lint
 ```
 
-## Notes
+## Kredit
 
-The game stores progress, scores, and settings in the browser using persisted state, so player progress can survive reloads during local development.
+Project internship kampus untuk branding **SOCS — Software Engineering, BINUS University Bekasi**.
 
+Current implementation focus: **Frontend, React, TypeScript, Three.js, UI/UX, game flow, dan interactive learning experience**.
