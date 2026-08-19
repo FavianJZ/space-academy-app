@@ -779,7 +779,7 @@ export const NewIntroScene: React.FC<{
             <span className="intro-ops-beacon" />
             <div>
               <span>FLIGHT RECORD // 01</span>
-              <strong>ORBITAL ACADEMY</strong>
+              <strong>SPACE ACADEMY</strong>
             </div>
           </div>
 
