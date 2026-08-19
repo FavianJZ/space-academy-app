@@ -95,7 +95,7 @@ const GameStage: React.FC = () => {
           <span className="gs-mission-beacon" />
           <div>
             <span>ACADEMY SIMULATION // {String(planetId).padStart(2, "0")}</span>
-            <strong>ORBITAL ACADEMY</strong>
+            <strong>SPACE ACADEMY</strong>
           </div>
         </div>
 
