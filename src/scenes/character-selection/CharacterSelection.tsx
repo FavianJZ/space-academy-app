@@ -459,7 +459,7 @@ const CharacterSelection = () => {
             <span className="cs-beacon" />
             <div>
               <span>CADET INDUCTION // 00</span>
-              <strong>ORBITAL ACADEMY</strong>
+              <strong>SPACE ACADEMY</strong>
             </div>
           </div>
 
