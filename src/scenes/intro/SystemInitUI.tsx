@@ -18,7 +18,7 @@ const SystemInitUI = ({ visible, statusText, onStartMission }: SystemInitUIProps
           <span className="intro-init-beacon" />
           <div>
             <span>MISSION CHANNEL // 01</span>
-            <strong>ORBITAL ACADEMY</strong>
+            <strong>SPACE ACADEMY</strong>
           </div>
         </div>
         <div className="intro-init-signal">
