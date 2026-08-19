@@ -1637,7 +1637,7 @@ const Bedroom: React.FC = () => {
                 <span className="mission-beacon" />
                 <div>
                   <span className="mission-eyebrow">CABIN RECOVERY // 01</span>
-                  <strong>ORBITAL ACADEMY</strong>
+                  <strong>SPACE ACADEMY</strong>
                 </div>
               </div>
 
