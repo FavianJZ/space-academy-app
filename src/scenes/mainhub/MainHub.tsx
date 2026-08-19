@@ -1433,7 +1433,7 @@ useEffect(() => {
 
       <div className="welcome-message">
         <span className="hub-command-kicker">
-          <i /> ORBITAL NAVIGATION // 02
+          <i /> SPACE NAVIGATION
         </span>
         <h1>WELCOME, {playerData.name || "CADET"}</h1>
         <p>SELECT A PLANET TO OPEN ITS MISSION VECTOR</p>
