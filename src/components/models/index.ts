@@ -1,0 +1,13 @@
+export { AsteroidObject } from "./AsteroidObject";
+export { BedroomModel } from "./BedroomModel";
+export { CockpitModel } from "./CockpitModel";
+export { Planet1 } from "./Planet1";
+export { Planet2 } from "./Planet2";
+export { Planet3 } from "./Planet3";
+export { Planet4 } from "./Planet4";
+export { Planet5 } from "./Planet5";
+export { Planet6 } from "./Planet6";
+export { Robot } from "./Robot";
+export { SpacemanPet } from "./SpacemanPet";
+export { SpacemanPink } from "./SpacemanPink";
+export { SpacemanWhite } from "./SpacemanWhite";
