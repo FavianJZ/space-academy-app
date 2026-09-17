@@ -1,7 +1,8 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useGameStore } from "../../stores/useGameStore";
 import { fetchGlobalLeaderboard } from "../../services/leaderboardService";
+import { supabase, isSupabaseEnabled } from "../../lib/supabase";
 import type { LeaderboardEntry } from "../../types/game.types";
 import { CadetDossierModal } from "../../components/specialization/CadetDossierModal";
 import "./Leaderboard.css";
@@ -20,17 +21,17 @@ const Leaderboard: React.FC = () => {
   const refreshSpecializationProfile = useGameStore((state) => state.refreshSpecializationProfile);
   const [showDossier, setShowDossier] = useState(false);
 
-const leaderboard = useMemo(() => {
+  const leaderboard = useMemo(() => {
     const merged = new Map<string, LeaderboardEntry>();
 
-for (const entry of remoteEntries) {
+    for (const entry of remoteEntries) {
       const existing = merged.get(entry.playerName);
       if (!existing || entry.totalScore > existing.totalScore) {
         merged.set(entry.playerName, entry);
       }
     }
 
-for (const entry of leaderboardEntries) {
+    for (const entry of leaderboardEntries) {
       const existing = merged.get(entry.playerName);
       if (!existing || entry.totalScore > existing.totalScore) {
         merged.set(entry.playerName, entry);
@@ -44,23 +45,55 @@ for (const entry of leaderboardEntries) {
     window.scrollTo(0, 0);
   }, []);
 
-useEffect(() => {
-    setIsLoading(true);
-    fetchGlobalLeaderboard()
-      .then((rows) => {
-        const mapped: LeaderboardEntry[] = rows.map((r) => ({
-          playerName: r.player_name,
-          totalScore: r.total_score,
-          timestamp: new Date(r.updated_at).getTime(),
-          major: (r.major || "") as LeaderboardEntry["major"],
-        }));
-        setRemoteEntries(mapped);
-      })
-      .catch(() => {
-        
-      })
-      .finally(() => setIsLoading(false));
+  const loadLeaderboard = useCallback(async () => {
+    try {
+      const rows = await fetchGlobalLeaderboard();
+      const mapped: LeaderboardEntry[] = rows.map((r) => ({
+        playerName: r.player_name,
+        totalScore: r.total_score,
+        timestamp: new Date(r.updated_at).getTime(),
+        major: (r.major || "") as LeaderboardEntry["major"],
+      }));
+      setRemoteEntries(mapped);
+    } catch (err) {
+      console.warn("Failed to fetch global leaderboard:", err);
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    loadLeaderboard();
+
+    // Polling fallback every 6 seconds
+    const interval = setInterval(loadLeaderboard, 6000);
+
+    // Supabase Realtime Channel
+    let channel: any = null;
+    if (isSupabaseEnabled() && supabase) {
+      channel = supabase
+        .channel("realtime-global-leaderboard")
+        .on(
+          "postgres_changes",
+          {
+            event: "*",
+            schema: "public",
+            table: "leaderboard",
+          },
+          () => {
+            loadLeaderboard();
+          }
+        )
+        .subscribe();
+    }
+
+    return () => {
+      clearInterval(interval);
+      if (channel && supabase) {
+        supabase.removeChannel(channel);
+      }
+    };
+  }, [loadLeaderboard]);
 
   useEffect(() => {
     if (visitedPlanets.size < 6) return;
@@ -93,9 +126,28 @@ useEffect(() => {
               <span style={{ marginLeft: 8, fontSize: "0.8em", opacity: 0.7 }}>
                 ⏳ Syncing...
               </span>
-            ) : remoteEntries.length > 0 ? (
-              <span style={{ marginLeft: 8, fontSize: "0.8em", color: "#00ff88" }}>
-                🌐 Online
+            ) : isSupabaseEnabled() ? (
+              <span
+                style={{
+                  marginLeft: 8,
+                  fontSize: "0.8em",
+                  color: "#00ffcc",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "5px",
+                }}
+              >
+                <span
+                  style={{
+                    width: "6px",
+                    height: "6px",
+                    borderRadius: "50%",
+                    background: "#00ffcc",
+                    boxShadow: "0 0 8px #00ffcc",
+                    display: "inline-block",
+                  }}
+                />
+                LIVE Realtime
               </span>
             ) : (
               <span style={{ marginLeft: 8, fontSize: "0.8em", opacity: 0.5 }}>

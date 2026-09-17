@@ -126,16 +126,35 @@ export async function syncScoreToSupabase(
   }
 }
 
-export function syncLeaderboardToSupabase(
+export async function syncLeaderboardToSupabase(
   playerName: string,
   totalScore: number,
   major: string
-): void {
+): Promise<void> {
   if (!isSupabaseEnabled()) return;
 
-  submitLeaderboardEntry(playerName, totalScore, major).catch((err) =>
-    console.error("[sync] leaderboard push failed:", err)
-  );
+  try {
+    let playerId = getLocalPlayerId();
+    if (!playerId) {
+      const state = useGameStore.getState();
+      const cleanName = state.playerData.name?.trim() || playerName || "Cadet Pilot";
+      playerId = await registerPlayer({
+        name: cleanName,
+        phone: state.playerData.phone,
+        school: state.playerData.school,
+        major: state.playerData.major || major,
+        character_type: state.character,
+        spaceman_color: state.spacemanColor,
+        spaceman_hat: state.spacemanHat,
+        spaceman_pet: state.spacemanPet,
+        specialization_result: state.specializationResult,
+      });
+    }
+
+    await submitLeaderboardEntry(playerName, totalScore, major);
+  } catch (err) {
+    console.error("[sync] leaderboard push failed:", err);
+  }
 }
 
 export function syncBossDamageToSupabase(
