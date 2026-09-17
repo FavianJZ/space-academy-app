@@ -19,7 +19,11 @@ const Leaderboard: React.FC = () => {
   const totalScore = useGameStore((state) => state.getTotalScore());
   const specializationResult = useGameStore((state) => state.specializationResult);
   const refreshSpecializationProfile = useGameStore((state) => state.refreshSpecializationProfile);
+  const p2Name = useGameStore((state) => state.p2Name);
   const [showDossier, setShowDossier] = useState(false);
+
+  const currentPlayerName = (playerData.name?.trim() || p2Name?.trim() || "");
+  const normalizedCurrentName = currentPlayerName.toLowerCase();
 
   const leaderboard = useMemo(() => {
     const merged = new Map<string, LeaderboardEntry>();
@@ -40,6 +44,16 @@ const Leaderboard: React.FC = () => {
 
     return [...merged.values()].sort((a, b) => b.totalScore - a.totalScore);
   }, [leaderboardEntries, remoteEntries]);
+
+  const userRankIndex = useMemo(() => {
+    if (!normalizedCurrentName) return -1;
+    return leaderboard.findIndex(
+      (entry) => entry.playerName.trim().toLowerCase() === normalizedCurrentName
+    );
+  }, [leaderboard, normalizedCurrentName]);
+
+  const userRank = userRankIndex >= 0 ? userRankIndex + 1 : null;
+  const userEntry = userRankIndex >= 0 ? leaderboard[userRankIndex] : null;
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -157,6 +171,42 @@ const Leaderboard: React.FC = () => {
           </p>
         </div>
 
+        {/* User Rank Indicator Banner */}
+        {userRank !== null && userEntry ? (
+          <div className="user-rank-banner">
+            <div className="user-rank-banner-left">
+              <span className="user-rank-pulse" />
+              <span className="user-rank-label">YOUR RANK:</span>
+              <span className="user-rank-number">#{userRank}</span>
+              <span className="user-rank-player">
+                {userEntry.playerName} <span className="you-badge">(YOU)</span>
+              </span>
+            </div>
+            <div className="user-rank-banner-right">
+              <span className="user-rank-score-label">SCORE:</span>
+              <span className="user-rank-score-val">
+                {userEntry.totalScore.toLocaleString()} PTS
+              </span>
+            </div>
+          </div>
+        ) : normalizedCurrentName && totalScore > 0 ? (
+          <div className="user-rank-banner pending">
+            <div className="user-rank-banner-left">
+              <span className="user-rank-pulse" />
+              <span className="user-rank-label">CURRENT PILOT:</span>
+              <span className="user-rank-player">
+                {currentPlayerName} <span className="you-badge">(YOU)</span>
+              </span>
+            </div>
+            <div className="user-rank-banner-right">
+              <span className="user-rank-score-label">SCORE:</span>
+              <span className="user-rank-score-val">
+                {totalScore.toLocaleString()} PTS
+              </span>
+            </div>
+          </div>
+        ) : null}
+
         <div className="leaderboard-section">
           <table className="leaderboard-table">
             <thead>
@@ -170,41 +220,81 @@ const Leaderboard: React.FC = () => {
 
             <tbody>
               {leaderboard.length > 0 ? (
-                leaderboard.slice(0, 50).map((entry, index) => {
-                  const isCurrentPlayer =
-                    entry.playerName === playerData.name &&
-                    entry.totalScore === totalScore;
+                <>
+                  {leaderboard.slice(0, 50).map((entry, index) => {
+                    const isCurrentPlayer =
+                      Boolean(normalizedCurrentName) &&
+                      entry.playerName.trim().toLowerCase() === normalizedCurrentName;
 
-                  const rankLabel =
-                    index === 0
-                      ? "🥇"
-                      : index === 1
-                        ? "🥈"
-                        : index === 2
-                          ? "🥉"
-                          : `#${index + 1}`;
+                    const rankLabel =
+                      index === 0
+                        ? "🥇"
+                        : index === 1
+                          ? "🥈"
+                          : index === 2
+                            ? "🥉"
+                            : `#${index + 1}`;
 
-                  return (
-                    <tr
-                      key={`${entry.playerName}-${entry.totalScore}-${entry.timestamp}-${index}`}
-                      className={`${isCurrentPlayer ? "player-row glow" : ""} ${
-                        index < 3 ? "top-rank" : ""
-                      }`}
-                    >
-                      <td className="rank-col">
-                        <span className="rank-badge">{rankLabel}</span>
-                      </td>
+                    return (
+                      <tr
+                        key={`${entry.playerName}-${entry.totalScore}-${entry.timestamp}-${index}`}
+                        className={`${isCurrentPlayer ? "player-row glow" : ""} ${
+                          index < 3 ? "top-rank" : ""
+                        }`}
+                      >
+                        <td className="rank-col">
+                          <span className="rank-badge">{rankLabel}</span>
+                        </td>
 
-                      <td className="name-col">{entry.playerName}</td>
+                        <td className="name-col">
+                          <span className="player-name-text">{entry.playerName}</span>
+                          {isCurrentPlayer && (
+                            <span className="you-badge">(YOU)</span>
+                          )}
+                        </td>
 
-                      <td className="major-col">{entry.major || "-"}</td>
+                        <td className="major-col">{entry.major || "-"}</td>
 
-                      <td className="score-col">
-                        <span className="score-badge">{entry.totalScore}</span>
-                      </td>
-                    </tr>
-                  );
-                })
+                        <td className="score-col">
+                          <span className="score-badge">{entry.totalScore}</span>
+                        </td>
+                      </tr>
+                    );
+                  })}
+
+                  {/* Show player's row pinned at the bottom if outside Top 50 */}
+                  {userRankIndex >= 50 && userEntry && (
+                    <>
+                      <tr className="separator-row">
+                        <td
+                          colSpan={4}
+                          style={{
+                            textAlign: "center",
+                            padding: "8px",
+                            color: "#00ffff",
+                            opacity: 0.6,
+                            letterSpacing: "4px",
+                          }}
+                        >
+                          • • •
+                        </td>
+                      </tr>
+                      <tr className="player-row glow">
+                        <td className="rank-col">
+                          <span className="rank-badge">#{userRank}</span>
+                        </td>
+                        <td className="name-col">
+                          <span className="player-name-text">{userEntry.playerName}</span>
+                          <span className="you-badge">(YOU)</span>
+                        </td>
+                        <td className="major-col">{userEntry.major || "-"}</td>
+                        <td className="score-col">
+                          <span className="score-badge">{userEntry.totalScore}</span>
+                        </td>
+                      </tr>
+                    </>
+                  )}
+                </>
               ) : (
                 <tr>
                   <td

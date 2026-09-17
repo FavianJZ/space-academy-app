@@ -1156,10 +1156,14 @@ const MainHub: React.FC = () => {
               (() => {
                 const fullLeaderboard = getPlanetLeaderboard(selectedPlanet);
                 const top10 = fullLeaderboard.slice(0, 10);
-                const currentPlayerName = playerData.name || "CADET";
+                const currentPlayerName =
+                  playerData.name?.trim() || p2Name?.trim() || "CADET";
+                const normalizedCurrentPlayer = currentPlayerName.toLowerCase();
 
                 const playerIndex = fullLeaderboard.findIndex(
-                  (entry) => entry.playerName === currentPlayerName
+                  (entry) =>
+                    entry.playerName.trim().toLowerCase() ===
+                    normalizedCurrentPlayer
                 );
                 const playerInTop10 = playerIndex >= 0 && playerIndex < 10;
                 const playerEntry =
@@ -1253,7 +1257,8 @@ const MainHub: React.FC = () => {
                                   ? "🥉"
                                   : "";
                           const isCurrentPlayer =
-                            entry.playerName === currentPlayerName;
+                            entry.playerName.trim().toLowerCase() ===
+                            normalizedCurrentPlayer;
 
                           return (
                             <div
