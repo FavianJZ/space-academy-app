@@ -1,0 +1,408 @@
+.new-intro-scene-container {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+  isolation: isolate;
+  background: #03090e;
+}
+
+.intro-canvas {
+  z-index: 0;
+  background: radial-gradient(circle at 50% 40%, #102630, #03090e 72%);
+}
+
+.intro-cinematic-layer,
+.intro-vignette,
+.intro-film-grain,
+.intro-scan-sweep,
+.intro-letterbox,
+.flash-overlay {
+  position: fixed;
+  pointer-events: none;
+}
+
+.intro-cinematic-layer,
+.intro-vignette,
+.intro-film-grain,
+.intro-scan-sweep,
+.flash-overlay {
+  inset: 0;
+}
+
+.intro-cinematic-layer { z-index: 2; }
+
+.intro-vignette {
+  background:
+    radial-gradient(circle at 50% 45%, transparent 28%, rgba(1, 6, 10, 0.11) 62%, rgba(1, 5, 8, 0.67) 115%),
+    linear-gradient(180deg, rgba(1, 6, 10, 0.3), transparent 23%, transparent 73%, rgba(1, 5, 8, 0.54));
+}
+
+.intro-film-grain {
+  opacity: 0.045;
+  background-image:
+    repeating-radial-gradient(circle at 17% 32%, transparent 0 1px, rgba(255, 255, 255, 0.28) 1px 2px),
+    repeating-linear-gradient(108deg, transparent 0 3px, rgba(130, 222, 255, 0.12) 3px 4px);
+  background-size: 7px 7px, 13px 13px;
+  mix-blend-mode: soft-light;
+  animation: introGrain 0.36s steps(2) infinite;
+}
+
+@keyframes introGrain {
+  0% { transform: translate3d(0, 0, 0); }
+  25% { transform: translate3d(-0.35%, 0.25%, 0); }
+  50% { transform: translate3d(0.28%, -0.34%, 0); }
+  75% { transform: translate3d(0.34%, 0.18%, 0); }
+  100% { transform: translate3d(-0.18%, -0.28%, 0); }
+}
+
+.intro-scan-sweep {
+  top: -18%;
+  bottom: auto;
+  height: 18%;
+  opacity: 0.22;
+  background: linear-gradient(180deg, transparent, rgba(100, 229, 250, 0.055), transparent);
+  animation: introScanSweep 8s linear infinite;
+}
+
+@keyframes introScanSweep {
+  to { transform: translateY(760%); }
+}
+
+.intro-letterbox {
+  left: 0;
+  width: 100%;
+  height: clamp(10px, 1.8vh, 20px);
+  z-index: 12;
+  background: rgba(1, 5, 8, 0.94);
+}
+
+.intro-letterbox-top { top: 0; }
+.intro-letterbox-bottom { bottom: 0; }
+
+.intro-ops-header {
+  position: absolute;
+  top: clamp(31px, 4.6vh, 52px);
+  left: clamp(24px, 3.5vw, 64px);
+  right: clamp(24px, 3.5vw, 64px);
+  z-index: 16;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  color: #dff8ff;
+  filter: drop-shadow(0 5px 18px rgba(0, 7, 12, 0.58));
+  pointer-events: none;
+  animation: introHudIn 0.7s ease both;
+}
+
+@keyframes introHudIn {
+  from { opacity: 0; transform: translateY(-10px); }
+}
+
+.intro-ops-identity {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.intro-ops-identity > div,
+.intro-phase-status {
+  display: flex;
+  flex-direction: column;
+}
+
+.intro-ops-beacon {
+  width: 9px;
+  height: 9px;
+  border: 2px solid #68e8ff;
+  box-shadow: 0 0 14px rgba(104, 232, 255, 0.68);
+  transform: rotate(45deg);
+  animation: introOpsBeacon 2.35s ease-in-out infinite;
+}
+
+@keyframes introOpsBeacon {
+  50% { opacity: 0.42; transform: rotate(45deg) scale(0.72); }
+}
+
+.intro-ops-identity span,
+.intro-phase-status > span {
+  color: rgba(155, 207, 218, 0.68);
+  font-size: clamp(0.54rem, 0.67vw, 0.67rem);
+  line-height: 1;
+  letter-spacing: 0.19em;
+}
+
+.intro-ops-identity strong {
+  margin-top: 6px;
+  font-family: "Orbitron", system-ui, sans-serif;
+  font-size: clamp(0.68rem, 0.9vw, 0.86rem);
+  font-weight: 600;
+  letter-spacing: 0.23em;
+  text-shadow: none;
+}
+
+.intro-phase-status {
+  align-items: flex-end;
+  gap: 8px;
+  margin-right: clamp(184px, 17vw, 250px);
+}
+
+.intro-phase-track {
+  display: flex;
+  gap: 4px;
+}
+
+.intro-phase-track i {
+  width: clamp(21px, 2.1vw, 32px);
+  height: 3px;
+  background: rgba(117, 181, 198, 0.18);
+  transform: skewX(-28deg);
+  transition: background 0.5s ease, box-shadow 0.5s ease;
+}
+
+.intro-phase-track i.active {
+  background: #67e5ff;
+  box-shadow: 0 0 10px rgba(77, 222, 255, 0.62);
+}
+
+.intro-route-telemetry {
+  --route-accent: #67e5ff;
+  position: absolute;
+  left: 50%;
+  bottom: clamp(37px, 5.2vh, 62px);
+  z-index: 22;
+  display: grid;
+  grid-template-columns: auto minmax(140px, 1fr);
+  grid-template-areas:
+    "heading state"
+    "progress metric";
+  align-items: center;
+  gap: 7px 18px;
+  width: min(430px, 34vw);
+  min-width: 330px;
+  padding: 11px 15px 10px;
+  border: 1px solid color-mix(in srgb, var(--route-accent) 38%, transparent);
+  background:
+    linear-gradient(105deg, rgba(3, 13, 20, 0.9), rgba(4, 11, 17, 0.72)),
+    linear-gradient(90deg, color-mix(in srgb, var(--route-accent) 14%, transparent), transparent 52%);
+  color: #e8fbff;
+  box-shadow:
+    inset 3px 0 var(--route-accent),
+    inset 0 1px rgba(231, 251, 255, 0.08),
+    0 18px 48px rgba(0, 4, 8, 0.42);
+  clip-path: polygon(0 0, calc(100% - 13px) 0, 100% 13px, 100% 100%, 13px 100%, 0 calc(100% - 13px));
+  backdrop-filter: blur(18px) saturate(125%);
+  transform: translateX(-50%);
+  animation: introRouteTelemetryIn 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
+  pointer-events: none;
+}
+
+@keyframes introRouteTelemetryIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 16px);
+    filter: blur(5px);
+  }
+}
+
+.intro-route-telemetry-heading {
+  grid-area: heading;
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+  white-space: nowrap;
+}
+
+.intro-route-telemetry-heading span,
+.intro-route-telemetry small {
+  color: color-mix(in srgb, var(--route-accent) 78%, #dffaff);
+  font-size: 0.48rem;
+  letter-spacing: 0.16em;
+}
+
+.intro-route-telemetry-heading strong {
+  font-family: "Orbitron", system-ui, sans-serif;
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.11em;
+}
+
+.intro-route-telemetry-state {
+  grid-area: state;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 7px;
+  min-width: 0;
+}
+
+.intro-route-telemetry-state i {
+  flex: 0 0 auto;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--route-accent);
+  box-shadow: 0 0 9px var(--route-accent);
+  animation: introRoutePulse 0.82s ease-in-out infinite alternate;
+}
+
+@keyframes introRoutePulse {
+  to { opacity: 0.35; transform: scale(0.7); }
+}
+
+.intro-route-telemetry-state span {
+  overflow: hidden;
+  color: rgba(218, 244, 248, 0.72);
+  font-size: 0.49rem;
+  letter-spacing: 0.11em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.intro-route-telemetry-progress {
+  grid-area: progress;
+  display: flex;
+  gap: 4px;
+  width: 130px;
+}
+
+.intro-route-telemetry-progress i {
+  flex: 1;
+  height: 2px;
+  background: rgba(133, 188, 199, 0.17);
+  transform: skewX(-25deg);
+  transition: background 0.35s ease, box-shadow 0.35s ease;
+}
+
+.intro-route-telemetry-progress i.active {
+  background: var(--route-accent);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--route-accent) 68%, transparent);
+}
+
+.intro-route-telemetry small {
+  grid-area: metric;
+  justify-self: end;
+  opacity: 0.56;
+}
+
+.intro-route-telemetry.is-complete {
+  border-color: color-mix(in srgb, var(--route-accent) 72%, transparent);
+  background:
+    linear-gradient(105deg, rgba(3, 16, 19, 0.94), rgba(5, 13, 17, 0.86)),
+    linear-gradient(90deg, color-mix(in srgb, var(--route-accent) 22%, transparent), transparent 64%);
+}
+
+.intro-skip-control {
+  position: absolute;
+  right: clamp(24px, 3.5vw, 64px);
+  bottom: clamp(34px, 5vh, 58px);
+  z-index: 35;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 154px;
+  min-height: 51px;
+  padding: 9px 14px;
+  border: 1px solid rgba(101, 212, 232, 0.28);
+  border-radius: 2px;
+  background: rgba(4, 17, 24, 0.76);
+  color: rgba(207, 240, 246, 0.72);
+  box-shadow: inset 0 1px rgba(222, 250, 255, 0.05), 0 13px 32px rgba(0, 5, 8, 0.32);
+  backdrop-filter: blur(18px) saturate(120%);
+  transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
+}
+
+.intro-skip-control span {
+  color: rgba(143, 192, 202, 0.55);
+  font-size: 0.49rem;
+  letter-spacing: 0.15em;
+}
+
+.intro-skip-control strong {
+  margin-top: 5px;
+  color: rgba(218, 246, 251, 0.78);
+  font-size: 0.6rem;
+  letter-spacing: 0.12em;
+  text-shadow: none;
+}
+
+.intro-skip-control:hover,
+.intro-skip-control:focus-visible {
+  transform: translateY(-3px);
+  border-color: rgba(111, 230, 251, 0.68);
+  background: rgba(8, 35, 45, 0.9);
+  box-shadow: inset 3px 0 #68e8ff, 0 16px 38px rgba(0, 5, 8, 0.44);
+}
+
+.intro-skip-control:focus-visible {
+  outline: 2px solid #b2f5ff;
+  outline-offset: 3px;
+}
+
+.intro-skip-control.is-recovery {
+  border-color: rgba(255, 184, 107, 0.72);
+  background: linear-gradient(104deg, rgba(255, 143, 68, 0.18), rgba(20, 16, 13, 0.9));
+  color: #fff3e2;
+  box-shadow:
+    inset 3px 0 rgba(255, 172, 92, 0.78),
+    0 18px 42px rgba(0, 5, 8, 0.48);
+}
+
+.intro-skip-control.is-recovery span {
+  color: rgba(255, 203, 153, 0.72);
+}
+
+.flash-overlay {
+  z-index: 9999;
+  background: #ecfcff;
+}
+
+@media (max-width: 900px) {
+  .intro-ops-header { top: 26px; left: 20px; right: 20px; }
+  .intro-phase-status { margin-right: 0; }
+  .intro-skip-control { right: 18px; bottom: 24px; }
+  .intro-route-telemetry {
+    bottom: 26px;
+    width: min(360px, 42vw);
+    min-width: 290px;
+  }
+}
+
+@media (max-width: 620px) {
+  .intro-phase-status { display: none; }
+  .intro-route-telemetry {
+    top: 79px;
+    bottom: auto;
+    width: calc(100vw - 30px);
+    min-width: 0;
+    padding: 9px 12px;
+  }
+  .intro-route-telemetry-state,
+  .intro-route-telemetry small { display: none; }
+  .intro-skip-control {
+    top: 25px;
+    right: 15px;
+    bottom: auto;
+    min-width: 104px;
+    min-height: 38px;
+    padding: 7px 10px;
+  }
+  .intro-skip-control span { display: none; }
+  .intro-skip-control strong { margin: 0; font-size: 0.51rem; }
+}
+
+@media (orientation: landscape) and (max-height: 560px) {
+  .intro-ops-header { top: 24px; }
+  .intro-skip-control { right: 16px; bottom: 18px; min-height: 42px; }
+  .intro-route-telemetry { bottom: 18px; padding-block: 8px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .intro-film-grain,
+  .intro-scan-sweep,
+  .intro-ops-header,
+  .intro-ops-beacon,
+  .intro-route-telemetry,
+  .intro-route-telemetry-state i { animation: none; }
+}

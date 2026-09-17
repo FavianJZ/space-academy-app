@@ -1,0 +1,11 @@
+Model Information:
+* title:	Sci-fi Spaceship Cockpit 02
+* source:	https://sketchfab.com/3d-models/sci-fi-spaceship-cockpit-02-c6825892999242319c1a29326c4e7713
+* author:	NotARealStudio (https://sketchfab.com/NotARealStudio)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Sci-fi Spaceship Cockpit 02" (https://sketchfab.com/3d-models/sci-fi-spaceship-cockpit-02-c6825892999242319c1a29326c4e7713) by NotARealStudio (https://sketchfab.com/NotARealStudio) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

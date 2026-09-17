@@ -1,0 +1,17 @@
+.intro-cutscene-container {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+  background: #03090e;
+}
+
+.intro-cutscene-container::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: radial-gradient(circle at 50% 45%, rgba(63, 207, 232, 0.045), transparent 48%);
+}

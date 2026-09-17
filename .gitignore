@@ -1,0 +1,41 @@
+# Dependencies
+node_modules/
+
+# Production build output
+dist/
+dist-ssr/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Logs & temp files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+*.log
+
+# System, Editor & Agent files
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+.vscode/
+.idea/
+.agents/
+.claude/
+
+# Non-production directories & scratch assets
+rollback/
+audio-prompts/
+scripts/
+New Character/
+New asset/
+AGENTS.md
+*-check.txt
+supabase-migration.sql
+
