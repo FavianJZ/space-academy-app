@@ -1,8 +1,8 @@
-import React, { Suspense, useEffect, useState } from "react";
-import { Canvas } from "@react-three/fiber";
+import React, { Suspense, useEffect, useState, useRef } from "react";
+import { Canvas, useFrame } from "@react-three/fiber";
+import * as THREE from "three";
 import { useNavigate } from "react-router-dom";
 import { SpacemanPink, SpacemanWhite, SpacemanPet } from "../models";
-import AvatarCharacterModel from "../../scenes/mainhub/AvatarCharacterModel";
 import {
   getSpacemanColorOption,
   getSpacemanHatOption,
@@ -24,53 +24,97 @@ interface DeviceAccountModalProps {
   onSelectCreateNew?: () => void;
 }
 
-// 3D Mini Hero Preview for each occupied slot
-const SlotHeroCanvas = ({ account }: { account: SavedDeviceAccount }) => {
+// 3D Mini Hero Stage with front-facing RPG hero stance & gentle breathing sway
+const HeroStage = ({ account }: { account: SavedDeviceAccount }) => {
   const selectedColor = getSpacemanColorOption(account.spacemanColor);
   const selectedPet = getSpacemanPetOption(account.spacemanPet);
-
   const hasPet = account.spacemanPet !== "none";
   const suitColor = selectedColor.modelColor ?? undefined;
   const CharacterModel = account.character === "pink" ? SpacemanPink : SpacemanWhite;
-  const pilotX = hasPet ? -0.45 : 0;
-  const petX = 0.58;
+
+  // Exact RPG hero stage positioning & sizing:
+  // With pet: pilot slightly to the left, pet to the right, facing front with slight inwards angle
+  // Without pet: pilot centered
+  const pilotX = hasPet ? -0.32 : 0;
+  const petX = 0.50;
+  
+  // Pilot scale: calibrated so crown / tall hats don't hit the top border, feet don't clip bottom
+  const pilotScale = account.spacemanHat === "none" 
+    ? (hasPet ? 0.48 : 0.52) 
+    : (hasPet ? 0.42 : 0.46);
+
+  const groupRef = useRef<THREE.Group>(null);
+
+  useFrame(({ clock }) => {
+    if (!groupRef.current) return;
+    const t = clock.getElapsedTime();
+    // Front-facing subtle breathing and gentle hero turn (always facing user, ±7 degrees)
+    groupRef.current.rotation.y = Math.sin(t * 0.9) * 0.12;
+    groupRef.current.position.y = Math.sin(t * 1.8) * 0.02;
+  });
+
+  return (
+    <group ref={groupRef}>
+      {/* Pilot Model */}
+      <group position={[pilotX, -1.08, 0]} rotation={[0, hasPet ? 0.10 : 0, 0]}>
+        <CharacterModel
+          scale={pilotScale}
+          position={[0, 0, 0]}
+          motion="idle"
+          suitColor={suitColor}
+          hatId={account.spacemanHat}
+        />
+        {/* Glowing holographic pedestal beneath pilot feet */}
+        <mesh position={[0, -0.01, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+          <ringGeometry args={[0.30, 0.36, 32]} />
+          <meshBasicMaterial color="#00ffcc" transparent opacity={0.4} />
+        </mesh>
+      </group>
+
+      {/* Pet Companion */}
+      {hasPet && (
+        <group position={[petX, -0.92, 0.15]} rotation={[0, -0.18, 0]} scale={0.68}>
+          <SpacemanPet petId={account.spacemanPet} />
+          {/* Companion holographic ring beneath pet */}
+          <mesh position={[0, -0.01, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+            <ringGeometry args={[0.22, 0.28, 32]} />
+            <meshBasicMaterial color={selectedPet.accent || "#00e5ff"} transparent opacity={0.35} />
+          </mesh>
+        </group>
+      )}
+    </group>
+  );
+};
+
+// 3D Mini Hero Preview Canvas with balanced camera framing
+const SlotHeroCanvas = ({ account }: { account: SavedDeviceAccount }) => {
+  const selectedPet = getSpacemanPetOption(account.spacemanPet);
+  const hasPet = account.spacemanPet !== "none";
 
   return (
     <div className="slot-canvas-wrap">
       <Canvas
-        camera={{ position: [0, -0.3, 3.6], fov: 36 }}
+        camera={{
+          position: [hasPet ? 0.08 : 0, -0.34, 4.4],
+          fov: 36,
+        }}
         gl={{ alpha: true, antialias: true }}
       >
-        <ambientLight intensity={0.8} color="#9ad9e6" />
-        <directionalLight position={[-2, 4, 3]} intensity={1.8} color="#dffcff" />
-        <pointLight position={[0, 0, 2.5]} intensity={2} color="#00ffcc" distance={5} />
+        <ambientLight intensity={1.1} color="#c8eeff" />
+        <directionalLight position={[2, 4, 3.5]} intensity={2.0} color="#ffffff" />
+        <directionalLight position={[-2.5, 2, 1.5]} intensity={1.2} color="#72ccff" />
+        <pointLight position={[0, 0, 2.5]} intensity={2.2} color="#00ffcc" distance={6} />
         {hasPet && (
           <pointLight
-            position={[petX, -0.6, 2.2]}
-            intensity={1.8}
+            position={[0.55, -0.5, 2.0]}
+            intensity={2.2}
             color={selectedPet.accent}
-            distance={4}
+            distance={5}
           />
         )}
 
         <Suspense fallback={null}>
-          <group position={[pilotX, 0, 0]}>
-            <AvatarCharacterModel
-              CharacterModel={CharacterModel}
-              suitColor={suitColor}
-              hatId={account.spacemanHat}
-              modelScale={account.spacemanHat === "none" ? 0.62 : 0.54}
-              modelPosition={account.spacemanHat === "none" ? [0, -1.68, 0] : [0, -1.58, 0]}
-              rotationSpeed={0.35}
-              floatAmplitude={0.03}
-            />
-          </group>
-
-          {hasPet && (
-            <group position={[petX, -1.35, 0.05]} scale={0.78}>
-              <SpacemanPet petId={account.spacemanPet} />
-            </group>
-          )}
+          <HeroStage account={account} />
         </Suspense>
       </Canvas>
     </div>
