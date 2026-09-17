@@ -527,12 +527,8 @@ const MainHub: React.FC = () => {
   }, [refreshSpecializationProfile]);
 
   useEffect(() => {
-    // Re-seed beatable bots if empty or if old impossible bots are detected
-    const hasOutdatedBots = planetLeaderboards.some(
-      (e) => (e.planetId === 3 && e.score > 480) || e.completionTime > 65
-    );
-
-    if (planetLeaderboards.length === 0 || hasOutdatedBots) {
+    // Only seed beatable bots if the leaderboard is completely empty.
+    if (planetLeaderboards.length === 0) {
       const sampleEntries = generateSamplePlanetLeaderboard();
       sampleEntries.forEach((entry) => {
         addPlanetLeaderboardEntry(entry);
