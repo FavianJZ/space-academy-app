@@ -75,9 +75,9 @@ const STAGE_CONFIGS: Record<
     competencyArea: "Flowchart & Process Decomposition",
   },
   5: {
-    stageName: "Logic Gate Array",
+    stageName: "Cloud Logic Array",
     planetName: "Logitron",
-    competencyArea: "Boolean Logic & Circuit Pipeline",
+    competencyArea: "Backend Pipeline Logic & Cloud Infrastructure",
   },
   6: {
     stageName: "Cyber Bug Quarantine",
@@ -301,9 +301,9 @@ export function generateCadetPersonalityProfile(
           case 5:
             evalText =
               timeSec < 60
-                ? `Kecepatan penyelesaian gerbang logika Logitron (${timeSec}s) menunjukkan penalaran boolean level tinggi.`
-                : `Berhasil mengaktifkan sirkuit gerbang logika Logitron dengan verifikasi truth-table yang akurat.`;
-            highlight = `${timeSec}s Boolean Synthesis`;
+                ? `Kecepatan analisis pipeline cloud Logitron (${timeSec}s) menunjukkan penguasaan logika backend infrastructure level tinggi.`
+                : `Berhasil mengkonfigurasi seluruh sirkuit logika Cloud & Backend Pipeline Logitron dengan verifikasi kondisi yang akurat.`;
+            highlight = `${timeSec}s Cloud Logic Synthesis`;
             break;
           case 6:
             evalText =

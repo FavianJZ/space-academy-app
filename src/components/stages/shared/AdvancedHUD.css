@@ -773,21 +773,31 @@
 }
 
 .game-stage-container .feedback-modal {
-  border: 1px solid var(--stage-line);
-  border-radius: 2px;
-  background: rgba(4, 16, 23, 0.94);
-  box-shadow: inset 3px 0 var(--gs-accent), 0 24px 72px rgba(0, 3, 7, 0.64);
+  position: fixed !important;
+  bottom: clamp(20px, 4vh, 40px) !important;
+  left: 50% !important;
+  transform: translate(-50%, 0) !important;
+  margin: 0 auto !important;
+  border: 1.5px solid var(--stage-line);
+  border-radius: 12px;
+  background: rgba(4, 16, 28, 0.96);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.8), 0 0 30px rgba(0, 255, 204, 0.15);
   backdrop-filter: blur(20px);
+  width: min(640px, 92vw);
+  max-width: 92vw;
+  box-sizing: border-box;
+  text-align: center;
+  z-index: 9999;
 }
 
 .game-stage-container .feedback-modal.success {
-  border-color: rgba(123, 242, 198, 0.48);
-  box-shadow: inset 3px 0 var(--stage-success), 0 24px 72px rgba(0, 3, 7, 0.64);
+  border-color: rgba(0, 255, 204, 0.6);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.8), 0 0 30px rgba(0, 255, 204, 0.25), inset 0 0 15px rgba(0, 255, 204, 0.08);
 }
 
 .game-stage-container .feedback-modal.failure {
-  border-color: rgba(255, 123, 132, 0.48);
-  box-shadow: inset 3px 0 var(--stage-danger), 0 24px 72px rgba(0, 3, 7, 0.64);
+  border-color: rgba(255, 77, 77, 0.6);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.8), 0 0 30px rgba(255, 77, 77, 0.25), inset 0 0 15px rgba(255, 77, 77, 0.08);
 }
 
 .game-stage-container .stage-bug-hunt {

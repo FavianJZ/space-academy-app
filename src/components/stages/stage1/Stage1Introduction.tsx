@@ -160,10 +160,17 @@ const [robotReaction, setRobotReaction] = useState<RobotReaction>('idle');
     return (
       <div className="stage-completion">
         <div className="completion-card">
+          <div className="completion-badge">🚀 ONBOARDING COMPLETE</div>
           <h1>STAGE 1 COMPLETE!</h1>
-          <div className="score-info">
-            <p>Score: +500 points</p>
-            <p>Status: Mission Success</p>
+          <div style={{ display: "flex", gap: "20px", justifyContent: "center", margin: "16px 0" }}>
+            <div className="completion-stat-chip">
+              <span className="stat-label">STATUS</span>
+              <span className="stat-value">SUCCESS</span>
+            </div>
+            <div className="completion-stat-chip">
+              <span className="stat-label">SCORE</span>
+              <span className="stat-value">+500</span>
+            </div>
           </div>
           <p className="returning-message">Returning to main hub...</p>
           <div className="completion-buttons">

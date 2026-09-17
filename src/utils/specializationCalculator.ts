@@ -134,6 +134,7 @@ export function calculateSpecializationProfile(
 
   if (records[5]) {
     aiLogic += records[5].completed ? 25 : 10;
+    system += records[5].completed ? 15 : 5; // Cloud infrastructure mastery
     if ((records[5].timeSpentSeconds || 60) < 60 && records[5].completed) aiLogic += 10;
   }
 

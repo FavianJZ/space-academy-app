@@ -70,40 +70,70 @@ export async function fetchGlobalLeaderboard(): Promise<LeaderboardRow[]> {
 
 export async function fetchPlanetLeaderboard(
   planetId: number
-): Promise<
-  Array<{
-    player_name: string;
-    planet_id: number;
-    score: number;
-    completion_time: number;
-  }>
-> {
+): Promise<import("../types/game.types").PlanetLeaderboardEntry[]> {
   if (!isSupabaseEnabled()) return [];
 
   const { data, error } = await supabase!
     .from("planet_scores")
-    .select("score, completion_time, planet_id, players!inner(name)")
+    .select("score, completion_time, planet_id, created_at, players!inner(name)")
     .eq("planet_id", planetId)
     .eq("completed", true)
     .order("score", { ascending: false })
-    .limit(20);
+    .limit(40);
 
   if (error) {
-    console.error("[leaderboardService] planet fetch failed:", error.message);
+    console.warn("[leaderboardService] planet fetch failed:", error.message);
     return [];
   }
 
-  interface JoinedRow {
-    score: number;
-    completion_time: number;
-    planet_id: number;
-    players: Array<{ name: string }>;
+  const mapped: import("../types/game.types").PlanetLeaderboardEntry[] = (
+    (data ?? []) as any[]
+  ).map((row) => {
+    let name = "Cadet Pilot";
+    if (row.players) {
+      if (
+        typeof row.players === "object" &&
+        !Array.isArray(row.players) &&
+        row.players.name
+      ) {
+        name = row.players.name;
+      } else if (Array.isArray(row.players) && row.players[0]?.name) {
+        name = row.players[0].name;
+      }
+    }
+
+    return {
+      playerName: name,
+      planetId: row.planet_id as import("../types/planet.types").PlanetId,
+      score: row.score,
+      completionTime: Math.round(row.completion_time ?? 0),
+      timestamp: row.created_at
+        ? new Date(row.created_at).getTime()
+        : Date.now(),
+    };
+  });
+
+  // Deduplicate by playerName (keep highest score, fastest time)
+  const uniqueByPlayer = new Map<
+    string,
+    import("../types/game.types").PlanetLeaderboardEntry
+  >();
+
+  for (const item of mapped) {
+    const existing = uniqueByPlayer.get(item.playerName);
+    if (
+      !existing ||
+      item.score > existing.score ||
+      (item.score === existing.score &&
+        item.completionTime < existing.completionTime)
+    ) {
+      uniqueByPlayer.set(item.playerName, item);
+    }
   }
 
-  return ((data ?? []) as JoinedRow[]).map((row) => ({
-    player_name: row.players[0]?.name ?? "Unknown",
-    planet_id: row.planet_id,
-    score: row.score,
-    completion_time: row.completion_time,
-  }));
+  return [...uniqueByPlayer.values()].sort((a, b) =>
+    b.score !== a.score
+      ? b.score - a.score
+      : a.completionTime - b.completionTime
+  );
 }

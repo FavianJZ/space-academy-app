@@ -94,17 +94,36 @@ export function useSupabaseSync(): void {
   }, [specializationResult]);
 }
 
-export function syncScoreToSupabase(
+export async function syncScoreToSupabase(
   planetId: number,
   stageId: number,
   score: number,
   completionTime?: number
-): void {
+): Promise<void> {
   if (!isSupabaseEnabled()) return;
 
-  submitScore(planetId, stageId, score, completionTime).catch((err) =>
-    console.error("[sync] score push failed:", err)
-  );
+  try {
+    let playerId = getLocalPlayerId();
+    if (!playerId) {
+      const state = useGameStore.getState();
+      const cleanName = state.playerData.name?.trim() || "Cadet Pilot";
+      playerId = await registerPlayer({
+        name: cleanName,
+        phone: state.playerData.phone,
+        school: state.playerData.school,
+        major: state.playerData.major,
+        character_type: state.character,
+        spaceman_color: state.spacemanColor,
+        spaceman_hat: state.spacemanHat,
+        spaceman_pet: state.spacemanPet,
+        specialization_result: state.specializationResult,
+      });
+    }
+
+    await submitScore(planetId, stageId, score, completionTime);
+  } catch (err) {
+    console.error("[sync] score push failed:", err);
+  }
 }
 
 export function syncLeaderboardToSupabase(

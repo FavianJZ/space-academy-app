@@ -369,16 +369,26 @@ useEffect(() => {
     }, [handleComplete, timeLeft]);
 
     if (showCompletion) {
+        const correctCount = Array.from(selectedAnswers.entries()).filter(([id]) => {
+            const q = quizQuestions.find(question => question.id === id);
+            return selectedAnswers.get(id) === q?.correctAnswer;
+        }).length;
         return (
             <div className="stage-completion">
                 <div className="completion-card">
-                    <h1>STAGE 2 COMPLETE!</h1>
-                    <div className="score-info">
-                        <p>Correct Answers: {Array.from(selectedAnswers.entries()).filter(([id]) => {
-                            const q = quizQuestions.find(question => question.id === id);
-                            return selectedAnswers.get(id) === q?.correctAnswer;
-                        }).length}/5</p>
-                        <p>Score: {score} points</p>
+                    <div className="completion-badge">
+                        {correctCount === quizQuestions.length ? "🏆 PERFECT SCORE" : "✅ STAGE 2 COMPLETE"}
+                    </div>
+                    <h1>THEORY ASSESSMENT PASSED!</h1>
+                    <div style={{ display: "flex", gap: "20px", justifyContent: "center", margin: "16px 0" }}>
+                        <div className="completion-stat-chip">
+                            <span className="stat-label">CORRECT</span>
+                            <span className="stat-value">{correctCount}/{quizQuestions.length}</span>
+                        </div>
+                        <div className="completion-stat-chip">
+                            <span className="stat-label">SCORE</span>
+                            <span className="stat-value">{score}</span>
+                        </div>
                     </div>
                     <p className="returning-message">Returning to main hub...</p>
                     <div className="robot-celebration">

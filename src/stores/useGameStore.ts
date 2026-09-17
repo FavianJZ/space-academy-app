@@ -16,7 +16,10 @@ import {
 } from "../constants/game.constants";
 import type { GameState } from "../types/game.types";
 import { registerPlayer, updatePlayer } from "../services/playerService";
-import { fetchGlobalLeaderboard as fetchGlobalLeaderboardFromSupabase } from "../services/leaderboardService";
+import {
+  fetchGlobalLeaderboard as fetchGlobalLeaderboardFromSupabase,
+  fetchPlanetLeaderboard,
+} from "../services/leaderboardService";
 import { fetchBossHP, dealBossDamage } from "../services/bossService";
 import type { ApiGlobalLeaderboardEntry } from "../types/api.types";
 import {
@@ -342,13 +345,58 @@ export const useGameStore = create<GameState>()(
       },
 
       getPlanetLeaderboard: (planetId) => {
-        return [...get().planetLeaderboards]
-          .filter((entry) => entry.planetId === planetId)
-          .sort((a, b) =>
-            b.score !== a.score
-              ? b.score - a.score
-              : a.completionTime - b.completionTime
-          );
+        const localEntries = get().planetLeaderboards.filter(
+          (entry) => entry.planetId === planetId
+        );
+        const remoteEntries =
+          get().remotePlanetLeaderboards[planetId] || [];
+
+        const merged = new Map<string, import("../types/game.types").PlanetLeaderboardEntry>();
+
+        // 1. Add local entries (seeded bots + local plays)
+        for (const entry of localEntries) {
+          merged.set(entry.playerName, entry);
+        }
+
+        // 2. Add remote entries from Supabase (real players across devices!)
+        for (const entry of remoteEntries) {
+          const compTime = entry.completionTime ?? 25;
+          const existing = merged.get(entry.playerName);
+          if (
+            !existing ||
+            entry.score > existing.score ||
+            (entry.score === existing.score &&
+              compTime < existing.completionTime)
+          ) {
+            merged.set(entry.playerName, {
+              ...entry,
+              completionTime: compTime,
+            });
+          }
+        }
+
+        // 3. Ensure current player's latest score from planetScores is represented
+        const currentPlayerData = get().playerData;
+        const currentName = currentPlayerData.name?.trim() || "CADET";
+        const playerPlanetScore = get().getPlanetScore(planetId, planetId);
+        if (playerPlanetScore > 0) {
+          const existing = merged.get(currentName);
+          if (!existing || playerPlanetScore > existing.score) {
+            merged.set(currentName, {
+              playerName: currentName,
+              planetId,
+              score: playerPlanetScore,
+              completionTime: existing?.completionTime ?? 25,
+              timestamp: Date.now(),
+            });
+          }
+        }
+
+        return [...merged.values()].sort((a, b) =>
+          b.score !== a.score
+            ? b.score - a.score
+            : a.completionTime - b.completionTime
+        );
       },
 
       bossMode: false,
@@ -470,8 +518,23 @@ export const useGameStore = create<GameState>()(
 
       remotePlanetLeaderboards: {},
 
-      fetchPlanetLeaderboardRemote: async (_planetId) => {
-        // Handled via local / Supabase sync
+      fetchPlanetLeaderboardRemote: async (planetId) => {
+        try {
+          const remoteEntries = await fetchPlanetLeaderboard(planetId);
+          if (remoteEntries && remoteEntries.length > 0) {
+            set((state) => ({
+              remotePlanetLeaderboards: {
+                ...state.remotePlanetLeaderboards,
+                [planetId]: remoteEntries,
+              },
+            }));
+          }
+        } catch (error) {
+          console.warn(
+            `Failed to fetch remote leaderboard for planet ${planetId}:`,
+            error
+          );
+        }
       },
 
       remoteBossStatus: null,
@@ -597,7 +660,7 @@ export const useGameStore = create<GameState>()(
     {
       name: STORAGE_KEY,
       storage,
-      version: 5,
+      version: 6,
       
       migrate: (persistedState, version) => {
         const state = persistedState as GameState;
@@ -625,11 +688,21 @@ export const useGameStore = create<GameState>()(
             ? { ...colorMigratedState, spacemanHat: "none" as const }
             : colorMigratedState;
 
-        return (
+        const petMigratedState =
           version < 5
             ? { ...hatMigratedState, spacemanPet: "none" as const }
-            : hatMigratedState
-        ) as GameState;
+            : hatMigratedState;
+
+        const botLeaderboardCleanedState =
+          version < 6
+            ? {
+                ...petMigratedState,
+                planetLeaderboards: [], // Clean old impossible bots and re-seed beatable bots
+                remotePlanetLeaderboards: {},
+              }
+            : petMigratedState;
+
+        return botLeaderboardCleanedState as GameState;
       },
     }
   )

@@ -3378,38 +3378,104 @@
 }
 
 .feedback-modal {
-  position: absolute;
-  bottom: clamp(20px, 4vw, 50px);
+  position: fixed;
+  bottom: clamp(20px, 4vh, 40px);
   left: 50%;
-  transform: translateX(-50%);
-  background: rgba(0, 0, 0, 0.92);
-  backdrop-filter: blur(12px);
-  border: 2px solid #fff;
-  padding: clamp(16px, 2.5vw, 24px) clamp(24px, 4vw, 40px);
-  border-radius: var(--radius-lg);
+  transform: translate(-50%, 0);
+  background: rgba(4, 16, 28, 0.96);
+  backdrop-filter: blur(20px);
+  border: 1.5px solid rgba(0, 255, 204, 0.4);
+  padding: clamp(14px, 2vw, 20px) clamp(24px, 3.5vw, 36px);
+  border-radius: var(--radius-md);
   text-align: center;
-  z-index: 20;
-  animation: feedbackSlideUp 0.4s cubic-bezier(0.22, 1, 0.36, 1);
-  max-width: 90%;
+  z-index: 9999;
+  width: min(640px, 92vw);
+  max-width: 92vw;
+  box-sizing: border-box;
+  animation: feedbackSlideUp 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.8), 0 0 30px rgba(0, 255, 204, 0.15);
 }
 
 .feedback-modal.success {
-  border-color: var(--accent-green);
+  border-color: rgba(0, 255, 204, 0.6);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.8), 0 0 30px rgba(0, 255, 204, 0.25), inset 0 0 15px rgba(0, 255, 204, 0.08);
 }
 
 .feedback-modal.failure {
-  border-color: var(--accent-red);
+  border-color: rgba(255, 77, 77, 0.6);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.8), 0 0 30px rgba(255, 77, 77, 0.25), inset 0 0 15px rgba(255, 77, 77, 0.08);
 }
 
 .feedback-modal h3 {
   margin-top: 0;
-  font-size: clamp(18px, 2.5vw, 24px);
+  margin-bottom: 6px;
+  font-size: clamp(18px, 2.2vw, 22px);
+  letter-spacing: 1.5px;
+  font-weight: 800;
+}
+
+.feedback-modal.success h3 {
+  color: #00ffcc;
+  text-shadow: 0 0 12px rgba(0, 255, 204, 0.6);
+}
+
+.feedback-modal.failure h3 {
+  color: #ff5555;
+  text-shadow: 0 0 12px rgba(255, 85, 85, 0.6);
 }
 
 .feedback-modal p {
-  font-size: clamp(13px, 1.6vw, 16px);
-  color: var(--text-secondary);
+  font-size: clamp(13px, 1.4vw, 15px);
+  color: #cce6ff;
   line-height: 1.5;
+  margin: 0 0 12px 0;
+}
+
+.feedback-modal .hud-sweep-btn-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.feedback-modal .next-btn {
+  background: linear-gradient(135deg, #00ffcc 0%, #00b894 100%) !important;
+  color: #030f1e !important;
+  font-weight: 800 !important;
+  padding: 10px 32px !important;
+  border-radius: 8px !important;
+  border: none !important;
+  font-size: 0.95rem !important;
+  letter-spacing: 1.2px !important;
+  cursor: pointer !important;
+  box-shadow: 0 0 18px rgba(0, 255, 204, 0.5) !important;
+  transition: all 0.25s ease !important;
+  min-height: 42px;
+}
+
+.feedback-modal .next-btn:hover {
+  box-shadow: 0 0 28px rgba(0, 255, 204, 0.8) !important;
+  transform: translateY(-1px) scale(1.03);
+}
+
+.feedback-modal .retry-btn {
+  background: rgba(255, 77, 77, 0.15) !important;
+  color: #ff7777 !important;
+  border: 1.5px solid #ff4d4d !important;
+  font-weight: 800 !important;
+  padding: 10px 32px !important;
+  border-radius: 8px !important;
+  font-size: 0.95rem !important;
+  letter-spacing: 1.2px !important;
+  cursor: pointer !important;
+  box-shadow: 0 0 16px rgba(255, 77, 77, 0.35) !important;
+  transition: all 0.25s ease !important;
+  min-height: 42px;
+}
+
+.feedback-modal .retry-btn:hover {
+  background: rgba(255, 77, 77, 0.3) !important;
+  box-shadow: 0 0 24px rgba(255, 77, 77, 0.6) !important;
+  transform: translateY(-1px) scale(1.03);
 }
 
 .retry-btn {
@@ -3434,12 +3500,12 @@
 
 @keyframes feedbackSlideUp {
   from {
-    transform: translate(-50%, 30px);
+    transform: translate(-50%, 25px) scale(0.96);
     opacity: 0;
   }
 
   to {
-    transform: translate(-50%, 0);
+    transform: translate(-50%, 0) scale(1);
     opacity: 1;
   }
 }
@@ -5098,4 +5164,493 @@
 
 .stage1-continue-btn:active {
   transform: translateZ(5px) scale(0.98);
+}
+
+/* ============================================================ */
+/* Pipeline Sequencer — Premium Glassmorphism Cards              */
+/* ============================================================ */
+
+.pipeline-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  position: relative;
+  padding: 10px 0;
+}
+
+@media (max-width: 840px) {
+  .pipeline-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .pipeline-grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+}
+
+.pipeline-laser-line {
+  position: absolute;
+  top: 50%;
+  left: 4%;
+  right: 4%;
+  height: 3px;
+  z-index: 0;
+  transform: translateY(-50%);
+  transition: all 0.4s ease;
+}
+
+.pipeline-laser-line--idle {
+  background: linear-gradient(90deg, rgba(0, 255, 204, 0.3), rgba(0, 204, 255, 0.2));
+  box-shadow: none;
+}
+
+.pipeline-laser-line--verified {
+  background: linear-gradient(90deg, #00ff88, #00ffff);
+  box-shadow: 0 0 12px #00ff88, 0 0 24px #00ffff, 0 0 36px rgba(0, 255, 136, 0.4);
+  animation: pipelinePulseGlow 1.2s ease-in-out infinite alternate;
+}
+
+@keyframes pipelinePulseGlow {
+  0% { box-shadow: 0 0 12px #00ff88, 0 0 24px #00ffff; }
+  100% { box-shadow: 0 0 20px #00ff88, 0 0 40px #00ffff, 0 0 50px rgba(0, 255, 136, 0.5); }
+}
+
+/* Animated data particles flowing on the laser line */
+.pipeline-laser-line--verified::before {
+  content: '';
+  position: absolute;
+  top: -3px;
+  left: 0;
+  width: 30px;
+  height: 9px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, #00ff88, transparent);
+  box-shadow: 0 0 10px #00ff88, 0 0 20px #00ffcc;
+  animation: dataParticleFlow 1.5s linear infinite;
+}
+
+.pipeline-laser-line--verified::after {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: 0;
+  width: 20px;
+  height: 7px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, #00ffff, transparent);
+  box-shadow: 0 0 8px #00ffff;
+  animation: dataParticleFlow 1.5s linear 0.6s infinite;
+}
+
+@keyframes dataParticleFlow {
+  0% { left: -5%; opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { left: 100%; opacity: 0; }
+}
+
+/* Individual pipeline step cards */
+.pipeline-step-card {
+  position: relative;
+  z-index: 1;
+  background: rgba(8, 22, 50, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1.5px solid rgba(126, 249, 255, 0.25);
+  border-radius: 16px;
+  padding: 18px 14px;
+  cursor: pointer;
+  transform: scale(1);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  min-height: 190px;
+  justify-content: space-between;
+  overflow: hidden;
+}
+
+/* Glassmorphism shimmer effect on hover */
+.pipeline-step-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 16px;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.08) 0%,
+    transparent 50%,
+    rgba(0, 255, 255, 0.04) 100%
+  );
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.pipeline-step-card:hover::before {
+  opacity: 1;
+}
+
+.pipeline-step-card:hover {
+  box-shadow: 0 8px 28px rgba(0, 255, 255, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  border-color: rgba(126, 249, 255, 0.5);
+  transform: translateY(-3px);
+}
+
+.pipeline-step-card--selected {
+  background: rgba(255, 204, 0, 0.14) !important;
+  border: 2px solid #ffd700 !important;
+  transform: scale(1.05) translateY(-4px) !important;
+  box-shadow: 0 8px 28px rgba(255, 215, 0, 0.35), 0 0 20px rgba(255, 204, 0, 0.15) inset !important;
+  animation: selectedPulse 0.8s ease-in-out infinite alternate;
+}
+
+@keyframes selectedPulse {
+  0% { box-shadow: 0 8px 24px rgba(255, 215, 0, 0.3), 0 0 15px rgba(255, 204, 0, 0.1) inset; }
+  100% { box-shadow: 0 12px 36px rgba(255, 215, 0, 0.5), 0 0 25px rgba(255, 204, 0, 0.2) inset; }
+}
+
+.pipeline-step-card--verified {
+  background: rgba(0, 255, 136, 0.14) !important;
+  border: 2px solid #00ff88 !important;
+  box-shadow: 0 6px 24px rgba(0, 255, 136, 0.3), 0 0 15px rgba(0, 255, 136, 0.08) inset !important;
+  cursor: default !important;
+}
+
+.pipeline-step-card--correct {
+  border-color: rgba(0, 255, 204, 0.55) !important;
+}
+
+.pipeline-step-card--correct::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #00ffcc, transparent);
+  opacity: 0.7;
+}
+
+.pipeline-slot-label {
+  font-size: 9.5px;
+  font-family: 'Consolas', 'SF Mono', monospace;
+  color: #7ef9ff;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+.pipeline-tag-badge {
+  font-size: 9px;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.45);
+  font-weight: bold;
+  border: 1px solid rgba(126, 249, 255, 0.15);
+}
+
+.pipeline-step-icon {
+  font-size: 2.2rem;
+  margin: 6px 0;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+  transition: transform 0.2s ease;
+}
+
+.pipeline-step-card:hover .pipeline-step-icon {
+  transform: scale(1.1);
+}
+
+.pipeline-step-card--selected .pipeline-step-icon {
+  transform: scale(1.15) rotate(-5deg);
+  filter: drop-shadow(0 3px 8px rgba(255, 215, 0, 0.4));
+}
+
+.pipeline-step-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: 0.3px;
+  line-height: 1.25;
+  margin-bottom: 6px;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.pipeline-step-subtitle {
+  font-size: 0.78rem;
+  color: #a1c2e4;
+  line-height: 1.35;
+}
+
+.pipeline-order-indicator {
+  margin-top: 10px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  transition: color 0.2s ease;
+}
+
+.pipeline-order-indicator--selected {
+  color: #ffd700;
+  text-shadow: 0 0 6px rgba(255, 215, 0, 0.5);
+}
+
+.pipeline-order-indicator--correct {
+  color: #00ff88;
+  text-shadow: 0 0 4px rgba(0, 255, 136, 0.4);
+}
+
+.pipeline-order-indicator--idle {
+  color: #607d9b;
+}
+
+/* Pipeline Verified Banner */
+.pipeline-verified-banner {
+  margin-top: 16px;
+  padding: 12px 20px;
+  background: linear-gradient(135deg, rgba(0, 255, 136, 0.12), rgba(0, 255, 255, 0.08));
+  border: 1px solid rgba(0, 255, 136, 0.6);
+  border-radius: 10px;
+  color: #00ff88;
+  font-weight: bold;
+  font-size: 13px;
+  letter-spacing: 1.2px;
+  text-align: center;
+  animation: verifiedBannerPulse 1.2s ease-in-out infinite;
+  box-shadow: 0 4px 20px rgba(0, 255, 136, 0.15);
+  text-shadow: 0 0 8px rgba(0, 255, 136, 0.5);
+}
+
+@keyframes verifiedBannerPulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 4px 20px rgba(0, 255, 136, 0.15); }
+  50% { transform: scale(1.01); box-shadow: 0 6px 28px rgba(0, 255, 136, 0.3); }
+}
+
+/* ============================================================ */
+/* Enhanced Completion Screens — Animated Score & Party FX       */
+/* ============================================================ */
+
+.completion-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.completion-card::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    rgba(0, 255, 136, 0.05) 60deg,
+    transparent 120deg,
+    rgba(0, 255, 255, 0.04) 180deg,
+    transparent 240deg,
+    rgba(170, 102, 255, 0.04) 300deg,
+    transparent 360deg
+  );
+  animation: completionAuroraSpin 10s linear infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+
+@keyframes completionAuroraSpin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.completion-card > * {
+  position: relative;
+  z-index: 1;
+}
+
+.completion-badge {
+  display: inline-block;
+  padding: 6px 20px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, rgba(0, 255, 136, 0.2), rgba(0, 255, 255, 0.1));
+  border: 1px solid rgba(0, 255, 136, 0.5);
+  color: #00ff88;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  text-shadow: 0 0 6px rgba(0, 255, 136, 0.4);
+  margin-bottom: 12px;
+  animation: badgeGlow 2s ease-in-out infinite alternate;
+}
+
+@keyframes badgeGlow {
+  0% { box-shadow: 0 2px 10px rgba(0, 255, 136, 0.2); }
+  100% { box-shadow: 0 4px 20px rgba(0, 255, 136, 0.4), 0 0 30px rgba(0, 255, 136, 0.1); }
+}
+
+.score-display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 12px 28px;
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: 12px;
+  border: 1px solid rgba(0, 255, 255, 0.2);
+  margin: 12px auto;
+  width: fit-content;
+}
+
+.score-display .score-label {
+  font-size: 10px;
+  color: #8ea8c4;
+  letter-spacing: 2px;
+  font-weight: 600;
+}
+
+.score-display .score-value {
+  font-size: 2rem;
+  font-weight: 900;
+  background: linear-gradient(135deg, #00ff88, #00ffff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: none;
+  filter: drop-shadow(0 2px 6px rgba(0, 255, 136, 0.3));
+}
+
+/* Completion screen stat chips */
+.completion-stat-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 18px;
+  background: rgba(8, 22, 50, 0.5);
+  border-radius: 10px;
+  border: 1px solid rgba(126, 249, 255, 0.15);
+}
+
+.completion-stat-chip .stat-label {
+  font-size: 10px;
+  color: #8ea8c4;
+  letter-spacing: 1px;
+  font-weight: 600;
+}
+
+.completion-stat-chip .stat-value {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #00ffcc;
+}
+
+/* ============================================================ */
+/* Enhanced Quiz Option Cards — Micro-Animations                */
+/* ============================================================ */
+
+.quiz-option {
+  position: relative;
+  overflow: hidden;
+}
+
+.quiz-option::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 40%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05), transparent);
+  transform: skewX(-15deg);
+  transition: left 0.5s ease;
+  pointer-events: none;
+}
+
+.quiz-option:hover::after {
+  left: 130%;
+}
+
+/* ============================================================ */
+/* Enhanced Timer Countdown Warning                             */
+/* ============================================================ */
+
+.quiz-timer-badge.danger,
+.puzzle-timer-circle.danger {
+  animation: timerDangerPulse 0.5s ease-in-out infinite alternate !important;
+}
+
+@keyframes timerDangerPulse {
+  0% { transform: scale(1); filter: none; }
+  100% { transform: scale(1.08); filter: drop-shadow(0 0 8px rgba(255, 68, 68, 0.6)); }
+}
+
+/* Stage entry animation */
+@keyframes stageSlideIn {
+  0% {
+    opacity: 0;
+    transform: translateY(30px) scale(0.97);
+    filter: blur(4px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+.intro-card,
+.quiz-card,
+.puzzle-card,
+.flowchart-card,
+.logic-card {
+  animation: stageSlideIn 0.6s cubic-bezier(0.25, 0.8, 0.25, 1) both;
+}
+
+/* Step dot enhanced animation */
+.step-dot.active {
+  position: relative;
+}
+
+.step-dot.active::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 1.5px solid var(--accent-cyan);
+  animation: stepDotRing 1.5s ease-in-out infinite;
+}
+
+@keyframes stepDotRing {
+  0%, 100% { transform: scale(1); opacity: 0.8; }
+  50% { transform: scale(1.3); opacity: 0.3; }
+}
+
+/* Feedback modal enhanced entrance */
+.feedback-modal {
+  position: fixed !important;
+  bottom: clamp(20px, 4vh, 40px) !important;
+  left: 50% !important;
+  transform: translate(-50%, 0) !important;
+  animation: feedbackSlideUp 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both !important;
+}
+
+@keyframes feedbackSlideUp {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 25px) scale(0.96);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1);
+  }
+}
+
+/* Keyboard focus styles for quiz options */
+.quiz-option:focus-visible {
+  outline: 2px solid var(--accent-cyan);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(0, 255, 255, 0.15);
 }

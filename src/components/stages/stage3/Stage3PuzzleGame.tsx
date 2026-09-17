@@ -222,6 +222,9 @@ const Stage3PuzzleGame: React.FC<Stage3PuzzleGameProps> = ({ planetId }) => {
 
   const currentChallenge = pipelineChallenges[challengeIdx];
 
+  const timeLeftRef = useRef(timeLeft);
+  timeLeftRef.current = timeLeft;
+
   const handleRobotClick = () => {
     setSpeechMessage(getRandomMessage(robotMessages.idle));
     setRobotReaction("waving");
@@ -236,8 +239,9 @@ const Stage3PuzzleGame: React.FC<Stage3PuzzleGameProps> = ({ planetId }) => {
       if (transitionRef.current) clearTimeout(transitionRef.current);
 
       markPlanetVisited(planetId as 1 | 2 | 3 | 4 | 5 | 6);
+      const remainingTime = timeLeftRef.current;
       const calcScore = solved
-        ? Math.round(200 + (timeLeft / INITIAL_TIME) * 300)
+        ? Math.round(200 + (remainingTime / INITIAL_TIME) * 300)
         : 80;
       setFinalScore(calcScore);
       const elapsed = getElapsedStageSeconds(stageStartRef.current);
@@ -253,8 +257,27 @@ const Stage3PuzzleGame: React.FC<Stage3PuzzleGameProps> = ({ planetId }) => {
         navigate("/mainhub");
       }, 4500);
     },
-    [addPlanetScore, markPlanetVisited, navigate, planetId, playSfx, timeLeft]
+    [addPlanetScore, markPlanetVisited, navigate, planetId, playSfx]
   );
+
+  const goToNextChallenge = useCallback(() => {
+    if (transitionRef.current) {
+      clearTimeout(transitionRef.current);
+      transitionRef.current = null;
+    }
+    if (challengeIdx < pipelineChallenges.length - 1) {
+      setChallengeIdx((prev) => {
+        const nextIdx = prev + 1;
+        setCurrentSteps(shuffleSteps(pipelineChallenges[nextIdx].steps));
+        return nextIdx;
+      });
+      setIsChallengeComplete(false);
+      setSelectedIdx(null);
+      setRobotReaction("thinking");
+    } else {
+      handleComplete(true);
+    }
+  }, [challengeIdx, handleComplete]);
 
   // Timer logic
   useEffect(() => {
@@ -273,7 +296,6 @@ const Stage3PuzzleGame: React.FC<Stage3PuzzleGameProps> = ({ planetId }) => {
 
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
-      if (transitionRef.current) clearTimeout(transitionRef.current);
     };
   }, [handleComplete, playSfx]);
 
@@ -316,16 +338,8 @@ const Stage3PuzzleGame: React.FC<Stage3PuzzleGameProps> = ({ planetId }) => {
         setTimeout(() => setScreenEffect(""), 500);
 
         transitionRef.current = setTimeout(() => {
-          if (challengeIdx < pipelineChallenges.length - 1) {
-            const nextIdx = challengeIdx + 1;
-            setChallengeIdx(nextIdx);
-            setCurrentSteps(shuffleSteps(pipelineChallenges[nextIdx].steps));
-            setIsChallengeComplete(false);
-            setRobotReaction("thinking");
-          } else {
-            handleComplete(true);
-          }
-        }, 1200);
+          goToNextChallenge();
+        }, 2500);
       }
     }
   };
@@ -368,14 +382,18 @@ const Stage3PuzzleGame: React.FC<Stage3PuzzleGameProps> = ({ planetId }) => {
             <span className="score-label">FINAL SCORE</span>
             <span className="score-value">{finalScore} PTS</span>
           </div>
-          <div className="stats-row" style={{ display: "flex", gap: "24px", justifyContent: "center", margin: "16px 0" }}>
-            <div>
-              <span style={{ fontSize: "12px", color: "#8ea8c4", display: "block" }}>TOTAL MOVES</span>
-              <strong style={{ fontSize: "18px", color: "#00ffcc" }}>{moves}</strong>
+          <div style={{ display: "flex", gap: "20px", justifyContent: "center", margin: "16px 0" }}>
+            <div className="completion-stat-chip">
+              <span className="stat-label">TOTAL MOVES</span>
+              <span className="stat-value">{moves}</span>
             </div>
-            <div>
-              <span style={{ fontSize: "12px", color: "#8ea8c4", display: "block" }}>TIME REMAINING</span>
-              <strong style={{ fontSize: "18px", color: "#7ef9ff" }}>{timeLeft}s</strong>
+            <div className="completion-stat-chip">
+              <span className="stat-label">TIME LEFT</span>
+              <span className="stat-value">{timeLeft}s</span>
+            </div>
+            <div className="completion-stat-chip">
+              <span className="stat-label">LEVELS</span>
+              <span className="stat-value">{pipelineChallenges.length}/3</span>
             </div>
           </div>
           <p className="returning-message">Returning to main hub...</p>
@@ -574,80 +592,49 @@ const Stage3PuzzleGame: React.FC<Stage3PuzzleGameProps> = ({ planetId }) => {
             </div>
           </div>
 
-          {/* Pipeline Blocks Horizontal Grid */}
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(4, 1fr)",
-              gap: "14px",
-              position: "relative",
-              padding: "10px 0",
-            }}
-          >
-            {/* Visual Laser Line behind the cards */}
+          {/* Pipeline Blocks — Responsive Grid with CSS classes */}
+          <div className="pipeline-grid">
+            {/* Animated Laser Data Flow Line */}
             <div
-              style={{
-                position: "absolute",
-                top: "50%",
-                left: "4%",
-                right: "4%",
-                height: "3px",
-                background: isChallengeComplete
-                  ? "linear-gradient(90deg, #00ff88, #00ffff)"
-                  : "linear-gradient(90deg, rgba(0, 255, 204, 0.3), rgba(0, 204, 255, 0.2))",
-                boxShadow: isChallengeComplete
-                  ? "0 0 12px #00ff88, 0 0 20px #00ffff"
-                  : "none",
-                zIndex: 0,
-                transform: "translateY(-50%)",
-                transition: "all 0.4s ease",
-              }}
+              className={`pipeline-laser-line ${
+                isChallengeComplete
+                  ? "pipeline-laser-line--verified"
+                  : "pipeline-laser-line--idle"
+              }`}
             />
 
             {currentSteps.map((step, idx) => {
               const isSelected = selectedIdx === idx;
               const isCorrectPosition = step.correctStep === idx + 1;
 
+              const cardClass = [
+                "pipeline-step-card",
+                isSelected && "pipeline-step-card--selected",
+                isChallengeComplete && "pipeline-step-card--verified",
+                !isSelected &&
+                  !isChallengeComplete &&
+                  isCorrectPosition &&
+                  "pipeline-step-card--correct",
+              ]
+                .filter(Boolean)
+                .join(" ");
+
               return (
                 <div
                   key={step.id}
+                  className={cardClass}
                   onClick={() => handleStepClick(idx)}
-                  style={{
-                    position: "relative",
-                    zIndex: 1,
-                    background: isSelected
-                      ? "rgba(255, 204, 0, 0.18)"
-                      : isChallengeComplete
-                      ? "rgba(0, 255, 136, 0.16)"
-                      : "rgba(8, 22, 50, 0.88)",
-                    border: isSelected
-                      ? "2px solid #ffd700"
-                      : isChallengeComplete
-                      ? "2px solid #00ff88"
-                      : isCorrectPosition
-                      ? "1.5px solid rgba(0, 255, 204, 0.6)"
-                      : "1.5px solid rgba(126, 249, 255, 0.25)",
-                    borderRadius: "14px",
-                    padding: "16px 12px",
-                    cursor: isChallengeComplete ? "default" : "pointer",
-                    transform: isSelected
-                      ? "scale(1.05) translateY(-4px)"
-                      : "scale(1)",
-                    boxShadow: isSelected
-                      ? "0 8px 24px rgba(255, 215, 0, 0.35)"
-                      : isChallengeComplete
-                      ? "0 6px 20px rgba(0, 255, 136, 0.3)"
-                      : "0 4px 12px rgba(0, 0, 0, 0.4)",
-                    transition: "all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1)",
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    textAlign: "center",
-                    minHeight: "190px",
-                    justifyContent: "space-between",
+                  role="button"
+                  tabIndex={isChallengeComplete ? -1 : 0}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      handleStepClick(idx);
+                    }
                   }}
+                  aria-label={`${step.title} - Slot ${idx + 1}`}
                 >
-                  {/* Slot Number Badge */}
+                  {/* Slot + Tag row */}
                   <div
                     style={{
                       width: "100%",
@@ -657,25 +644,13 @@ const Stage3PuzzleGame: React.FC<Stage3PuzzleGameProps> = ({ planetId }) => {
                       marginBottom: "6px",
                     }}
                   >
-                    <span
-                      style={{
-                        fontSize: "9.5px",
-                        fontFamily: "Consolas, monospace",
-                        color: "#7ef9ff",
-                        fontWeight: "bold",
-                        letterSpacing: "1px",
-                      }}
-                    >
+                    <span className="pipeline-slot-label">
                       SLOT {idx + 1}
                     </span>
                     <span
+                      className="pipeline-tag-badge"
                       style={{
-                        fontSize: "9px",
-                        padding: "2px 6px",
-                        borderRadius: "4px",
-                        background: "rgba(0,0,0,0.4)",
                         color: isCorrectPosition ? "#00ffcc" : "#8ea8c4",
-                        fontWeight: "bold",
                       }}
                     >
                       {step.tag}
@@ -683,47 +658,25 @@ const Stage3PuzzleGame: React.FC<Stage3PuzzleGameProps> = ({ planetId }) => {
                   </div>
 
                   {/* Icon */}
-                  <div style={{ fontSize: "2rem", margin: "4px 0" }}>
-                    {step.icon}
-                  </div>
+                  <div className="pipeline-step-icon">{step.icon}</div>
 
                   {/* Title */}
-                  <div
-                    style={{
-                      fontSize: "0.95rem",
-                      fontWeight: "bold",
-                      color: "#ffffff",
-                      letterSpacing: "0.3px",
-                      lineHeight: "1.25",
-                      marginBottom: "6px",
-                    }}
-                  >
-                    {step.title}
-                  </div>
+                  <div className="pipeline-step-title">{step.title}</div>
 
                   {/* Subtitle */}
-                  <div
-                    style={{
-                      fontSize: "0.78rem",
-                      color: "#a1c2e4",
-                      lineHeight: "1.3",
-                    }}
-                  >
+                  <div className="pipeline-step-subtitle">
                     {step.subtitle}
                   </div>
 
                   {/* Order indicator */}
                   <div
-                    style={{
-                      marginTop: "10px",
-                      fontSize: "10px",
-                      color: isSelected
-                        ? "#ffd700"
+                    className={`pipeline-order-indicator ${
+                      isSelected
+                        ? "pipeline-order-indicator--selected"
                         : isCorrectPosition
-                        ? "#00ff88"
-                        : "#607d9b",
-                      fontWeight: 700,
-                    }}
+                        ? "pipeline-order-indicator--correct"
+                        : "pipeline-order-indicator--idle"
+                    }`}
                   >
                     {isSelected
                       ? "★ SELECTED"
@@ -736,24 +689,47 @@ const Stage3PuzzleGame: React.FC<Stage3PuzzleGameProps> = ({ planetId }) => {
             })}
           </div>
 
-          {/* Verified Notification Banner */}
+          {/* Verified Notification Banner with Interactive Next Button */}
           {isChallengeComplete && (
             <div
+              className="pipeline-verified-banner"
               style={{
-                marginTop: "16px",
-                padding: "10px",
-                background: "rgba(0, 255, 136, 0.15)",
-                border: "1px solid #00ff88",
-                borderRadius: "8px",
-                color: "#00ff88",
-                fontWeight: "bold",
-                fontSize: "13px",
-                letterSpacing: "1px",
-                textAlign: "center",
-                animation: "pulse 1s infinite",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: "16px",
+                flexWrap: "wrap",
+                padding: "14px 20px",
               }}
             >
-              ⚡ PIPELINE VERIFIED! DATA FLOW SYNCHRONIZED — ADVANCING...
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <span style={{ fontSize: "1.2rem" }}>⚡</span>
+                <span>
+                  PIPELINE VERIFIED! DATA FLOW SYNCHRONIZED
+                </span>
+              </div>
+              <button
+                onClick={goToNextChallenge}
+                className="hud-sweep-btn"
+                style={{
+                  background: "linear-gradient(135deg, #00ffcc 0%, #00b894 100%)",
+                  color: "#030f1e",
+                  border: "none",
+                  fontWeight: "bold",
+                  padding: "10px 24px",
+                  borderRadius: "8px",
+                  cursor: "pointer",
+                  fontSize: "0.95rem",
+                  boxShadow: "0 0 15px rgba(0, 255, 204, 0.5)",
+                  letterSpacing: "1px",
+                  transition: "all 0.2s ease",
+                  marginLeft: "auto",
+                }}
+              >
+                {challengeIdx < pipelineChallenges.length - 1
+                  ? `LANJUT LEVEL ${challengeIdx + 2} ➔`
+                  : "SELESAIKAN MISI ➔"}
+              </button>
             </div>
           )}
         </div>

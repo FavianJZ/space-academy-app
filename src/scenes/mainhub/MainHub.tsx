@@ -22,6 +22,7 @@ import CharacterCustomizationPanel from "./CharacterCustomizationPanel";
 import { CadetDossierModal } from "../../components/specialization/CadetDossierModal";
 import { MainHubAvatarBeacon } from "./MainHubAvatarBeacon";
 import { containsProfanity } from "../../utils/profanityFilter";
+import { supabase, isSupabaseEnabled } from "../../lib/supabase";
 
 import {
   Planet1,
@@ -499,6 +500,9 @@ const MainHub: React.FC = () => {
   const addPlanetLeaderboardEntry = useGameStore(
     (state) => state.addPlanetLeaderboardEntry
   );
+  const fetchPlanetLeaderboardRemote = useGameStore(
+    (state) => state.fetchPlanetLeaderboardRemote
+  );
   const planetLeaderboards = useGameStore((state) => state.planetLeaderboards);
   const getPlanetScore = useGameStore((state) => state.getPlanetScore);
   const getTotalScore = useGameStore((state) => state.getTotalScore);
@@ -522,15 +526,59 @@ const MainHub: React.FC = () => {
     refreshSpecializationProfile();
   }, [refreshSpecializationProfile]);
 
-useEffect(() => {
-  if (planetLeaderboards.length > 0) return;
+  useEffect(() => {
+    // Re-seed beatable bots if empty or if old impossible bots are detected
+    const hasOutdatedBots = planetLeaderboards.some(
+      (e) => (e.planetId === 3 && e.score > 480) || e.completionTime > 65
+    );
 
-  const sampleEntries = generateSamplePlanetLeaderboard();
+    if (planetLeaderboards.length === 0 || hasOutdatedBots) {
+      const sampleEntries = generateSamplePlanetLeaderboard();
+      sampleEntries.forEach((entry) => {
+        addPlanetLeaderboardEntry(entry);
+      });
+    }
+  }, [addPlanetLeaderboardEntry, planetLeaderboards]);
 
-  sampleEntries.forEach((entry) => {
-    addPlanetLeaderboardEntry(entry);
-  });
-}, [addPlanetLeaderboardEntry, planetLeaderboards.length]);
+  // Realtime Supabase Leaderboard Sync across devices
+  useEffect(() => {
+    if (!selectedPlanet || selectedPlanet === 1 || !showLeaderboard) return;
+
+    // 1. Initial remote fetch from Supabase
+    fetchPlanetLeaderboardRemote(selectedPlanet);
+
+    // 2. Poll every 5s while leaderboard is open so other devices see updates live
+    const interval = setInterval(() => {
+      fetchPlanetLeaderboardRemote(selectedPlanet);
+    }, 5000);
+
+    // 3. Setup Supabase Realtime channel for instant push updates
+    let channel: any = null;
+    if (isSupabaseEnabled() && supabase) {
+      channel = supabase
+        .channel(`realtime-planet-lb-${selectedPlanet}`)
+        .on(
+          "postgres_changes",
+          {
+            event: "*",
+            schema: "public",
+            table: "planet_scores",
+            filter: `planet_id=eq.${selectedPlanet}`,
+          },
+          () => {
+            fetchPlanetLeaderboardRemote(selectedPlanet);
+          }
+        )
+        .subscribe();
+    }
+
+    return () => {
+      clearInterval(interval);
+      if (channel && supabase) {
+        supabase.removeChannel(channel);
+      }
+    };
+  }, [selectedPlanet, showLeaderboard, fetchPlanetLeaderboardRemote]);
 
   const [activePlayers, setActivePlayers] =
     useState<Record<PlanetId, number>>(DEFAULT_ACTIVE_PLAYERS);
@@ -1136,13 +1184,46 @@ useEffect(() => {
                       borderColor: `${PLANET_META[selectedPlanet].color}33`,
                     }}
                   >
-                    <div className="planet-lb-header">
+                    <div
+                      className="planet-lb-header"
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                      }}
+                    >
                       <span
                         className="planet-lb-title"
                         style={{ color: PLANET_META[selectedPlanet].color }}
                       >
                         🏆 TOP PILOTS —{" "}
                         {PLANET_META[selectedPlanet].name.toUpperCase()}
+                      </span>
+                      <span
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: "5px",
+                          fontSize: "10px",
+                          color: "#00ffcc",
+                          fontWeight: 700,
+                          letterSpacing: "1px",
+                          background: "rgba(0, 255, 204, 0.12)",
+                          padding: "2px 8px",
+                          borderRadius: "12px",
+                          border: "1px solid rgba(0, 255, 204, 0.3)",
+                        }}
+                      >
+                        <span
+                          style={{
+                            width: "6px",
+                            height: "6px",
+                            borderRadius: "50%",
+                            background: "#00ffcc",
+                            boxShadow: "0 0 8px #00ffcc",
+                          }}
+                        />
+                        LIVE
                       </span>
                     </div>
 

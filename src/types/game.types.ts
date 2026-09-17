@@ -5,7 +5,6 @@ import type {
 } from "./customization.types";
 import type {
   ApiGlobalLeaderboardEntry,
-  ApiPlanetLeaderboardEntry,
   ApiBossStatus,
 } from "./api.types";
 
@@ -128,7 +127,7 @@ playerId: string | null;
   isLeaderboardLoading: boolean;
   fetchGlobalLeaderboard: () => Promise<void>;
 
-  remotePlanetLeaderboards: Partial<Record<PlanetId, ApiPlanetLeaderboardEntry[]>>;
+  remotePlanetLeaderboards: Partial<Record<PlanetId, PlanetLeaderboardEntry[]>>;
   fetchPlanetLeaderboardRemote: (planetId: PlanetId) => Promise<void>;
 
   remoteBossStatus: ApiBossStatus | null;
