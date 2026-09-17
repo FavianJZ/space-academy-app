@@ -497,9 +497,6 @@ const MainHub: React.FC = () => {
   const getPlanetLeaderboard = useGameStore(
     (state) => state.getPlanetLeaderboard
   );
-  const addPlanetLeaderboardEntry = useGameStore(
-    (state) => state.addPlanetLeaderboardEntry
-  );
   const fetchPlanetLeaderboardRemote = useGameStore(
     (state) => state.fetchPlanetLeaderboardRemote
   );
@@ -527,14 +524,29 @@ const MainHub: React.FC = () => {
   }, [refreshSpecializationProfile]);
 
   useEffect(() => {
-    // Only seed beatable bots if the leaderboard is completely empty.
-    if (planetLeaderboards.length === 0) {
+    const hasOutdatedQuizaraBot = planetLeaderboards.some(
+      (e) => e.planetId === 2 && e.score >= 800
+    );
+    const hasOutdatedUltimaraBot = planetLeaderboards.some(
+      (e) => e.planetId === 6 && e.score < 500
+    );
+
+    if (
+      planetLeaderboards.length === 0 ||
+      hasOutdatedQuizaraBot ||
+      hasOutdatedUltimaraBot
+    ) {
+      const currentPlayer = (playerData.name?.trim() || p2Name?.trim() || "").toLowerCase();
+      const realPlayerEntries = planetLeaderboards.filter(
+        (e) => Boolean(currentPlayer) && e.playerName.trim().toLowerCase() === currentPlayer
+      );
       const sampleEntries = generateSamplePlanetLeaderboard();
-      sampleEntries.forEach((entry) => {
-        addPlanetLeaderboardEntry(entry);
+
+      useGameStore.setState({
+        planetLeaderboards: [...sampleEntries, ...realPlayerEntries],
       });
     }
-  }, [addPlanetLeaderboardEntry, planetLeaderboards]);
+  }, [planetLeaderboards, playerData.name, p2Name]);
 
   // Realtime Supabase Leaderboard Sync across devices
   useEffect(() => {

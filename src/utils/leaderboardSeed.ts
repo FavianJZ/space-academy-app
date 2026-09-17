@@ -37,13 +37,20 @@ interface PlanetBotProfile {
   timeMax: number;
 }
 
+// Calibrated against player normal high scores (Grade S benchmarks):
+// Stage 1 (Novaris): Player 500 pts (~60s)
+// Stage 2 (Quizara): Player 689 pts (~25-30s)
+// Stage 3 (Puzzlon): Player 470 pts (~35-45s)
+// Stage 4 (Flowra): Player 592 pts (~30-40s)
+// Stage 5 (Logitron): Player 242 pts (32s)
+// Stage 6 (Ultimara): Player 2695 pts (~50-60s)
 const PLANET_BOT_PROFILES: Record<PlanetId, PlanetBotProfile> = {
-  1: { scoreMin: 320, scoreMax: 420, timeMin: 18, timeMax: 28 }, // Intro Stage
-  2: { scoreMin: 680, scoreMax: 840, timeMin: 20, timeMax: 35 }, // Quiz (3 questions ~25s)
-  3: { scoreMin: 280, scoreMax: 390, timeMin: 24, timeMax: 42 }, // Pipeline (3 cards ~30s, player ~440)
-  4: { scoreMin: 320, scoreMax: 440, timeMin: 18, timeMax: 35 }, // Flowchart (~25s, player ~515)
-  5: { scoreMin: 130, scoreMax: 175, timeMin: 20, timeMax: 38 }, // Logic Circuit (~28s, player ~186)
-  6: { scoreMin: 150, scoreMax: 230, timeMin: 34, timeMax: 50 }, // Bug Hunt (<60s duration!)
+  1: { scoreMin: 290, scoreMax: 450, timeMin: 68, timeMax: 105 }, // Novaris
+  2: { scoreMin: 360, scoreMax: 615, timeMin: 28, timeMax: 52 }, // Quizara
+  3: { scoreMin: 220, scoreMax: 415, timeMin: 38, timeMax: 72 }, // Puzzlon
+  4: { scoreMin: 290, scoreMax: 520, timeMin: 36, timeMax: 68 }, // Flowra
+  5: { scoreMin: 95, scoreMax: 215, timeMin: 38, timeMax: 70 }, // Logitron
+  6: { scoreMin: 1150, scoreMax: 2380, timeMin: 58, timeMax: 102 }, // Ultimara
 };
 
 export const generateSamplePlanetLeaderboard = (): PlanetLeaderboardEntry[] => {
@@ -52,21 +59,20 @@ export const generateSamplePlanetLeaderboard = (): PlanetLeaderboardEntry[] => {
 
   for (let planetId = 1; planetId <= 6; planetId++) {
     const config = PLANET_BOT_PROFILES[planetId as PlanetId];
-    const sampleCount = 3;
+    const sampleCount = 4; // 4 tiered bots per planet
 
-    // Generate sorted descending scores so rank 1, 2, 3 bots feel naturally tiered
-    const scoreRange = config.scoreMax - config.scoreMin;
-    const step = scoreRange / (sampleCount + 1);
+    const scoreStep = (config.scoreMax - config.scoreMin) / (sampleCount - 1);
+    const timeStep = (config.timeMax - config.timeMin) / (sampleCount - 1);
 
     for (let index = 0; index < sampleCount; index++) {
-      const targetScore = Math.round(
-        config.scoreMax - index * step - Math.random() * 15
-      );
-      const targetTime = Math.round(
-        config.timeMin +
-          index * ((config.timeMax - config.timeMin) / sampleCount) +
-          Math.floor(Math.random() * 5)
-      );
+      // Natural descending scores with slight offset so bots have distinct ranks
+      const baseScore = Math.round(config.scoreMax - index * scoreStep);
+      const scoreVariance = (index % 2 === 0 ? 3 : -4);
+      const targetScore = Math.max(config.scoreMin, baseScore + scoreVariance);
+
+      const baseTime = Math.round(config.timeMin + index * timeStep);
+      const timeVariance = (index % 2 === 0 ? 1 : 3);
+      const targetTime = baseTime + timeVariance;
 
       entries.push({
         playerName: getRandomPilotName(usedNames),
@@ -75,7 +81,7 @@ export const generateSamplePlanetLeaderboard = (): PlanetLeaderboardEntry[] => {
         completionTime: targetTime,
         timestamp:
           Date.now() -
-          Math.floor(Math.random() * 3 * 24 * 60 * 60 * 1000),
+          Math.floor((index + 1) * 3600 * 1000 + Math.random() * 86400000),
       });
     }
   }

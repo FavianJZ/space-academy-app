@@ -660,7 +660,7 @@ export const useGameStore = create<GameState>()(
     {
       name: STORAGE_KEY,
       storage,
-      version: 6,
+      version: 7,
       
       migrate: (persistedState, version) => {
         const state = persistedState as GameState;
@@ -697,12 +697,21 @@ export const useGameStore = create<GameState>()(
           version < 6
             ? {
                 ...petMigratedState,
-                planetLeaderboards: [], // Clean old impossible bots and re-seed beatable bots
+                planetLeaderboards: [],
                 remotePlanetLeaderboards: {},
               }
             : petMigratedState;
 
-        return botLeaderboardCleanedState as GameState;
+        const botLeaderboardRecalibratedState =
+          version < 7
+            ? {
+                ...botLeaderboardCleanedState,
+                planetLeaderboards: [], // Clear old 840 bots and reseed fresh calibrated bots
+                remotePlanetLeaderboards: {},
+              }
+            : botLeaderboardCleanedState;
+
+        return botLeaderboardRecalibratedState as GameState;
       },
     }
   )
