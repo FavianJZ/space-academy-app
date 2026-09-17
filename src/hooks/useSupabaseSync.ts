@@ -12,6 +12,7 @@ import {
 import { submitScore } from "../services/scoreService";
 import { submitLeaderboardEntry } from "../services/leaderboardService";
 import { dealBossDamage as remoteDealBossDamage } from "../services/bossService";
+import { snapshotCurrentStoreAccount } from "../services/deviceAccountService";
 
 export function useSupabaseSync(): void {
   const hasRegistered = useRef(false);
@@ -42,6 +43,7 @@ export function useSupabaseSync(): void {
       specialization_result: specializationResult,
     }).then(() => {
       hasRegistered.current = true;
+      snapshotCurrentStoreAccount();
     });
   }, [
     playerData.name,
@@ -55,6 +57,7 @@ export function useSupabaseSync(): void {
   ]);
 
   useEffect(() => {
+    snapshotCurrentStoreAccount();
     if (!isSupabaseEnabled()) return;
     const playerId = getLocalPlayerId();
     if (!playerId) return;
@@ -76,6 +79,7 @@ export function useSupabaseSync(): void {
   }, [introCompleted]);
 
   useEffect(() => {
+    snapshotCurrentStoreAccount();
     if (!isSupabaseEnabled() || !isGameCompleted) return;
     const playerId = getLocalPlayerId();
     if (!playerId) return;

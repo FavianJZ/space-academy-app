@@ -1,4 +1,5 @@
 import { supabase, isSupabaseEnabled } from "../lib/supabase";
+import { getLocalDeviceId } from "./deviceAccountService";
 
 const PLAYER_ID_KEY = "space-academy-player-id";
 
@@ -18,6 +19,7 @@ interface RegisterData {
   spaceman_hat?: string;
   spaceman_pet?: string;
   specialization_result?: import("../types/specialization.types").SpecializationResult | null;
+  device_id?: string;
 }
 
 export async function registerPlayer(
@@ -93,6 +95,7 @@ const { data: row, error } = await supabase!
       spaceman_color: data.spaceman_color || "original",
       spaceman_hat: data.spaceman_hat || "none",
       spaceman_pet: data.spaceman_pet || "none",
+      device_id: data.device_id || getLocalDeviceId(),
     })
     .select("id")
     .single();
@@ -116,6 +119,7 @@ export async function updatePlayer(
 
   const payload: Record<string, unknown> = {
     updated_at: new Date().toISOString(),
+    device_id: data.device_id || getLocalDeviceId(),
   };
 
   if (data.name !== undefined) payload.name = data.name.trim();

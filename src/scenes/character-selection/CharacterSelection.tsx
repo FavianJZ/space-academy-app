@@ -18,6 +18,11 @@ import { SpacemanPink, SpacemanWhite } from "../../components/models";
 import { useGameAudio } from "../../hooks/useGameAudio";
 import { useGameStore } from "../../stores/useGameStore";
 import type { Character } from "../../types/game.types";
+import { DeviceAccountModal } from "../../components/character-selection/DeviceAccountModal";
+import {
+  fetchDeviceAccounts,
+  type SavedDeviceAccount,
+} from "../../services/deviceAccountService";
 
 import "./CharacterSelection.css";
 
@@ -353,6 +358,25 @@ const CharacterSelection = () => {
   const [interfaceReady, setInterfaceReady] = useState(false);
   const pointerStartX = useRef<number | null>(null);
 
+  // Device memory & 2-account limit state
+  const [deviceAccounts, setDeviceAccounts] = useState<SavedDeviceAccount[]>([]);
+  const [showDeviceModal, setShowDeviceModal] = useState(false);
+  const [deviceIsFull, setDeviceIsFull] = useState(false);
+
+  const checkDevice = useCallback(async () => {
+    try {
+      const res = await fetchDeviceAccounts();
+      setDeviceAccounts(res.accounts);
+      setDeviceIsFull(res.isFull);
+    } catch (e) {
+      console.warn("[CharacterSelection] Device check failed:", e);
+    }
+  }, []);
+
+  useEffect(() => {
+    checkDevice();
+  }, [checkDevice]);
+
   const candidateIndex = CANDIDATES.findIndex((candidate) => candidate.id === selected);
   const candidate = CANDIDATES[candidateIndex] ?? CANDIDATES[0];
 
@@ -391,6 +415,14 @@ const CharacterSelection = () => {
 
   const confirmCandidate = useCallback(() => {
     if (isCommitting) return;
+
+    // Check device limit: 1 device max 2 accounts
+    if (deviceIsFull && deviceAccounts.length >= 2) {
+      playSfx("feedbackIncorrect");
+      setShowDeviceModal(true);
+      return;
+    }
+
     const confirmation = playSfx("uiConfirm");
     setIsCommitting(true);
     setCharacter(selected);
@@ -398,7 +430,7 @@ const CharacterSelection = () => {
       () => navigate("/intro"),
       confirmation.motionMs + 100
     );
-  }, [isCommitting, navigate, playSfx, selected, setCharacter]);
+  }, [isCommitting, navigate, playSfx, selected, setCharacter, deviceIsFull, deviceAccounts.length]);
 
   useEffect(() => {
     const handleKeyboard = (event: KeyboardEvent) => {
@@ -461,6 +493,34 @@ const CharacterSelection = () => {
               <span>CADET INDUCTION // 00</span>
               <strong>SPACE ACADEMY</strong>
             </div>
+          </div>
+
+          {/* Device Profile Checker / Save Slot Button */}
+          <div className="cs-device-slot-action">
+            <button
+              type="button"
+              className={`cs-device-btn ${
+                deviceIsFull ? "full" : deviceAccounts.length > 0 ? "active" : "fresh"
+              }`}
+              onClick={() => {
+                playSfx("uiTabSwitch");
+                setShowDeviceModal(true);
+              }}
+              title="Cek Profil & Hero Tersimpan di Perangkat Ini (Maks 2 Akun)"
+            >
+              <span className="cs-device-btn-icon">🎮</span>
+              <span className="cs-device-btn-text">
+                DEVICE MEMORY: <strong>{deviceAccounts.length}/2</strong>
+              </span>
+              <span className="cs-device-btn-badge">
+                {deviceIsFull
+                  ? "2/2 FULL"
+                  : deviceAccounts.length > 0
+                  ? "PILOT SAVED"
+                  : "FRESH"}
+              </span>
+              {deviceAccounts.length > 0 && <span className="cs-device-pulse" />}
+            </button>
           </div>
 
           <div className="cs-link-state">
@@ -593,6 +653,18 @@ const CharacterSelection = () => {
         <strong>{candidate.callsign}</strong>
         <small>OPENING MISSION CHANNEL...</small>
       </div>
+
+      <DeviceAccountModal
+        isOpen={showDeviceModal}
+        onClose={() => {
+          setShowDeviceModal(false);
+          checkDevice();
+        }}
+        onSelectCreateNew={() => {
+          setShowDeviceModal(false);
+          checkDevice();
+        }}
+      />
     </main>
   );
 };

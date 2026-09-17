@@ -1,0 +1,512 @@
+/* Device Account Modal - Sci-Fi RPG Hero Selector */
+
+.dam-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(3, 10, 16, 0.85);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(12px, 2.5vw, 28px);
+  animation: damFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes damFadeIn {
+  from { opacity: 0; transform: scale(0.97); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.dam-modal {
+  width: 100%;
+  max-width: 980px;
+  background: linear-gradient(135deg, rgba(7, 22, 34, 0.96) 0%, rgba(10, 36, 52, 0.94) 50%, rgba(5, 18, 28, 0.96) 100%);
+  border: 2px solid #00ffcc;
+  border-radius: 16px;
+  box-shadow: 0 0 50px rgba(0, 255, 204, 0.25), inset 0 0 30px rgba(0, 255, 204, 0.08);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  max-height: 90vh;
+  max-height: 90dvh;
+}
+
+/* Header */
+.dam-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  border-bottom: 1px solid rgba(0, 255, 204, 0.25);
+  background: rgba(0, 255, 204, 0.05);
+}
+
+.dam-header-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.dam-icon-pulse {
+  font-size: 28px;
+  filter: drop-shadow(0 0 10px #00ffcc);
+  animation: damPulse 2s infinite ease-in-out;
+}
+
+@keyframes damPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+.dam-header-left h2 {
+  margin: 0;
+  font-family: 'Orbitron', sans-serif;
+  font-size: clamp(1rem, 1.6vw, 1.25rem);
+  font-weight: 800;
+  color: #00ffcc;
+  letter-spacing: 1px;
+  text-shadow: 0 0 12px rgba(0, 255, 204, 0.5);
+}
+
+.dam-header-left p {
+  margin: 2px 0 0 0;
+  font-family: 'Roboto Mono', monospace;
+  font-size: 0.78rem;
+  color: #88ccee;
+  opacity: 0.85;
+}
+
+.dam-header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dam-refresh-btn {
+  background: rgba(0, 255, 204, 0.12);
+  border: 1px solid rgba(0, 255, 204, 0.4);
+  color: #00ffcc;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 6px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.dam-refresh-btn:hover {
+  background: rgba(0, 255, 204, 0.25);
+  box-shadow: 0 0 12px rgba(0, 255, 204, 0.4);
+}
+
+.dam-refresh-btn.spin {
+  animation: damSpin 0.8s linear infinite;
+}
+
+@keyframes damSpin {
+  100% { transform: rotate(360deg); }
+}
+
+.dam-close-btn {
+  background: rgba(255, 60, 100, 0.15);
+  border: 1px solid rgba(255, 60, 100, 0.4);
+  color: #ff6688;
+  font-size: 1rem;
+  font-weight: 800;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.dam-close-btn:hover {
+  background: rgba(255, 60, 100, 0.35);
+  color: #ffffff;
+  box-shadow: 0 0 15px rgba(255, 60, 100, 0.5);
+}
+
+/* Device Bar */
+.dam-device-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 24px;
+  background: rgba(0, 20, 32, 0.6);
+  border-bottom: 1px solid rgba(0, 255, 204, 0.15);
+  font-family: 'Roboto Mono', monospace;
+  font-size: 0.82rem;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.dam-device-id {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dam-lbl {
+  color: #72ccff;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.dam-device-id code {
+  color: #ffffff;
+  background: rgba(0, 255, 204, 0.1);
+  padding: 2px 8px;
+  border-radius: 4px;
+  border: 1px solid rgba(0, 255, 204, 0.25);
+  letter-spacing: 1px;
+}
+
+.dam-quota-pill {
+  display: inline-block;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 800;
+  padding: 3px 12px;
+  border-radius: 20px;
+  letter-spacing: 0.8px;
+}
+
+.dam-quota-pill.fresh {
+  background: rgba(0, 255, 204, 0.15);
+  border: 1px solid #00ffcc;
+  color: #00ffcc;
+  box-shadow: 0 0 10px rgba(0, 255, 204, 0.3);
+}
+
+.dam-quota-pill.active {
+  background: rgba(0, 200, 255, 0.2);
+  border: 1px solid #00ccff;
+  color: #88ddff;
+}
+
+.dam-quota-pill.full {
+  background: rgba(255, 170, 0, 0.2);
+  border: 1px solid #ffaa00;
+  color: #ffcc00;
+  box-shadow: 0 0 10px rgba(255, 170, 0, 0.3);
+}
+
+/* Slot Containers */
+.dam-slots-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+  gap: 20px;
+  padding: 24px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.dam-loading {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 0;
+  gap: 16px;
+  font-family: 'Orbitron', sans-serif;
+  color: #00ffcc;
+}
+
+.dam-spinner {
+  width: 42px;
+  height: 42px;
+  border: 3px solid rgba(0, 255, 204, 0.2);
+  border-top-color: #00ffcc;
+  border-radius: 50%;
+  animation: damSpin 1s linear infinite;
+}
+
+/* Slot Card */
+.dam-slot-card {
+  background: rgba(10, 30, 46, 0.7);
+  border-radius: 12px;
+  border: 1px solid rgba(0, 255, 204, 0.2);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.dam-slot-card.occupied {
+  border-color: rgba(0, 255, 204, 0.5);
+  box-shadow: 0 0 20px rgba(0, 255, 204, 0.12);
+}
+
+.dam-slot-card.occupied:hover {
+  border-color: #00ffcc;
+  box-shadow: 0 0 25px rgba(0, 255, 204, 0.25);
+  transform: translateY(-2px);
+}
+
+.dam-slot-card.empty {
+  border: 2px dashed rgba(0, 255, 204, 0.3);
+  background: rgba(5, 20, 30, 0.4);
+}
+
+.dam-slot-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  background: rgba(0, 255, 204, 0.08);
+  border-bottom: 1px solid rgba(0, 255, 204, 0.15);
+}
+
+.dam-slot-badge {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: #00ffcc;
+  letter-spacing: 1px;
+}
+
+.dam-status-tag {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+.dam-status-tag.completed {
+  background: rgba(0, 255, 136, 0.2);
+  border: 1px solid #00ff88;
+  color: #00ff88;
+  box-shadow: 0 0 8px rgba(0, 255, 136, 0.4);
+}
+
+.dam-status-tag.in-progress {
+  background: rgba(0, 200, 255, 0.2);
+  border: 1px solid #00ccff;
+  color: #72ccff;
+}
+
+/* Slot Body */
+.dam-slot-body {
+  display: flex;
+  flex-direction: row;
+  padding: 16px;
+  gap: 16px;
+  align-items: center;
+}
+
+.slot-canvas-wrap {
+  width: 140px;
+  height: 190px;
+  flex-shrink: 0;
+  background: radial-gradient(circle at 50% 50%, rgba(0, 255, 204, 0.15) 0%, rgba(0, 20, 35, 0.8) 100%);
+  border-radius: 10px;
+  border: 1px solid rgba(0, 255, 204, 0.3);
+  overflow: hidden;
+  position: relative;
+}
+
+.dam-slot-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.dam-pilot-name {
+  margin: 0;
+  font-family: 'Orbitron', sans-serif;
+  font-size: clamp(1.1rem, 2vw, 1.4rem);
+  font-weight: 900;
+  color: #ffffff;
+  letter-spacing: 1.5px;
+  text-shadow: 0 0 10px rgba(0, 255, 204, 0.6);
+}
+
+.dam-pilot-meta {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 0.75rem;
+  color: #77eaff;
+  display: flex;
+  gap: 6px;
+}
+
+.dam-score-box {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 170, 0, 0.3);
+  margin-top: 4px;
+}
+
+.dam-score-lbl {
+  display: block;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.62rem;
+  color: #ffbb44;
+  letter-spacing: 1px;
+}
+
+.dam-score-val {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 1rem;
+  font-weight: 800;
+  color: #ffdd44;
+  text-shadow: 0 0 8px rgba(255, 187, 68, 0.5);
+}
+
+.dam-loadout-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 4px 0 8px 0;
+}
+
+.dam-tag {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 0.65rem;
+  background: rgba(0, 255, 204, 0.1);
+  color: #cceeff;
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid rgba(0, 255, 204, 0.2);
+}
+
+.dam-action-btn {
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 800;
+  font-size: 0.78rem;
+  padding: 8px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  letter-spacing: 1px;
+  transition: all 0.25s ease;
+  width: 100%;
+}
+
+.dam-action-btn.load {
+  background: linear-gradient(135deg, rgba(0, 255, 204, 0.35) 0%, rgba(0, 180, 255, 0.35) 100%);
+  border: 1px solid #00ffcc;
+  color: #00ffcc;
+  box-shadow: 0 0 15px rgba(0, 255, 204, 0.3);
+}
+
+.dam-action-btn.load:hover {
+  background: linear-gradient(135deg, #00ffcc 0%, #00ccff 100%);
+  color: #051418;
+  box-shadow: 0 0 25px rgba(0, 255, 204, 0.7);
+  transform: translateY(-2px);
+}
+
+.dam-action-btn.create {
+  background: rgba(0, 255, 204, 0.15);
+  border: 1px solid #00ffcc;
+  color: #00ffcc;
+  padding: 10px 18px;
+  margin-top: 14px;
+}
+
+.dam-action-btn.create:hover:not(:disabled) {
+  background: #00ffcc;
+  color: #051418;
+  box-shadow: 0 0 20px rgba(0, 255, 204, 0.6);
+}
+
+.dam-action-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  border-color: #667788;
+  color: #8899aa;
+}
+
+/* Empty Slot State */
+.dam-empty-slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  text-align: center;
+}
+
+.dam-empty-icon {
+  font-size: 38px;
+  color: rgba(0, 255, 204, 0.6);
+  margin-bottom: 12px;
+  filter: drop-shadow(0 0 10px rgba(0, 255, 204, 0.3));
+}
+
+.dam-empty-slot h4 {
+  margin: 0 0 6px 0;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.95rem;
+  color: #ffffff;
+  letter-spacing: 1px;
+}
+
+.dam-empty-slot p {
+  margin: 0;
+  font-family: 'Roboto Mono', monospace;
+  font-size: 0.75rem;
+  color: #88bbcc;
+  max-width: 240px;
+}
+
+/* Footer Notice */
+.dam-footer-notice {
+  padding: 12px 24px;
+  border-top: 1px solid rgba(0, 255, 204, 0.15);
+  background: rgba(0, 15, 25, 0.8);
+  font-family: 'Roboto Mono', monospace;
+  font-size: 0.78rem;
+}
+
+.dam-alert-full {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #ffcc44;
+}
+
+.dam-alert-avail {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #88ddff;
+}
+
+.dam-footer-notice p {
+  margin: 0;
+  line-height: 1.4;
+}
+
+@media (max-width: 768px) {
+  .dam-slots-container {
+    grid-template-columns: 1fr;
+    padding: 14px;
+    gap: 14px;
+  }
+  .dam-slot-body {
+    flex-direction: column;
+    text-align: center;
+  }
+  .slot-canvas-wrap {
+    width: 100%;
+    height: 160px;
+  }
+  .dam-slot-info {
+    width: 100%;
+    align-items: center;
+  }
+  .dam-loadout-tags {
+    justify-content: center;
+  }
+}
