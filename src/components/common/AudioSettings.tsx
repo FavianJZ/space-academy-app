@@ -16,6 +16,7 @@ import {
   DEFAULT_SFX_VOLUME,
 } from "../../constants/game.constants";
 import { useGameStore } from "../../stores/useGameStore";
+import { getTranslation } from "../../i18n/translations";
 import {
   AudioSettingsContext,
   useAudioSettings,
@@ -114,6 +115,13 @@ const VolumeGlyph = ({ muted }: { muted: boolean }) => (
   </svg>
 );
 
+const GlobeIcon = () => (
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    <circle cx="12" cy="12" r="10" />
+    <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+  </svg>
+);
+
 export const AudioSettingsButton = ({
   className = "",
   label = "AUDIO",
@@ -141,6 +149,9 @@ export const AudioSettingsProvider = ({ children }: AudioSettingsProviderProps) 
   const sfxVolume = useGameStore((state) => state.sfxVolume);
   const setMusicVolume = useGameStore((state) => state.setMusicVolume);
   const setSfxVolume = useGameStore((state) => state.setSfxVolume);
+  const language = useGameStore((state) => state.language);
+  const setLanguage = useGameStore((state) => state.setLanguage);
+  const t = getTranslation(language).settings;
   const [isOpen, setIsOpen] = useState(false);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const previousFocusRef = useRef<HTMLElement | null>(null);
@@ -309,21 +320,21 @@ export const AudioSettingsProvider = ({ children }: AudioSettingsProviderProps) 
               <header className="audio-settings-header">
                 <div>
                   <span className="audio-settings-eyebrow">
-                    SYSTEM CONFIGURATION // {scene.code}
+                    {t.eyebrow} // {scene.code}
                   </span>
-                  <h2 id="audio-settings-title">Sound calibration</h2>
+                  <h2 id="audio-settings-title">{t.title}</h2>
                   <p id="audio-settings-description">
-                    Atur keseimbangan musik dan efek secara langsung. Profil audio tersimpan otomatis.
+                    {t.description}
                   </p>
                 </div>
 
                 <div className="audio-settings-header-actions">
-                  <span className="audio-settings-live"><i /> LIVE MIX</span>
+                  <span className="audio-settings-live"><i /> {t.liveMix}</span>
                   <button
                     ref={closeButtonRef}
                     type="button"
                     className="audio-settings-close"
-                    aria-label="Close audio settings"
+                    aria-label={t.closeAria}
                     data-audio-cue="none"
                     onClick={closeAudioSettings}
                   >
@@ -335,8 +346,8 @@ export const AudioSettingsProvider = ({ children }: AudioSettingsProviderProps) 
               <div className="audio-settings-body">
                 <aside className="audio-settings-monitor" aria-label="Current audio output">
                   <div className="audio-settings-monitor-head">
-                    <span>OUTPUT ROUTING</span>
-                    <strong>{allMuted ? "MUTED" : "ONLINE"}</strong>
+                    <span>{t.outputRouting}</span>
+                    <strong>{allMuted ? t.muted : t.online}</strong>
                   </div>
 
                   <div className="audio-settings-wave" aria-hidden="true">
@@ -349,15 +360,16 @@ export const AudioSettingsProvider = ({ children }: AudioSettingsProviderProps) 
                   </div>
 
                   <div className="audio-settings-signal">
-                    <span>MASTER SIGNAL</span>
+                    <span>{t.masterSignal}</span>
                     <strong>{averageSignal}%</strong>
                     <div><i style={{ width: `${averageSignal}%` }} /></div>
                   </div>
 
                   <dl>
-                    <div><dt>SECTOR</dt><dd>{scene.label}</dd></div>
-                    <div><dt>PROFILE</dt><dd>AUTO-SAVED</dd></div>
-                    <div><dt>OUTPUT</dt><dd>STEREO WEB</dd></div>
+                    <div><dt>{t.sector}</dt><dd>{scene.label}</dd></div>
+                    <div><dt>{t.profile}</dt><dd>{t.autoSaved}</dd></div>
+                    <div><dt>{t.output}</dt><dd>{t.stereoWeb}</dd></div>
+                    <div><dt>{t.languagePrefHeading}</dt><dd style={{ color: "var(--audio-settings-accent)", fontWeight: "bold" }}>{language === "id" ? "INDONESIA (ID)" : "ENGLISH (EN)"}</dd></div>
                   </dl>
 
                   <button
@@ -366,18 +378,52 @@ export const AudioSettingsProvider = ({ children }: AudioSettingsProviderProps) 
                     onClick={toggleAllAudio}
                   >
                     <VolumeGlyph muted={allMuted} />
-                    {allMuted ? "RESTORE ALL" : "MUTE ALL"}
+                    {allMuted ? t.restoreAll : t.muteAll}
                   </button>
                 </aside>
 
                 <div className="audio-settings-mixer">
+                  {/* Language Selection Channel */}
+                  <div className="audio-settings-channel audio-settings-channel--lang">
+                    <div className="audio-settings-channel-head">
+                      <div className="audio-settings-channel-icon"><GlobeIcon /></div>
+                      <div>
+                        <span>{t.languagePrefHeading}</span>
+                        <h3>{t.languageTitle}</h3>
+                        <p>{t.languageDesc}</p>
+                      </div>
+                      <div className="audio-settings-lang-pills">
+                        <button
+                          type="button"
+                          className={`audio-settings-lang-pill ${language === "id" ? "active" : ""}`}
+                          onClick={() => {
+                            gameAudio.playSfx("uiConfirm");
+                            setLanguage("id");
+                          }}
+                        >
+                          <span className="lang-flag">🇮🇩</span> {t.idOption}
+                        </button>
+                        <button
+                          type="button"
+                          className={`audio-settings-lang-pill ${language === "en" ? "active" : ""}`}
+                          onClick={() => {
+                            gameAudio.playSfx("uiConfirm");
+                            setLanguage("en");
+                          }}
+                        >
+                          <span className="lang-flag">🇬🇧</span> {t.enOption}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
                   <div className="audio-settings-channel">
                     <div className="audio-settings-channel-head">
                       <div className="audio-settings-channel-icon"><MusicIcon /></div>
                       <div>
-                        <span>CHANNEL 01</span>
-                        <h3>Background music</h3>
-                        <p>Ambient loop dan tema setiap scene.</p>
+                        <span>{t.channel01}</span>
+                        <h3>{t.bgmTitle}</h3>
+                        <p>{t.bgmDesc}</p>
                       </div>
                       <output htmlFor="audio-music-volume">{toPercent(musicVolume)}%</output>
                     </div>
@@ -414,9 +460,9 @@ export const AudioSettingsProvider = ({ children }: AudioSettingsProviderProps) 
                     <div className="audio-settings-channel-head">
                       <div className="audio-settings-channel-icon"><EffectsIcon /></div>
                       <div>
-                        <span>CHANNEL 02</span>
-                        <h3>Interface &amp; effects</h3>
-                        <p>UI, dialog, karakter, pet, dan gameplay.</p>
+                        <span>{t.channel02}</span>
+                        <h3>{t.sfxTitle}</h3>
+                        <p>{t.sfxDesc}</p>
                       </div>
                       <output htmlFor="audio-sfx-volume">{toPercent(sfxVolume)}%</output>
                     </div>
@@ -453,8 +499,8 @@ export const AudioSettingsProvider = ({ children }: AudioSettingsProviderProps) 
 
               <footer className="audio-settings-footer">
                 <div className="audio-settings-shortcuts">
-                  <span><kbd>ESC</kbd> CLOSE</span>
-                  <span><kbd>←</kbd><kbd>→</kbd> ADJUST</span>
+                  <span><kbd>ESC</kbd> {t.escClose}</span>
+                  <span><kbd>←</kbd><kbd>→</kbd> {t.arrowAdjust}</span>
                 </div>
                 <div className="audio-settings-footer-actions">
                   <button
@@ -463,7 +509,7 @@ export const AudioSettingsProvider = ({ children }: AudioSettingsProviderProps) 
                     data-audio-cue="none"
                     onClick={resetAudio}
                   >
-                    RESET 50 / 50
+                    {t.resetAudio}
                   </button>
                   <button
                     type="button"
@@ -472,7 +518,7 @@ export const AudioSettingsProvider = ({ children }: AudioSettingsProviderProps) 
                     disabled={sfxVolume === 0}
                     onClick={() => gameAudio.playSfx("uiConfirm")}
                   >
-                    TEST SIGNAL
+                    {t.testSignal}
                   </button>
                   <button
                     type="button"
@@ -480,7 +526,7 @@ export const AudioSettingsProvider = ({ children }: AudioSettingsProviderProps) 
                     data-audio-cue="none"
                     onClick={closeAudioSettings}
                   >
-                    APPLY &amp; CLOSE <span aria-hidden="true">→</span>
+                    {t.applyAndClose} <span aria-hidden="true">→</span>
                   </button>
                 </div>
               </footer>

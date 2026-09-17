@@ -14,6 +14,7 @@ import type {
   SpecializationResult,
   SpecializationArchetypeKey,
 } from "../../types/specialization.types";
+import { getTranslation } from "../../i18n/translations";
 import "./CadetDossierModal.css";
 
 interface CadetIdentity {
@@ -48,6 +49,8 @@ interface ArchetypeCardProps {
 const ArchetypeCard: React.FC<ArchetypeCardProps> = ({ archetypeKey, rank }) => {
   const meta = ARCHETYPE_METAS[archetypeKey];
   const isPrimary = rank === "Primary";
+  const language = useGameStore((state) => state.language);
+  const t = getTranslation(language).dossier;
 
   return (
     <div
@@ -55,7 +58,7 @@ const ArchetypeCard: React.FC<ArchetypeCardProps> = ({ archetypeKey, rank }) => 
       style={{ "--archetype-color": meta.color } as React.CSSProperties}
     >
       <span className="dossier-archetype-rank">
-        {isPrimary ? "⬡ Primary Archetype" : "⬢ Secondary Archetype"}
+        {isPrimary ? t.primaryArchetype : t.secondaryArchetype}
       </span>
       <span className="dossier-archetype-badge">{meta.badge}</span>
       <span className="dossier-archetype-title">{meta.title}</span>
@@ -73,6 +76,9 @@ export const CadetDossierModal: React.FC<CadetDossierModalProps> = ({
   const primaryMeta = ARCHETYPE_METAS[result.primaryArchetype];
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   const [downloadFeedback, setDownloadFeedback] = useState<string | null>(null);
+
+  const language = useGameStore((state) => state.language);
+  const t = getTranslation(language).dossier;
 
   const character = useGameStore((state) => state.character);
   const spacemanColor = useGameStore((state) => state.spacemanColor);
@@ -94,7 +100,7 @@ export const CadetDossierModal: React.FC<CadetDossierModalProps> = ({
     if (isGeneratingPdf) return;
     try {
       setIsGeneratingPdf(true);
-      setDownloadFeedback("Generating HD Cadet Card PDF (2 Slides)...");
+      setDownloadFeedback(t.generatingPdf);
       // Wait for HD 3D frame to render to buffer
       await new Promise((resolve) => setTimeout(resolve, 400));
       await generateCadetCardPdf(
@@ -108,11 +114,19 @@ export const CadetDossierModal: React.FC<CadetDossierModalProps> = ({
         },
         telemetrySignals
       );
-      setDownloadFeedback("Cadet Card (2 Slides) downloaded successfully!");
+      setDownloadFeedback(
+        language === "en"
+          ? "Cadet Card (2 Slides) downloaded successfully!"
+          : "Kartu Kadet (2 Halaman) berhasil diunduh!"
+      );
       setTimeout(() => setDownloadFeedback(null), 4000);
     } catch (err) {
       console.error("Failed to generate Cadet Card PDF:", err);
-      setDownloadFeedback("Download error. Please try again.");
+      setDownloadFeedback(
+        language === "en"
+          ? "Download error. Please try again."
+          : "Gagal mengunduh. Silakan coba lagi."
+      );
       setTimeout(() => setDownloadFeedback(null), 4000);
     } finally {
       setIsGeneratingPdf(false);
@@ -144,35 +158,35 @@ export const CadetDossierModal: React.FC<CadetDossierModalProps> = ({
       onClick={handleBackdropClick}
       role="dialog"
       aria-modal="true"
-      aria-label="Cadet Specialization Dossier"
+      aria-label={t.title}
     >
       <div className="dossier-container" ref={containerRef}>
         {/* ── Header ─────────────────────────────────── */}
         <header className="dossier-header">
           <div className="dossier-header-content">
             <p className="dossier-classification">
-              Space Academy — Cadet Dossier
+              {language === "en" ? "Space Academy — Cadet Dossier" : "Space Academy — Dosir Kadet"}
             </p>
             <h1 className="dossier-cadet-name">
-              {cadet.name || "Unknown Cadet"}
+              {cadet.name || (language === "en" ? "Unknown Cadet" : "Kadet Tidak Dikenal")}
             </h1>
             <ul className="dossier-cadet-info">
               {cadet.school && (
                 <li>
-                  School: <strong>{cadet.school}</strong>
+                  {t.school}: <strong>{cadet.school}</strong>
                 </li>
               )}
               {cadet.major && (
                 <li>
-                  Major: <strong>{cadet.major}</strong>
+                  {t.major}: <strong>{cadet.major}</strong>
                 </li>
               )}
               <li>
                 Status:{" "}
                 <strong>
                   {result.confidenceLevel >= 100
-                    ? "Certified Graduate"
-                    : "In Training"}
+                    ? (language === "en" ? "Certified Graduate" : "Lulusan Tersertifikasi")
+                    : (language === "en" ? "In Training" : "Dalam Pelatihan")}
                 </strong>
               </li>
             </ul>
@@ -181,7 +195,7 @@ export const CadetDossierModal: React.FC<CadetDossierModalProps> = ({
             type="button"
             className="dossier-close-btn"
             onClick={onClose}
-            aria-label="Close dossier"
+            aria-label={t.closeBtn}
           >
             ✕
           </button>
@@ -191,7 +205,9 @@ export const CadetDossierModal: React.FC<CadetDossierModalProps> = ({
         <div className="dossier-body">
           {/* Confidence Meter */}
           <section className="dossier-section dossier-confidence">
-            <span className="dossier-section-label">Assessment Confidence</span>
+            <span className="dossier-section-label">
+              {language === "en" ? "Assessment Confidence" : "Tingkat Keyakinan Asesmen"}
+            </span>
             <div className="dossier-confidence-header">
               <span className="dossier-confidence-pct">
                 {result.confidenceLevel}%
@@ -221,7 +237,7 @@ export const CadetDossierModal: React.FC<CadetDossierModalProps> = ({
           {/* Radar Chart */}
           <section className="dossier-section">
             <span className="dossier-section-label">
-              Competency Radar — 4 Pillars
+              {language === "en" ? "Competency Radar — 4 Pillars" : "Radar Kompetensi — 4 Pilar"}
             </span>
             <div className="dossier-radar-wrapper">
               <RadarChart scores={result.radarScores} size={260} />
@@ -231,7 +247,7 @@ export const CadetDossierModal: React.FC<CadetDossierModalProps> = ({
           {/* Archetype Badges */}
           <section className="dossier-section">
             <span className="dossier-section-label">
-              Specialization Archetypes
+              {language === "en" ? "Specialization Archetypes" : "Arketipe Spesialisasi"}
             </span>
             <div className="dossier-archetypes">
               <ArchetypeCard
@@ -248,7 +264,7 @@ export const CadetDossierModal: React.FC<CadetDossierModalProps> = ({
           {/* Analysis Narrative */}
           <section className="dossier-section">
             <span className="dossier-section-label">
-              Personality Analysis
+              {language === "en" ? "Personality Analysis" : "Analisis Karakter & Bakat"}
             </span>
             <p className="dossier-analysis-text">{result.analysisText}</p>
           </section>
@@ -256,7 +272,7 @@ export const CadetDossierModal: React.FC<CadetDossierModalProps> = ({
           {/* SOCS Recommendation */}
           <section className="dossier-section">
             <span className="dossier-section-label">
-              SOCS BINUS Bekasi — Recommendation
+              {language === "en" ? "SOCS BINUS Bekasi — Recommendation" : "Rekomendasi SOCS BINUS Bekasi"}
             </span>
             <p className="dossier-recommendation">{result.recommendationNote}</p>
             <div
@@ -275,7 +291,7 @@ export const CadetDossierModal: React.FC<CadetDossierModalProps> = ({
           {/* Career Paths */}
           <section className="dossier-section">
             <span className="dossier-section-label">
-              Recommended Career Paths
+              {language === "en" ? "Recommended Career Paths" : "Rekomendasi Jalur Karier"}
             </span>
             <div className="dossier-career-paths">
               {primaryMeta.careerPaths.map((career) => (
@@ -300,7 +316,7 @@ export const CadetDossierModal: React.FC<CadetDossierModalProps> = ({
             onClick={onClose}
             disabled={isGeneratingPdf}
           >
-            Close
+            {t.closeBtn}
           </button>
           <button
             type="button"
@@ -308,7 +324,7 @@ export const CadetDossierModal: React.FC<CadetDossierModalProps> = ({
             onClick={handleSaveCadetCard}
             disabled={isGeneratingPdf}
           >
-            {isGeneratingPdf ? "GENERATING PDF..." : "SAVE CADET CARD"}
+            {isGeneratingPdf ? (language === "en" ? "GENERATING PDF..." : "MEMBUAT PDF...") : t.savePdfBtn}
           </button>
         </footer>
       </div>

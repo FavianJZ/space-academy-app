@@ -15,9 +15,10 @@ import {
   SpeechBubble,
 } from "../shared/SpeechBubble";
 import {
-  robotMessages,
+  getRobotMessages,
   getRandomMessage,
 } from "../shared/speechBubbleContent";
+import { getTranslation } from "../../../i18n/translations";
 
 import "../shared/StageStyle.css";
 import "../shared/AdvancedHUD.css";
@@ -34,39 +35,30 @@ const Stage1Introduction: React.FC<Stage1IntroductionProps> = ({ planetId }) => 
   const addPlanetScore = useGameStore((state) => state.addPlanetScore);
   const markPlanetVisited = useGameStore((state) => state.markPlanetVisited);
   const playerData = useGameStore((state) => state.playerData);
+  const language = useGameStore((state) => state.language);
+  const t = getTranslation(language);
+
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const stageStartRef = useRef(Date.now());
   const [displayedText, setDisplayedText] = useState('');
   const [isTyping, setIsTyping] = useState(true);
 
-const [tilt, setTilt] = useState({ x: 0, y: 0 });
+  const [tilt, setTilt] = useState({ x: 0, y: 0 });
 
-const [robotReaction, setRobotReaction] = useState<RobotReaction>('idle');
+  const [robotReaction, setRobotReaction] = useState<RobotReaction>('idle');
   const [speechMessage, setSpeechMessage] = useState('');
   const [screenEffect, setScreenEffect] = useState('');
 
   const typingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const introSteps = useMemo(() => [
-    {
-      title: 'Welcome to Software Engineering',
-      content:
-        'Software Engineering adalah disiplin merancang, membangun, dan memelihara sistem perangkat lunak berstandar industri. Dari sistem navigasi hingga kontrol pesawat, software adalah otak dari seluruh misi antariksa.',
-      speaker: 'AI Flight Core',
-    },
-    {
-      title: 'Software Development Lifecycle (SDLC)',
-      content:
-        'SDLC adalah siklus hidup rekayasa software: Requirement Analysis, System Architecture, Implementation (Coding), Testing & QA, hingga Cloud Deployment. Semua tahapan ini saling terhubung secara presisi.',
-      speaker: 'AI Flight Core',
-    },
-    {
-      title: 'Cadet Flight Readiness',
-      content:
-        `Siap bertugas, Kadet ${playerData.name || 'Pioneer'}! Di stasiun berikutnya, Anda akan menguji teori komputasi, menyusun pipeline arsitektur, menyelesaikan flowchart logic, dan membasmi bug sistem.`,
-      speaker: 'AI Flight Core',
-    },
-  ], [playerData.name]);
+  const introSteps = useMemo(() => {
+    const rawSteps = t.stages.stage1.steps;
+    return rawSteps.map((step) => ({
+      title: step.title,
+      speaker: step.speaker,
+      content: typeof step.content === "function" ? step.content(playerData.name || "Pioneer") : step.content,
+    }));
+  }, [t, playerData.name]);
 
   const handleSkipTyping = () => {
     if (!isTyping) return;
@@ -130,7 +122,7 @@ const [robotReaction, setRobotReaction] = useState<RobotReaction>('idle');
   const [showCompletion, setShowCompletion] = useState(false);
 
   const handleRobotClick = () => {
-    const msg = getRandomMessage(robotMessages.idle);
+    const msg = getRandomMessage(getRobotMessages(language).idle);
     setSpeechMessage(msg);
     setRobotReaction('waving');
     setTimeout(() => setRobotReaction('idle'), 2000);
@@ -160,8 +152,8 @@ const [robotReaction, setRobotReaction] = useState<RobotReaction>('idle');
     return (
       <div className="stage-completion">
         <div className="completion-card">
-          <div className="completion-badge">🚀 ONBOARDING COMPLETE</div>
-          <h1>STAGE 1 COMPLETE!</h1>
+          <div className="completion-badge">{t.stages.stage1.onboardingComplete}</div>
+          <h1>{t.stages.stage1.stage1Complete}</h1>
           <div style={{ display: "flex", gap: "20px", justifyContent: "center", margin: "16px 0" }}>
             <div className="completion-stat-chip">
               <span className="stat-label">STATUS</span>
@@ -172,10 +164,10 @@ const [robotReaction, setRobotReaction] = useState<RobotReaction>('idle');
               <span className="stat-value">+500</span>
             </div>
           </div>
-          <p className="returning-message">Returning to main hub...</p>
+          <p className="returning-message">{t.stages.stage1.returning}</p>
           <div className="completion-buttons">
-            <button className="replay-btn" onClick={handleReplay}>Replay Stage</button>
-            <button className="return-btn" onClick={() => navigate('/mainhub')}>Return to Hub</button>
+            <button className="replay-btn" onClick={handleReplay}>{t.stages.stage1.replayBtn}</button>
+            <button className="return-btn" onClick={() => navigate('/mainhub')}>{t.stages.stage1.returnBtn}</button>
           </div>
           <div className="robot-celebration">
             <AdaptiveCanvas camera={{ position: [0, 1, 5], fov: 50 }} dpr={[1, 1.1]} quality="low">
@@ -246,7 +238,7 @@ const [robotReaction, setRobotReaction] = useState<RobotReaction>('idle');
           <div className="card-scanline" />
 
           <div className="step-indicators">
-            {introSteps.map((_, idx) => (
+            {introSteps.map((_: unknown, idx: number) => (
               <div key={idx} className={`step-dot ${idx === currentStep ? 'active' : ''} ${idx < currentStep ? 'completed' : ''}`} />
             ))}
           </div>
@@ -267,7 +259,7 @@ const [robotReaction, setRobotReaction] = useState<RobotReaction>('idle');
             </p>
             {isTyping && (
               <span style={{ fontSize: "11px", color: "#00ffcc", opacity: 0.7, marginTop: "8px", display: "block" }}>
-                ⚡ Click dialog to reveal instantly
+                {t.stages.stage1.clickToReveal}
               </span>
             )}
           </div>
@@ -293,7 +285,7 @@ const [robotReaction, setRobotReaction] = useState<RobotReaction>('idle');
                 data-audio-cue="none"
                 onClick={handleContinue}
               >
-                {currentStep === introSteps.length - 1 ? 'INITIATE PROTOCOL 🚀' : 'NEXT SEQUENCE ▸'}
+                {currentStep === introSteps.length - 1 ? t.stages.stage1.initiateBtn : t.stages.stage1.nextBtn}
               </button>
             </div>
           )}

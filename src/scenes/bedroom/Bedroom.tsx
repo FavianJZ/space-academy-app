@@ -26,6 +26,7 @@ import {
   cancelSpeechNarration,
   speakNarration,
 } from "../../audio/speechNarration";
+import { getTranslation } from "../../i18n/translations";
 
 import { containsProfanity, validateAppropriateText } from "../../utils/profanityFilter";
 
@@ -861,204 +862,134 @@ const Bedroom: React.FC = () => {
     return () => window.clearTimeout(resetTimer);
   }, [dialoguePhase, currentStoryIndex, identityStep, storyQueue]);
 
-  const introDialogues = [
-    {
-      phase: 0,
-      speaker: "AI System",
-      text: "⚠ PROTOKOL DARURAT AKTIF ⚠\n\nCadet... bangun! Tabrakan asteroid membuat sistem utama lumpuh.",
-      buttons: [{ text: "Siapa kamu? Aku di mana?", action: 1 }],
+  const language = useGameStore((state) => state.language);
+  const t = getTranslation(language);
+
+  const introDialogues = useMemo(
+    () => [
+      {
+        phase: 0 as DialoguePhase,
+        speaker: "AI System",
+        text: t.bedroom.dialogues.phase0.text,
+        buttons: [{ text: t.bedroom.dialogues.phase0.btn, action: 1 }],
+      },
+      {
+        phase: 1 as DialoguePhase,
+        speaker: "AI Robot",
+        text: t.bedroom.dialogues.phase1.text,
+        buttons: [
+          { text: t.bedroom.dialogues.phase1.btn1, action: 2 },
+          { text: t.bedroom.dialogues.phase1.btn2, action: 2 },
+        ],
+      },
+      {
+        phase: 2 as DialoguePhase,
+        speaker: "AI Robot",
+        text: t.bedroom.dialogues.phase2.text,
+        buttons: [{ text: t.bedroom.dialogues.phase2.btn, action: 3 }],
+      },
+    ],
+    [t]
+  );
+
+  const getStepConfig = useCallback(
+    (step: IdentityStep): StepConfig | null => {
+      switch (step) {
+        case "intro":
+          return {
+            step,
+            preDialogue: t.bedroom.steps.intro.lines as unknown as StoryLine[],
+            postSubmit: () => [],
+          };
+
+        case "name":
+          return {
+            step,
+            field: "name",
+            label: t.bedroom.steps.name.label,
+            placeholder: t.bedroom.steps.name.placeholder,
+            required: true,
+            inputType: "text",
+            preDialogue: t.bedroom.steps.name.preDialogue as unknown as StoryLine[],
+            postSubmit: (value) =>
+              t.bedroom.steps.name.postSuccess(value.trim()) as unknown as StoryLine[],
+          };
+
+        case "phone":
+          return {
+            step,
+            field: "phone",
+            label: t.bedroom.steps.phone.label,
+            placeholder: t.bedroom.steps.phone.placeholder,
+            required: false,
+            inputType: "tel",
+            preDialogue: t.bedroom.steps.phone.preDialogue as unknown as StoryLine[],
+            postSubmit: (value) => {
+              const hasValue = value.trim().length > 0;
+
+              return (
+                hasValue
+                  ? t.bedroom.steps.phone.postSuccess
+                  : t.bedroom.steps.phone.postEmpty
+              ) as unknown as StoryLine[];
+            },
+          };
+
+        case "school":
+          return {
+            step,
+            field: "school",
+            label: t.bedroom.steps.school.label,
+            placeholder: t.bedroom.steps.school.placeholder,
+            required: false,
+            inputType: "text",
+            preDialogue: t.bedroom.steps.school.preDialogue as unknown as StoryLine[],
+            postSubmit: (value) => {
+              const hasValue = value.trim().length > 0;
+
+              return (
+                hasValue
+                  ? t.bedroom.steps.school.postSuccess(value.trim())
+                  : t.bedroom.steps.school.postEmpty
+              ) as unknown as StoryLine[];
+            },
+          };
+
+        case "major":
+          return {
+            step,
+            field: "major",
+            label: t.bedroom.steps.major.label,
+            required: true,
+            inputType: "select",
+            options: [
+              { value: "", label: t.bedroom.steps.major.selectPrompt },
+              { value: "IPA", label: t.bedroom.steps.major.ipaLabel },
+              { value: "IPS", label: t.bedroom.steps.major.ipsLabel },
+            ],
+            preDialogue: t.bedroom.steps.major.preDialogue as unknown as StoryLine[],
+            postSubmit: (value, currentData) =>
+              t.bedroom.steps.major.postSuccess(
+                currentData.name || "cadet",
+                value
+              ) as unknown as StoryLine[],
+          };
+
+        default:
+          return null;
+      }
     },
-    {
-      phase: 1,
-      speaker: "AI Robot",
-      text: "Kita terdampar di planet asing. Untuk menstabilkan kapal dan membuka navigasi, aku harus verifikasi identitasmu.",
-      buttons: [
-        { text: "Kondisi kapalnya bagaimana?", action: 2 },
-        { text: "Apa yang harus aku lakukan?", action: 2 },
-      ],
-    },
-    {
-      phase: 2,
-      speaker: "AI Robot",
-      text: "Tenang, kabin masih aman. Ikuti verifikasi bertahap. Aku akan pandu satu per satu agar cepat dan jelas.",
-      buttons: [{ text: "Mulai verifikasi sekarang", action: 3 }],
-    },
-  ];
-
-  const getStepConfig = useCallback((step: IdentityStep): StepConfig | null => {
-    switch (step) {
-      case "intro":
-        return {
-          step,
-          preDialogue: [
-            {
-              speaker: "AI Robot",
-              text: "Cadet, sebelum sistem navigasi kubuka, aku perlu sinkronisasi identitas bertahap.",
-              tone: "info",
-            },
-            {
-              speaker: "Spaceman",
-              text: "Baik. Aku siap. Pandu aku pelan-pelan.",
-              tone: "info",
-            },
-            {
-              speaker: "AI Robot",
-              text: "Kita mulai dari data paling penting dulu.",
-              tone: "success",
-            },
-          ],
-          postSubmit: () => [],
-        };
-
-      case "name":
-        return {
-          step,
-          field: "name",
-          label: "NAMA PILOT",
-          placeholder: "Masukkan nama identitas pilot",
-          required: true,
-          inputType: "text",
-          preDialogue: [
-            {
-              speaker: "AI Robot",
-              text: "Cadet, aku butuh identitas pilot untuk membuka lapisan keamanan inti.",
-              tone: "info",
-            },
-          ],
-          postSubmit: (value) => [
-            {
-              speaker: "AI Robot",
-              text: `Sinkronisasi biometrik cocok. Senang melihatmu kembali sadar, ${value.trim()}.`,
-              tone: "success",
-            },
-            {
-              speaker: "Spaceman",
-              text: "Lanjut. Kita selesaikan verifikasi ini.",
-              tone: "info",
-            },
-          ],
-        };
-
-      case "phone":
-        return {
-          step,
-          field: "phone",
-          label: "NOMOR TELEPON",
-          placeholder: "Kontak darurat (opsional)",
-          required: false,
-          inputType: "tel",
-          preDialogue: [
-            {
-              speaker: "AI Robot",
-              text: "Masukkan kanal kontak darurat. Jika tidak ada, kita tetap bisa lanjut.",
-              tone: "info",
-            },
-          ],
-          postSubmit: (value) => {
-            const hasValue = value.trim().length > 0;
-
-            return hasValue
-              ? [
-                  {
-                    speaker: "AI Robot",
-                    text: "Kanal darurat tercatat. Prioritas komunikasi berhasil dipetakan.",
-                    tone: "success",
-                  },
-                ]
-              : [
-                  {
-                    speaker: "AI Robot",
-                    text: "Kontak darurat belum tersedia. Tidak masalah, kita lanjut ke data berikutnya.",
-                    tone: "warn",
-                  },
-                ];
-          },
-        };
-
-      case "school":
-        return {
-          step,
-          field: "school",
-          label: "SEKOLAH / AKADEMI",
-          placeholder: "Asal sekolah atau akademi (opsional)",
-          required: false,
-          inputType: "text",
-          preDialogue: [
-            {
-              speaker: "AI Robot",
-              text: "Afiliasi akademimu membantuku memuat modul pelatihan yang tepat.",
-              tone: "info",
-            },
-          ],
-          postSubmit: (value) => {
-            const hasValue = value.trim().length > 0;
-
-            return hasValue
-              ? [
-                  {
-                    speaker: "AI Robot",
-                    text: `Afiliasi ${value.trim()} dikenali. Profil pendidikan berhasil ditautkan.`,
-                    tone: "success",
-                  },
-                ]
-              : [
-                  {
-                    speaker: "AI Robot",
-                    text: "Afiliasi belum ditemukan. Kamu bisa memperbaruinya nanti di terminal utama.",
-                    tone: "warn",
-                  },
-                ];
-          },
-        };
-
-      case "major":
-        return {
-          step,
-          field: "major",
-          label: "JURUSAN SPESIALISASI",
-          required: true,
-          inputType: "select",
-          options: [
-            { value: "", label: "Pilih jurusan..." },
-            { value: "IPA", label: "IPA - Sains & Teknologi" },
-            { value: "IPS", label: "IPS - Ilmu Sosial" },
-          ],
-          preDialogue: [
-            {
-              speaker: "AI Robot",
-              text: "Pilih spesialisasi utama. Ini menentukan paket misi yang akan aktif.",
-              tone: "info",
-            },
-          ],
-          postSubmit: (value, currentData) => [
-            {
-              speaker: "AI Robot",
-              text: `Profil ${
-                currentData.name || "cadet"
-              } dikonfigurasi untuk jalur ${value}.`,
-              tone: "success",
-            },
-            {
-              speaker: "Spaceman",
-              text: "Bagus. Sekarang buka akses sistem intinya.",
-              tone: "info",
-            },
-          ],
-        };
-
-      default:
-        return null;
-    }
-  }, []);
+    [t]
+  );
 
   const stepMetadata = useMemo(
     () => ({
-      name: { title: "Langkah 1/4 - Identitas Utama" },
-      phone: { title: "Langkah 2/4 - Kontak Darurat" },
-      school: { title: "Langkah 3/4 - Afiliasi Akademi" },
-      major: { title: "Langkah 4/4 - Spesialisasi" },
+      name: { title: t.bedroom.steps.name.metaTitle },
+      phone: { title: t.bedroom.steps.phone.metaTitle },
+      school: { title: t.bedroom.steps.school.metaTitle },
+      major: { title: t.bedroom.steps.major.metaTitle },
     }),
-    []
+    [t]
   );
 
   const startStep = useCallback(
@@ -1210,7 +1141,9 @@ const Bedroom: React.FC = () => {
 
     if (cfg.required && !value) {
       setStepError(
-        cfg.field === "major" ? "Jurusan wajib dipilih." : "Nama pilot wajib diisi."
+        cfg.field === "major"
+          ? t.bedroom.errors.majorRequired
+          : t.bedroom.errors.nameRequired
       );
       return;
     }
@@ -1218,7 +1151,7 @@ const Bedroom: React.FC = () => {
     if ((cfg.field === "name" || cfg.field === "school") && value) {
       const check = validateAppropriateText(value);
       if (!check.isValid) {
-        setStepError(check.errorMessage || "Harap gunakan kata yang sopan.");
+        setStepError(check.errorMessage || t.bedroom.errors.appropriateText);
         return;
       }
     }
@@ -1250,19 +1183,19 @@ const Bedroom: React.FC = () => {
 
   const handleFinalAuthentication = () => {
     if (!formData.name.trim()) {
-      setStepError("Nama pilot wajib diisi sebelum autentikasi final.");
+      setStepError(t.bedroom.errors.finalAuthName);
       startStep("name");
       return;
     }
 
     if (containsProfanity(formData.name) || containsProfanity(formData.school)) {
-      setStepError("🚫 Nama / Sekolah mengandung kata yang tidak sopan!");
+      setStepError(t.bedroom.errors.profanity);
       startStep("name");
       return;
     }
 
     if (!formData.major) {
-      setStepError("Jurusan wajib dipilih sebelum autentikasi final.");
+      setStepError(t.bedroom.errors.finalAuthMajor);
       startStep("major");
       return;
     }
@@ -1377,8 +1310,8 @@ const Bedroom: React.FC = () => {
 
       setNarrationDone(false);
       void speakNarration(activeNarrationText, {
-        lang: "id-ID",
-        preferredVoiceLanguage: "id",
+        lang: language === "en" ? "en-US" : "id-ID",
+        preferredVoiceLanguage: language,
         pitch: activeSpeaker === "robot" ? 1.24 : 0.96,
         rate: activeSpeaker === "robot" ? 1.06 : 1.02,
         volume: speechVolume,
@@ -1854,7 +1787,7 @@ const Bedroom: React.FC = () => {
                           startStep("name");
                         }}
                       >
-                        ▸ Mulai Verifikasi
+                        ▸ {t.bedroom.steps.intro.btn}
                       </button>
                     </div>
                   )}
@@ -1876,7 +1809,7 @@ const Bedroom: React.FC = () => {
                           handleContinueStory();
                         }}
                       >
-                        ▸ Lanjut Dialog
+                        {t.bedroom.continueDialogue}
                       </button>
                     </div>
                   )}
@@ -1941,7 +1874,7 @@ const Bedroom: React.FC = () => {
                     data-audio-cue="confirm"
                     onClick={handleSendStep}
                   >
-                    ▸ KIRIM DATA
+                    {t.bedroom.sendData}
                   </button>
                 </div>
               </div>
@@ -1953,26 +1886,26 @@ const Bedroom: React.FC = () => {
                 <div className="dialogue-scanline" />
 
                 <div className="step-card" onClick={(event) => event.stopPropagation()}>
-                  <p className="step-progress">Ringkasan Verifikasi</p>
+                  <p className="step-progress">{t.bedroom.confirm.summaryTitle}</p>
 
                   <div className="confirm-summary">
                     <div className="summary-row">
-                      <span>Nama Pilot</span>
+                      <span>{t.bedroom.confirm.pilotName}</span>
                       <strong>{formData.name || "-"}</strong>
                     </div>
 
                     <div className="summary-row">
-                      <span>Nomor Telepon</span>
+                      <span>{t.bedroom.confirm.phone}</span>
                       <strong>{formData.phone || "-"}</strong>
                     </div>
 
                     <div className="summary-row">
-                      <span>Sekolah / Akademi</span>
+                      <span>{t.bedroom.confirm.school}</span>
                       <strong>{formData.school || "-"}</strong>
                     </div>
 
                     <div className="summary-row">
-                      <span>Jurusan</span>
+                      <span>{t.bedroom.confirm.major}</span>
                       <strong>{formData.major || "-"}</strong>
                     </div>
                   </div>
@@ -1980,8 +1913,7 @@ const Bedroom: React.FC = () => {
                   {stepError && <p className="inline-error">{stepError}</p>}
 
                   <p className="form-hint">
-                    AI Robot: "Data sudah lengkap. Satu autentikasi lagi, lalu
-                    sistem navigasi kubuka penuh."
+                    {t.bedroom.confirm.hint}
                   </p>
 
                   <div className="dialogue-actions visible">
@@ -1990,7 +1922,7 @@ const Bedroom: React.FC = () => {
                       data-audio-cue="confirm"
                       onClick={handleFinalAuthentication}
                     >
-                      ⚡ AUTHENTIKASI FINAL
+                      {t.bedroom.confirm.finalAuthBtn}
                     </button>
 
                     <button
@@ -1998,7 +1930,7 @@ const Bedroom: React.FC = () => {
                       data-audio-cue="tab"
                       onClick={handleEditData}
                     >
-                      ✎ Edit Data
+                      {t.bedroom.confirm.editDataBtn}
                     </button>
                   </div>
                 </div>
@@ -2010,11 +1942,11 @@ const Bedroom: React.FC = () => {
                 <div className="completion-glow" />
 
                 <div className="message-content">
-                  <h3>✓ AUTENTIKASI BERHASIL</h3>
+                  <h3>{t.bedroom.success.title}</h3>
 
                   <p>
                     <TypewriterText
-                      text={`Selamat datang, Pilot ${formData.name}. Akses sistem telah kubuka penuh. Kita bisa pulang sekarang.`}
+                      text={t.bedroom.success.welcome(formData.name)}
                       speed={30}
                     />
                   </p>
@@ -2025,8 +1957,8 @@ const Bedroom: React.FC = () => {
 
                   <p className="message-hint">
                     {isRegistering
-                      ? "Menghubungkan ke server..."
-                      : "Menyiapkan rute ke Main Hub..."}
+                      ? t.bedroom.success.connecting
+                      : t.bedroom.success.preparing}
                   </p>
                 </div>
               </div>

@@ -102,9 +102,6 @@
   box-shadow: 0 0 12px rgba(0, 255, 204, 0.4);
 }
 
-.dam-refresh-btn.spin {
-  animation: damSpin 0.8s linear infinite;
-}
 
 @keyframes damSpin {
   100% { transform: rotate(360deg); }

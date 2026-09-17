@@ -16,6 +16,8 @@ import {
   MAX_ACCOUNTS_PER_DEVICE,
 } from "../../services/deviceAccountService";
 import { useGameAudio } from "../../hooks/useGameAudio";
+import { useGameStore } from "../../stores/useGameStore";
+import { getTranslation } from "../../i18n/translations";
 import "./DeviceAccountModal.css";
 
 interface DeviceAccountModalProps {
@@ -128,6 +130,8 @@ export const DeviceAccountModal: React.FC<DeviceAccountModalProps> = ({
 }) => {
   const navigate = useNavigate();
   const { playSfx } = useGameAudio();
+  const language = useGameStore((state) => state.language);
+  const t = getTranslation(language).deviceModal;
 
   const [loading, setLoading] = useState(true);
   const [deviceId, setDeviceId] = useState("");
@@ -187,17 +191,18 @@ export const DeviceAccountModal: React.FC<DeviceAccountModalProps> = ({
           <div className="dam-header-left">
             <div className="dam-icon-pulse">🎮</div>
             <div>
-              <h2>DEVICE MEMORY & PILOT PROFILES</h2>
-              <p>Sistem Kuota Perangkat: Maksimal 2 Akun Pilot per Device</p>
+              <h2>{t.title}</h2>
+              <p>{t.subtitle}</p>
             </div>
           </div>
 
           <div className="dam-header-right">
             <button
               type="button"
-              className={`dam-refresh-btn ${isRefreshing ? "spin" : ""}`}
+              className="dam-refresh-btn"
               onClick={loadData}
-              title="Cek Ulang Device & Sinkronisasi"
+              disabled={isRefreshing}
+              title={t.refreshTitle}
             >
               🔄 Refresh
             </button>
@@ -205,7 +210,7 @@ export const DeviceAccountModal: React.FC<DeviceAccountModalProps> = ({
               type="button"
               className="dam-close-btn"
               onClick={onClose}
-              aria-label="Tutup"
+              aria-label={t.closeBtn}
             >
               ✕
             </button>
@@ -226,10 +231,10 @@ export const DeviceAccountModal: React.FC<DeviceAccountModalProps> = ({
               }`}
             >
               {accounts.length === 0
-                ? "✨ FRESH DEVICE (0/2 AKUN)"
+                ? (language === "en" ? "✨ FRESH DEVICE (0/2 ACCOUNTS)" : "✨ FRESH DEVICE (0/2 AKUN)")
                 : accounts.length === 1
-                ? "🚀 1/2 AKUN TERDAFTAR"
-                : "🔒 2/2 AKUN PENUH (BATAS DEVICE)"}
+                ? (language === "en" ? "🚀 1/2 ACCOUNT REGISTERED" : "🚀 1/2 AKUN TERDAFTAR")
+                : (language === "en" ? "🔒 2/2 ACCOUNTS FULL (DEVICE LIMIT)" : "🔒 2/2 AKUN PENUH (BATAS DEVICE)")}
             </span>
           </div>
         </div>
@@ -239,7 +244,7 @@ export const DeviceAccountModal: React.FC<DeviceAccountModalProps> = ({
           {loading ? (
             <div className="dam-loading">
               <span className="dam-spinner" />
-              <p>MEMINDAI PROFIL PERANGKAT...</p>
+              <p>{t.scanning}</p>
             </div>
           ) : (
             <>
@@ -250,7 +255,7 @@ export const DeviceAccountModal: React.FC<DeviceAccountModalProps> = ({
                 }`}
               >
                 <div className="dam-slot-header">
-                  <span className="dam-slot-badge">SLOT 01</span>
+                  <span className="dam-slot-badge">{t.slotBadge} 01</span>
                   {accounts[0] && (
                     <span
                       className={`dam-status-tag ${
@@ -258,8 +263,8 @@ export const DeviceAccountModal: React.FC<DeviceAccountModalProps> = ({
                       }`}
                     >
                       {accounts[0].isGameCompleted
-                        ? "🏆 TAMAT (COMPLETED)"
-                        : `🚀 AKTIF (${accounts[0].visitedPlanetsCount}/6 SEKTOR)`}
+                        ? t.completedTag
+                        : `${t.activeTag} (${accounts[0].visitedPlanetsCount}/6 ${t.sectors})`}
                     </span>
                   )}
                 </div>
@@ -276,7 +281,7 @@ export const DeviceAccountModal: React.FC<DeviceAccountModalProps> = ({
                       </div>
 
                       <div className="dam-score-box">
-                        <span className="dam-score-lbl">HIGH SCORE</span>
+                        <span className="dam-score-lbl">{t.highScore}</span>
                         <span className="dam-score-val">
                           {accounts[0].totalScore.toLocaleString()} PTS
                         </span>
@@ -303,21 +308,21 @@ export const DeviceAccountModal: React.FC<DeviceAccountModalProps> = ({
                         className="dam-action-btn load"
                         onClick={() => handleSelectAccount(accounts[0])}
                       >
-                        ▶ LOAD PILOT (LANJUTKAN)
+                        {t.loadPilot}
                       </button>
                     </div>
                   </div>
                 ) : (
                   <div className="dam-empty-slot">
                     <div className="dam-empty-icon">➕</div>
-                    <h4>SLOT 01 KOSONG</h4>
-                    <p>Perangkat ini belum memiliki akun di Slot 1.</p>
+                    <h4>{t.slotBadge} 01 {t.emptySlotTitle}</h4>
+                    <p>{t.emptySlotDesc}</p>
                     <button
                       type="button"
                       className="dam-action-btn create"
                       onClick={handleCreateNew}
                     >
-                      + BUAT PILOT BARU
+                      {t.createNewPilot}
                     </button>
                   </div>
                 )}
@@ -330,7 +335,7 @@ export const DeviceAccountModal: React.FC<DeviceAccountModalProps> = ({
                 }`}
               >
                 <div className="dam-slot-header">
-                  <span className="dam-slot-badge">SLOT 02</span>
+                  <span className="dam-slot-badge">{t.slotBadge} 02</span>
                   {accounts[1] && (
                     <span
                       className={`dam-status-tag ${
@@ -338,8 +343,8 @@ export const DeviceAccountModal: React.FC<DeviceAccountModalProps> = ({
                       }`}
                     >
                       {accounts[1].isGameCompleted
-                        ? "🏆 TAMAT (COMPLETED)"
-                        : `🚀 AKTIF (${accounts[1].visitedPlanetsCount}/6 SEKTOR)`}
+                        ? t.completedTag
+                        : `${t.activeTag} (${accounts[1].visitedPlanetsCount}/6 ${t.sectors})`}
                     </span>
                   )}
                 </div>
@@ -356,7 +361,7 @@ export const DeviceAccountModal: React.FC<DeviceAccountModalProps> = ({
                       </div>
 
                       <div className="dam-score-box">
-                        <span className="dam-score-lbl">HIGH SCORE</span>
+                        <span className="dam-score-lbl">{t.highScore}</span>
                         <span className="dam-score-val">
                           {accounts[1].totalScore.toLocaleString()} PTS
                         </span>
@@ -383,18 +388,18 @@ export const DeviceAccountModal: React.FC<DeviceAccountModalProps> = ({
                         className="dam-action-btn load"
                         onClick={() => handleSelectAccount(accounts[1])}
                       >
-                        ▶ LOAD PILOT (LANJUTKAN)
+                        {t.loadPilot}
                       </button>
                     </div>
                   </div>
                 ) : (
                   <div className="dam-empty-slot">
                     <div className="dam-empty-icon">➕</div>
-                    <h4>SLOT 02 KOSONG</h4>
+                    <h4>{t.slotBadge} 02 {t.emptySlotTitle}</h4>
                     <p>
                       {isFull
-                        ? "Batas maksimal 2 akun per device tercapai."
-                        : "Slot tersedia untuk mendaftarkan akun kedua pada device ini."}
+                        ? (language === "en" ? "Maximum limit of 2 accounts per device reached." : "Batas maksimal 2 akun per device tercapai.")
+                        : (language === "en" ? "Slot available to register a second account on this device." : "Slot tersedia untuk mendaftarkan akun kedua pada device ini.")}
                     </p>
                     <button
                       type="button"
@@ -402,7 +407,7 @@ export const DeviceAccountModal: React.FC<DeviceAccountModalProps> = ({
                       onClick={handleCreateNew}
                       disabled={isFull}
                     >
-                      {isFull ? "BATAS TERCAPAI" : "+ BUAT PILOT BARU"}
+                      {isFull ? (language === "en" ? "LIMIT REACHED" : "BATAS TERCAPAI") : t.createNewPilot}
                     </button>
                   </div>
                 )}
@@ -417,19 +422,20 @@ export const DeviceAccountModal: React.FC<DeviceAccountModalProps> = ({
             <div className="dam-alert-full">
               <span>⚠️</span>
               <p>
-                <strong>Batas 2 Akun Tercapai:</strong> Device ini sudah memiliki 2
-                akun pilot. Untuk menjaga integritas penilaian, 1 perangkat
-                dibatasi maksimal 2 pengguna. Silakan pilih salah satu hero di
-                atas.
+                <strong>{language === "en" ? "Device Limit Reached:" : "Batas 2 Akun Tercapai:"}</strong>{" "}
+                {language === "en"
+                  ? "This device already has 2 pilot profiles. To preserve test integrity, 1 device is limited to maximum 2 users. Please select one of the heroes above."
+                  : "Device ini sudah memiliki 2 akun pilot. Untuk menjaga integritas penilaian, 1 perangkat dibatasi maksimal 2 pengguna. Silakan pilih salah satu hero di atas."}
               </p>
             </div>
           ) : (
             <div className="dam-alert-avail">
               <span>💡</span>
               <p>
-                <strong>Status Device Normal:</strong> Anda masih memiliki{" "}
-                <strong>{MAX_ACCOUNTS_PER_DEVICE - accounts.length}</strong> slot
-                tersedia untuk membuat akun baru pada perangkat ini.
+                <strong>{language === "en" ? "Normal Device Status:" : "Status Device Normal:"}</strong>{" "}
+                {language === "en"
+                  ? `You still have ${MAX_ACCOUNTS_PER_DEVICE - accounts.length} slot(s) available to create a new account on this device.`
+                  : `Anda masih memiliki ${MAX_ACCOUNTS_PER_DEVICE - accounts.length} slot tersedia untuk membuat akun baru pada perangkat ini.`}
               </p>
             </div>
           )}

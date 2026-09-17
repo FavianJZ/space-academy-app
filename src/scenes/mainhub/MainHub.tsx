@@ -16,6 +16,7 @@ import AdaptiveCanvas from "../../components/common/AdaptiveCanvas";
 import { useAudioSettings } from "../../components/common/audioSettingsContext";
 import { useGameAudio } from "../../hooks/useGameAudio";
 import { useGameStore } from "../../stores/useGameStore";
+import { getTranslation } from "../../i18n/translations";
 import { generateSamplePlanetLeaderboard } from "../../utils/leaderboardSeed";
 import AvatarCharacterModel from "./AvatarCharacterModel";
 import CharacterCustomizationPanel from "./CharacterCustomizationPanel";
@@ -144,6 +145,10 @@ const PlanetWrapper: React.FC<{
   ]);
   const hoverTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const orbitAngleRef = useRef<number>(angle);
+
+  const language = useGameStore((state) => state.language);
+  const t = getTranslation(language);
+  const planetInfo = t.planets[planetId as keyof typeof t.planets];
 
   useEffect(() => {
     return () => {
@@ -366,7 +371,7 @@ const PlanetWrapper: React.FC<{
               className="planet-start-here-indicator"
               style={{ "--accent": meta.color } as React.CSSProperties}
             >
-              <div className="indicator-text">YOUR HERE</div>
+              <div className="indicator-text">{language === "en" ? "YOU ARE HERE" : "KAMU DI SINI"}</div>
               <div className="indicator-arrows">
                 <span>▼</span>
                 <span>▼</span>
@@ -418,7 +423,9 @@ const PlanetWrapper: React.FC<{
                         {activePlayers}
                       </strong>
                       <span className="hologram-players-label">
-                        PILOT{activePlayers > 1 ? "S" : ""} IN SECTOR
+                        {language === "en"
+                          ? `PILOT${activePlayers > 1 ? "S" : ""} IN SECTOR`
+                          : "PILOT DI SEKTOR"}
                       </span>
                       <span className="hologram-players-dot" />
                     </div>
@@ -426,22 +433,22 @@ const PlanetWrapper: React.FC<{
                 </header>
 
                 <div className="hologram-identity">
-                  <div className="hologram-name">{meta.name}</div>
+                  <div className="hologram-name">{planetInfo?.name ?? meta.name}</div>
                   <div className="hologram-type">
-                    {meta.type.toUpperCase()}
+                    {(planetInfo?.type ?? meta.type).toUpperCase()}
                   </div>
                 </div>
 
-                <div className="hologram-desc">{meta.description}</div>
+                <div className="hologram-desc">{planetInfo?.description ?? meta.description}</div>
 
                 <div className="hologram-stats">
                   <div className="hologram-stat">
-                    <span>MISSIONS</span>
+                    <span>{language === "en" ? "MISSIONS" : "MISI"}</span>
                     <strong>{meta.missions}</strong>
                   </div>
 
                   <div className="hologram-stat">
-                    <span>DIFFICULTY</span>
+                    <span>{language === "en" ? "DIFFICULTY" : "KESULITAN"}</span>
                     <strong className="hologram-diff-badge">
                       {meta.difficulty.toUpperCase()}
                     </strong>
@@ -449,15 +456,19 @@ const PlanetWrapper: React.FC<{
 
                   <div className="hologram-stat hologram-status-stat">
                     <span>STATUS</span>
-                    <strong>{isVisited ? "CLEARED" : "AVAILABLE"}</strong>
+                    <strong>
+                      {isVisited
+                        ? (language === "en" ? "CLEARED" : "SELESAI")
+                        : (language === "en" ? "AVAILABLE" : "TERSEDIA")}
+                    </strong>
                   </div>
                 </div>
 
                 <div className="hologram-footer">
                   <span className="hologram-footer-beacon" />
                   {isVisited
-                    ? "MISSION ARCHIVE COMPLETE"
-                    : "SELECT PLANET TO OPEN MISSION"}
+                    ? (language === "en" ? "MISSION ARCHIVE COMPLETE" : "ARSIP MISI SELESAI")
+                    : (language === "en" ? "SELECT PLANET TO OPEN MISSION" : "PILIH PLANET UNTUK MEMBUKA MISI")}
                 </div>
               </article>
               <div className="hologram-arrow" />
@@ -473,6 +484,10 @@ const MainHub: React.FC = () => {
   const navigate = useNavigate();
   const { playSfx } = useGameAudio();
   const { openAudioSettings } = useAudioSettings();
+
+  const language = useGameStore((state) => state.language);
+  const translations = getTranslation(language);
+  const t = translations.mainhub;
 
   const character = useGameStore((state) => state.character);
   const setCharacter = useGameStore((state) => state.setCharacter);
@@ -1055,7 +1070,7 @@ const MainHub: React.FC = () => {
                 setBossMode(!bossMode);
               }}
             >
-              {bossMode ? "BOSS MODE" : "NORMAL MODE"}
+              {bossMode ? t.bossModeActive : t.normalModeActive}
             </button>
           )}
 
@@ -1070,12 +1085,12 @@ const MainHub: React.FC = () => {
                   <div className="planet-completed-banner">
                     <div className="planet-completed-icon">✅</div>
                     <div className="planet-completed-text">
-                      MISSION COMPLETED
+                      {t.missionCompletedBanner}
                     </div>
                     <div className="planet-completed-stats">
                       <div className="planet-completed-stat">
                         <span className="planet-completed-stat-label">
-                          LAST SCORE
+                          {t.lastScore}
                         </span>
                         <span
                           className="planet-completed-stat-value"
@@ -1087,7 +1102,7 @@ const MainHub: React.FC = () => {
                       <div className="planet-completed-stat-divider" />
                       <div className="planet-completed-stat">
                         <span className="planet-completed-stat-label">
-                          TOTAL SCORE
+                          {t.totalScore}
                         </span>
                         <span
                           className="planet-completed-stat-value"
@@ -1102,12 +1117,12 @@ const MainHub: React.FC = () => {
                           STATUS
                         </span>
                         <span className="planet-completed-stat-value planet-completed-cleared">
-                          CLEARED ★
+                          {t.statusCleared}
                         </span>
                       </div>
                     </div>
                     <div className="planet-completed-hint">
-                      You can replay this mission to improve your score!
+                      {t.replayHint}
                     </div>
                   </div>
                 );
@@ -1115,36 +1130,37 @@ const MainHub: React.FC = () => {
 
             {activePlayers[selectedPlanet] > 0 && (
               <div className="planet-ui-players">
-                <span className="planet-ui-players-icon">LIVE</span>
+                <span className="planet-ui-players-icon">{t.liveCount}</span>
                 <span className="planet-ui-players-count">
                   {activePlayers[selectedPlanet]}
                 </span>
                 <span className="planet-ui-players-label">
-                  player{activePlayers[selectedPlanet] > 1 ? "s" : ""}{" "}
-                  currently exploring
+                  {language === "en"
+                    ? `player${activePlayers[selectedPlanet] > 1 ? "s" : ""} currently exploring`
+                    : "pemain sedang menjelajah"}
                 </span>
                 <span className="planet-ui-players-dot" />
               </div>
             )}
 
             <h2 style={{ color: PLANET_META[selectedPlanet].color }}>
-              {PLANET_META[selectedPlanet].name}
+              {translations.planets[selectedPlanet]?.name ?? PLANET_META[selectedPlanet].name}
             </h2>
 
             <div
               className="planet-info-type"
               style={{ color: PLANET_META[selectedPlanet].color }}
             >
-              {PLANET_META[selectedPlanet].type.toUpperCase()}
+              {(translations.planets[selectedPlanet]?.type ?? PLANET_META[selectedPlanet].type).toUpperCase()}
             </div>
 
-            <p>{PLANET_META[selectedPlanet].description}</p>
+            <p>{translations.planets[selectedPlanet]?.description ?? PLANET_META[selectedPlanet].description}</p>
 
             <div className="planet-info-meta">
               <span>
-                {STAGE_DESCRIPTIONS[selectedPlanet].title}:{" "}
-                {STAGE_DESCRIPTIONS[selectedPlanet].description}
-                {selectedPlanet === 6 && bossMode ? " — Boss Mode" : ""}
+                {translations.planets[selectedPlanet]?.stageTitle ?? STAGE_DESCRIPTIONS[selectedPlanet].title}:{" "}
+                {translations.planets[selectedPlanet]?.stageDescription ?? STAGE_DESCRIPTIONS[selectedPlanet].description}
+                {selectedPlanet === 6 && bossMode ? (language === "en" ? " — Boss Mode" : " — Mode Boss") : ""}
               </span>
             </div>
 
@@ -1159,7 +1175,7 @@ const MainHub: React.FC = () => {
                 }}
                 onClick={() => setShowLeaderboard(!showLeaderboard)}
               >
-                🏆 {showLeaderboard ? "HIDE LEADERBOARD" : "VIEW LEADERBOARD"}
+                🏆 {showLeaderboard ? t.hideLeaderboard : t.viewPlanetLeaderboard}
               </button>
             )}
 
@@ -1169,7 +1185,7 @@ const MainHub: React.FC = () => {
                 const fullLeaderboard = getPlanetLeaderboard(selectedPlanet);
                 const top10 = fullLeaderboard.slice(0, 10);
                 const currentPlayerName =
-                  playerData.name?.trim() || p2Name?.trim() || "CADET";
+                  playerData.name?.trim() || p2Name?.trim() || t.cadet;
                 const normalizedCurrentPlayer = currentPlayerName.toLowerCase();
 
                 const playerIndex = fullLeaderboard.findIndex(
@@ -1208,8 +1224,7 @@ const MainHub: React.FC = () => {
                         className="planet-lb-title"
                         style={{ color: PLANET_META[selectedPlanet].color }}
                       >
-                        🏆 TOP PILOTS —{" "}
-                        {PLANET_META[selectedPlanet].name.toUpperCase()}
+                        {t.topPilotsTitle(translations.planets[selectedPlanet]?.name ?? PLANET_META[selectedPlanet].name)}
                       </span>
                       <span
                         style={{
@@ -1235,21 +1250,21 @@ const MainHub: React.FC = () => {
                             boxShadow: "0 0 8px #00ffcc",
                           }}
                         />
-                        LIVE
+                        {t.liveCount}
                       </span>
                     </div>
 
                     {fullLeaderboard.length === 0 && !playerPlanetScore ? (
                       <div className="planet-lb-empty">
-                        No records yet. Be the first!
+                        {t.noRecordsYet}
                       </div>
                     ) : (
                       <div className="planet-lb-table">
                         <div className="planet-lb-row planet-lb-row-header">
                           <span className="planet-lb-rank">#</span>
-                          <span className="planet-lb-name">PILOT</span>
-                          <span className="planet-lb-score">SCORE</span>
-                          <span className="planet-lb-time">TIME</span>
+                          <span className="planet-lb-name">{t.pilotCol}</span>
+                          <span className="planet-lb-score">{t.scoreCol}</span>
+                          <span className="planet-lb-time">{t.timeCol}</span>
                         </div>
 
                         {top10.map((entry, index) => {
@@ -1284,7 +1299,7 @@ const MainHub: React.FC = () => {
                               </span>
                               <span className="planet-lb-name">
                                 {entry.playerName}
-                                {isCurrentPlayer ? " (YOU)" : ""}
+                                {isCurrentPlayer ? ` ${t.youTag}` : ""}
                               </span>
                               <span
                                 className="planet-lb-score"
@@ -1313,7 +1328,7 @@ const MainHub: React.FC = () => {
                                   : `${fullLeaderboard.length + 1}+`}
                               </span>
                               <span className="planet-lb-name">
-                                {currentPlayerName} (YOU)
+                                {currentPlayerName} {t.youTag}
                               </span>
                               <span
                                 className="planet-lb-score"
@@ -1369,11 +1384,11 @@ const MainHub: React.FC = () => {
                   }
                 }}
               >
-                {visitedPlanets.has(selectedPlanet) ? "REPLAY" : "DEPART"}
+                {visitedPlanets.has(selectedPlanet) ? t.replayBtn : t.departBtn}
               </button>
 
               <button className="back-btn" onClick={handleBack}>
-                BACK
+                {t.backBtn}
               </button>
             </div>
           </div>
@@ -1393,13 +1408,13 @@ const MainHub: React.FC = () => {
             onClick={(event) => event.stopPropagation()}
           >
             <div className="p2-modal-system-bar">
-              <span>RAID LINK // LOCAL CO-OP</span>
+              <span>{language === "en" ? "RAID LINK // LOCAL CO-OP" : "TAUTAN RAID // CO-OP LOKAL"}</span>
               <button
                 type="button"
                 aria-label="Close co-op setup"
                 onClick={() => setShowP2Modal(false)}
               >
-                CLOSE
+                {translations.settings.escClose}
               </button>
             </div>
 
@@ -1407,10 +1422,10 @@ const MainHub: React.FC = () => {
               <div className="p2-modal-icon">P2</div>
               <div>
                 <h3 className="p2-modal-title" id="p2-modal-title">
-                  Link second pilot
+                  {t.p2ModalTitle}
                 </h3>
                 <p className="p2-modal-subtitle">
-                  Assign the numpad station before entering the Ultimara raid.
+                  {t.p2ModalSubtitle}
                 </p>
               </div>
             </div>
@@ -1424,15 +1439,15 @@ const MainHub: React.FC = () => {
                   <span className="p2-player-id" style={{ color: "#00ffff" }}>
                     P1
                   </span>
-                  <span className="p2-player-role">Mouse Pilot</span>
+                  <span className="p2-player-role">{t.p2MousePilot}</span>
                 </div>
                 <div className="p2-station-spec">
-                  <span>PRIMARY INPUT</span>
+                  <span>{t.p2PrimaryInput}</span>
                   <strong>POINTER / LMB</strong>
-                  <small>Direct target acquisition</small>
+                  <small>{t.p2DirectTarget}</small>
                 </div>
                 <div className="p2-player-name" style={{ color: "#00ffff" }}>
-                  {(playerData.name || "CADET").toUpperCase()}
+                  {(playerData.name || t.cadet).toUpperCase()}
                 </div>
               </div>
 
@@ -1446,20 +1461,20 @@ const MainHub: React.FC = () => {
                   <span className="p2-player-id" style={{ color: "#ffb703" }}>
                     P2
                   </span>
-                  <span className="p2-player-role">Numpad Runner</span>
+                  <span className="p2-player-role">{t.p2NumpadRunner}</span>
                 </div>
                 <div className="p2-station-spec p2-station-spec-secondary">
-                  <span>SECONDARY INPUT</span>
+                  <span>{t.p2SecondaryInput}</span>
                   <strong>NUMPAD 1—9</strong>
-                  <small>Grid-linked strike controls</small>
+                  <small>{t.p2GridStrike}</small>
                 </div>
 
                 <label className="p2-field">
-                  <span className="p2-field-label">PILOT CALLSIGN</span>
+                  <span className="p2-field-label">{t.p2CallsignLabel}</span>
                   <input
                     className="p2-name-input"
                     type="text"
-                    placeholder="Enter player 2 name"
+                    placeholder={t.p2CallsignPlaceholder}
                     value={p2FormName}
                     onChange={(event) => setP2FormName(event.target.value)}
                     maxLength={20}
@@ -1476,13 +1491,13 @@ const MainHub: React.FC = () => {
                 </label>
 
                 <label className="p2-field">
-                  <span className="p2-field-label">CONTACT LINK / OPTIONAL</span>
+                  <span className="p2-field-label">{t.p2ContactLabel}</span>
                   <input
                     className="p2-name-input"
                     type="tel"
                     inputMode="numeric"
                     pattern="[0-9]*"
-                    placeholder="Phone number"
+                    placeholder={t.p2ContactPlaceholder}
                     value={p2FormPhone}
                     onChange={(event) => setP2FormPhone(event.target.value.replace(/\D/g, ""))}
                     maxLength={16}
@@ -1505,7 +1520,7 @@ const MainHub: React.FC = () => {
                 disabled={!p2FormName.trim()}
                 onClick={() => {
                   if (containsProfanity(p2FormName)) {
-                    alert("🚫 Nama Callsign mengandung kata yang tidak sopan!");
+                    alert(t.p2ProfanityAlert);
                     return;
                   }
                   if (p2FormName.trim()) {
@@ -1516,7 +1531,7 @@ const MainHub: React.FC = () => {
                   }
                 }}
               >
-                ESTABLISH RAID LINK
+                {t.p2EstablishRaidLink}
               </button>
 
               <button
@@ -1527,7 +1542,7 @@ const MainHub: React.FC = () => {
                   handleDepart();
                 }}
               >
-                CONTINUE IN NORMAL MODE
+                {t.p2ContinueNormal}
               </button>
             </div>
           </div>
@@ -1561,20 +1576,20 @@ const MainHub: React.FC = () => {
 
       <div className="welcome-message">
         <span className="hub-command-kicker">
-          <i /> SPACE NAVIGATION
+          <i /> {t.spaceNav}
         </span>
-        <h1>WELCOME, {playerData.name || "CADET"}</h1>
-        <p>SELECT A PLANET TO OPEN ITS MISSION VECTOR</p>
+        <h1>{t.welcome} {playerData.name || t.cadet}</h1>
+        <p>{t.selectPlanet}</p>
         <div className="hub-status-row" aria-label="Academy progress">
-          <span>{stageStatus.completedCount}/6 SECTORS CLEARED</span>
-          <span>{getTotalScore().toLocaleString()} TOTAL SCORE</span>
+          <span>{stageStatus.completedCount}/6 {t.sectorsCleared}</span>
+          <span>{getTotalScore().toLocaleString()} {t.totalScore}</span>
         </div>
         <div className="hub-buttons">
           <button
             className="leaderboard-btn"
             onClick={() => navigate("/leaderboard")}
           >
-            VIEW LEADERBOARD
+            {t.viewLeaderboard}
           </button>
           <button
             className="dossier-btn"
@@ -1583,7 +1598,7 @@ const MainHub: React.FC = () => {
               setShowDossier(true);
             }}
           >
-            DOSSIER
+            {t.dossier}
           </button>
           <button
             className="settings-btn"
@@ -1593,7 +1608,7 @@ const MainHub: React.FC = () => {
               openAudioSettings();
             }}
           >
-            SETTINGS
+            {t.settings}
           </button>
         </div>
       </div>

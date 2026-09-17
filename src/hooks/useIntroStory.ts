@@ -1,8 +1,11 @@
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 
+import { useGameStore } from "../stores/useGameStore";
+import { getTranslation } from "../i18n/translations";
 import {
+  getNavFlightBriefing,
+  getNavGateDialogue,
   LANDING_GATE_INDEX,
-  NAV_FLIGHT_BRIEFING,
   NAV_FLIGHT_GATES,
   type ManualFlightStage,
 } from "../scenes/intro/navFlightConfig";
@@ -49,85 +52,6 @@ interface RouteNarrative {
   strandedDialogue: string;
 }
 
-const ROUTE_NARRATIVES: Record<NavigationRoute, RouteNarrative> = {
-  Mesin: {
-    lockColor: 0xff9b4a,
-    crisisColor: 0xff3d24,
-    strandedColor: 0xffb86b,
-    lockWarp: 0.7,
-    crisisWarp: 1.8,
-    lockDialogue:
-      "Rute mesin dipilih. Tiga drone servis memeriksa pendorong dari luar. Kamera buritan aktif; kita mulai dengan dorongan rendah.",
-    crisisDialogue:
-      "Pendorong kanan terlalu panas. Saluran pendinginnya retak. Aku mengurangi daya dan melepas modul yang rusak sebelum api mencapai badan kapal.",
-    climaxDialogue:
-      "Modul sudah terlepas dan dua pendorong masih merespons. Orbit tidak dapat dipulihkan, tetapi ada pulau dengan pad darurat di depan.",
-    approachDialogue:
-      "Pad terkunci. Roda pendaratan turun. Kecepatan kita potong bertahap; tahan hidung kapal tetap sejajar dengan garis tengah.",
-    touchdownDialogue:
-      "Roda utama menyentuh pad. Menahan rem aerodinamis... roda depan turun... kapal berhenti.",
-    strandedDialogue:
-      "Pendaratan aman, tetapi panas tadi merusak inti identitas kapal. Autentikasi ulang pilot diperlukan sebelum sistem pemulihan dapat dibuka.",
-  },
-  Navigasi: {
-    lockColor: 0x42ddff,
-    crisisColor: 0x2776ff,
-    strandedColor: 0x72d8ff,
-    lockWarp: 1.45,
-    crisisWarp: 2.4,
-    lockDialogue:
-      "Rute navigasi dipilih. Kendali manual aktif. Tiga gerbang orbital menjadi patokan untuk mengitari planet dan turun ke koridor aman.",
-    crisisDialogue:
-      "Badai magnetik menggandakan sinyal gerbang. Aku melihat lintasan asli dan bayangannya sekaligus; haluan sudah melenceng delapan belas derajat.",
-    climaxDialogue:
-      "Gerbang asli ditemukan melalui posisi bintang, tetapi kita terlalu rendah untuk kembali ke orbit. Aku memilih daratan terapung sebagai tujuan.",
-    approachDialogue:
-      "Suar pendaratan terlihat. Menghapus sinyal palsu, menurunkan roda, lalu masuk dari sisi kanan dengan sudut tiga derajat.",
-    touchdownDialogue:
-      "Kontak roda utama terkonfirmasi. Koreksi kecil ke kiri... roda depan turun... lintasan stabil.",
-    strandedDialogue:
-      "Kita mendarat di daratan yang tidak tercatat. Badai magnetik menghapus peta dan profil pilot, jadi autentikasi ulang diperlukan.",
-  },
-  Bensin: {
-    lockColor: 0x7dff9b,
-    crisisColor: 0xffbd38,
-    strandedColor: 0xffcf72,
-    lockWarp: 0.9,
-    crisisWarp: 0.28,
-    lockDialogue:
-      "Rute cadangan bahan bakar dipilih. Tangki sekunder tersambung. Kita memakai dorongan minimum sambil membidik pulau di depan.",
-    crisisDialogue:
-      "Segel tangki pecah. Tetesan bahan bakar terlihat di belakang sayap kanan. Mematikan pendorong sebelum sisa bahan bakar ikut terbakar.",
-    climaxDialogue:
-      "Pendorong sudah mati. Kita hanya punya ketinggian dan momentum. Aku mengubah sudut luncur agar energi cukup sampai ke pulau.",
-    approachDialogue:
-      "Pad masuk jangkauan. Roda turun. Jangan tarik hidung terlalu cepat; kita simpan kecepatan untuk flare terakhir.",
-    touchdownDialogue:
-      "Flare sekarang... roda utama menyentuh pad. Kecepatan turun, roda depan aman, dan kebocoran telah berhenti.",
-    strandedDialogue:
-      "Glide berhasil dan tangki kini benar-benar kosong. Sistem darurat terkunci sampai autentikasi pilot dipulihkan.",
-  },
-  Blackhole: {
-    lockColor: 0xb26dff,
-    crisisColor: 0x7b2cff,
-    strandedColor: 0xb993ff,
-    lockWarp: 3.1,
-    crisisWarp: 4.2,
-    lockDialogue:
-      "Rute slingshot dipilih. Kita akan meminjam gravitasi singularitas untuk menambah kecepatan. Kamera distabilkan terhadap bintang, bukan badan kapal.",
-    crisisDialogue:
-      "Tarikan pasang lebih kuat dari prediksi. Orbit menyempit dan badan kapal mulai miring. Menyalakan pendorong koreksi sebelum melewati batas aman.",
-    climaxDialogue:
-      "Kita terlempar keluar. Putaran berhasil diredam dan sensor kembali membaca sebuah daratan di vektor kanan depan.",
-    approachDialogue:
-      "Mengubah kecepatan sisa menjadi lintasan turun. Roda pendaratan aktif; sekarang kapal harus benar-benar rata sebelum menyentuh pad.",
-    touchdownDialogue:
-      "Kontak. Suspensi menahan benturan pertama... putaran nol... shuttle berhenti di tengah pad.",
-    strandedDialogue:
-      "Kita selamat dari anomali, tetapi tidak satu pun koordinat cocok dengan peta akademi. Autentikasi ulang diperlukan untuk membuka navigasi lokal.",
-  },
-};
-
 const waitFor = (durationMs: number, signal: AbortSignal) =>
   new Promise<boolean>((resolve) => {
     if (signal.aborted) {
@@ -160,6 +84,64 @@ export const useIntroStory = ({
   onStranded,
   onManualStageChange,
 }: UseIntroStoryProps) => {
+  const language = useGameStore((state) => state.language);
+  const t = getTranslation(language).intro;
+
+  const routeNarratives = useMemo<Record<NavigationRoute, RouteNarrative>>(() => ({
+    Mesin: {
+      lockColor: 0xff9b4a,
+      crisisColor: 0xff3d24,
+      strandedColor: 0xffb86b,
+      lockWarp: 0.7,
+      crisisWarp: 1.8,
+      lockDialogue: t.routes.Mesin.narrative.lock,
+      crisisDialogue: t.routes.Mesin.narrative.crisis,
+      climaxDialogue: t.routes.Mesin.narrative.climax,
+      approachDialogue: t.routes.Mesin.narrative.approach,
+      touchdownDialogue: t.routes.Mesin.narrative.touchdown,
+      strandedDialogue: t.routes.Mesin.narrative.stranded,
+    },
+    Navigasi: {
+      lockColor: 0x42ddff,
+      crisisColor: 0x2776ff,
+      strandedColor: 0x72d8ff,
+      lockWarp: 1.45,
+      crisisWarp: 2.4,
+      lockDialogue: t.routes.Navigasi.narrative.lock,
+      crisisDialogue: t.routes.Navigasi.narrative.crisis,
+      climaxDialogue: t.routes.Navigasi.narrative.climax,
+      approachDialogue: t.routes.Navigasi.narrative.approach,
+      touchdownDialogue: t.routes.Navigasi.narrative.touchdown,
+      strandedDialogue: t.routes.Navigasi.narrative.stranded,
+    },
+    Bensin: {
+      lockColor: 0x7dff9b,
+      crisisColor: 0xffbd38,
+      strandedColor: 0xffcf72,
+      lockWarp: 0.9,
+      crisisWarp: 0.28,
+      lockDialogue: t.routes.Bensin.narrative.lock,
+      crisisDialogue: t.routes.Bensin.narrative.crisis,
+      climaxDialogue: t.routes.Bensin.narrative.climax,
+      approachDialogue: t.routes.Bensin.narrative.approach,
+      touchdownDialogue: t.routes.Bensin.narrative.touchdown,
+      strandedDialogue: t.routes.Bensin.narrative.stranded,
+    },
+    Blackhole: {
+      lockColor: 0xb26dff,
+      crisisColor: 0x7b2cff,
+      strandedColor: 0xb993ff,
+      lockWarp: 3.1,
+      crisisWarp: 4.2,
+      lockDialogue: t.routes.Blackhole.narrative.lock,
+      crisisDialogue: t.routes.Blackhole.narrative.crisis,
+      climaxDialogue: t.routes.Blackhole.narrative.climax,
+      approachDialogue: t.routes.Blackhole.narrative.approach,
+      touchdownDialogue: t.routes.Blackhole.narrative.touchdown,
+      strandedDialogue: t.routes.Blackhole.narrative.stranded,
+    },
+  }), [t]);
+
   const storyControllerRef = useRef<AbortController | null>(null);
   
   const alarmStateRef = useRef(false);
@@ -214,7 +196,7 @@ export const useIntroStory = ({
       onLightingChange(0x6beaff, 3.2);
 
       await onDialogue(
-        "Komandan, ini ORBIT. Rekaman OA-01 dimulai. Sistem navigasi utama gagal saat kita meninggalkan orbit akademi.",
+        t.dialogues.greeting,
         900
       );
       if (signal.aborted) return;
@@ -223,7 +205,7 @@ export const useIntroStory = ({
       onStoryBeatChange("cruise");
       onWarpSpeed(0.82);
       await onDialogue(
-        "Aku menemukan empat prosedur pemulihan: perbaikan mesin, koreksi navigasi, cadangan bahan bakar, dan slingshot gravitasi. Setiap pilihan memiliki konsekuensi berbeda.",
+        t.dialogues.recoveryFound,
         900
       );
       if (signal.aborted) return;
@@ -232,7 +214,7 @@ export const useIntroStory = ({
       onStoryBeatChange("route-selection");
       onWarpSpeed(0.46);
       await onDialogue(
-        "Panel keputusan aktif. Pilih satu vektor; aku akan menjalankan prosedur dan membuka kamera penerbangan yang sesuai.",
+        t.dialogues.decisionActive,
         900
       );
       if (signal.aborted) return;
@@ -250,13 +232,14 @@ export const useIntroStory = ({
     onStoryBeatChange,
     onWarpSpeed,
     setAlarm,
+    t.dialogues,
   ]);
 
-const runLandingSequence = useCallback(
+  const runLandingSequence = useCallback(
     (route: NavigationRoute, playApproachBeat: boolean) => {
       const controller = beginStory();
       const { signal } = controller;
-      const narrative = ROUTE_NARRATIVES[route];
+      const narrative = routeNarratives[route];
 
       void (async () => {
         if (playApproachBeat) {
@@ -273,7 +256,6 @@ const runLandingSequence = useCallback(
             return;
           }
         } else if (!(await waitFor(MANUAL_TOUCHDOWN_DELAY_MS, signal))) {
-          
           return;
         }
 
@@ -312,6 +294,7 @@ const runLandingSequence = useCallback(
       onStranded,
       onStoryBeatChange,
       onWarpSpeed,
+      routeNarratives,
       setAlarm,
     ]
   );
@@ -320,7 +303,7 @@ const runLandingSequence = useCallback(
     (route: NavigationRoute) => {
       const controller = beginStory();
       const { signal } = controller;
-      const narrative = ROUTE_NARRATIVES[route];
+      const narrative = routeNarratives[route];
 
       onNavigationShow(false);
       onRouteSelected(route);
@@ -332,9 +315,9 @@ const runLandingSequence = useCallback(
       onShake(false);
       onLightingChange(narrative.lockColor, 4.2);
 
-if (route === MANUAL_FLIGHT_ROUTE) {
+      if (route === MANUAL_FLIGHT_ROUTE) {
         onManualStageChange("flying");
-        void onDialogue(NAV_FLIGHT_BRIEFING, 1400);
+        void onDialogue(getNavFlightBriefing(language), 1400);
         return;
       }
 
@@ -371,6 +354,7 @@ if (route === MANUAL_FLIGHT_ROUTE) {
     [
       beginStory,
       holdCinematicBeat,
+      language,
       onAsteroidShow,
       onDialogue,
       onLightingChange,
@@ -381,17 +365,18 @@ if (route === MANUAL_FLIGHT_ROUTE) {
       onShake,
       onStoryBeatChange,
       onWarpSpeed,
+      routeNarratives,
       runLandingSequence,
       setAlarm,
     ]
   );
 
-const handleManualGateCleared = useCallback(
+  const handleManualGateCleared = useCallback(
     (gateIndex: number) => {
       const gate = NAV_FLIGHT_GATES[gateIndex];
       if (!gate || gateIndex >= LANDING_GATE_INDEX) return;
 
-      const narrative = ROUTE_NARRATIVES[MANUAL_FLIGHT_ROUTE];
+      const narrative = routeNarratives[MANUAL_FLIGHT_ROUTE];
       onStoryBeatChange(gate.beat);
       onPhaseChange(gate.phase);
       setAlarm(gate.alarm);
@@ -400,13 +385,13 @@ const handleManualGateCleared = useCallback(
         gate.alarm ? 5.4 : 4.2
       );
 
-void onDialogue(gate.dialogue, 900);
+      void onDialogue(getNavGateDialogue(gate.id, gate.dialogue, language), 900);
     },
-    [onDialogue, onLightingChange, onPhaseChange, onStoryBeatChange, setAlarm]
+    [language, onDialogue, onLightingChange, onPhaseChange, onStoryBeatChange, routeNarratives, setAlarm]
   );
 
-const handleManualLandingGate = useCallback(() => {
-    const narrative = ROUTE_NARRATIVES[MANUAL_FLIGHT_ROUTE];
+  const handleManualLandingGate = useCallback(() => {
+    const narrative = routeNarratives[MANUAL_FLIGHT_ROUTE];
     onManualStageChange("landing");
     onPhaseChange("crash");
     onStoryBeatChange("route-approach");
@@ -423,10 +408,11 @@ const handleManualLandingGate = useCallback(() => {
     onShake,
     onStoryBeatChange,
     onWarpSpeed,
+    routeNarratives,
     setAlarm,
   ]);
 
-const handleManualHandoffComplete = useCallback(() => {
+  const handleManualHandoffComplete = useCallback(() => {
     onManualStageChange("done");
     runLandingSequence(MANUAL_FLIGHT_ROUTE, false);
   }, [onManualStageChange, runLandingSequence]);

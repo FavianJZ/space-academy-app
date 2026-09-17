@@ -21,10 +21,12 @@ import {
   SpeechBubble,
 } from "../shared/SpeechBubble";
 import {
-  robotMessages,
+  getRobotMessages,
   getRandomMessage,
 } from "../shared/speechBubbleContent";
 import { BossUFO } from "../shared/BossUFO";
+import { getTranslation } from "../../../i18n/translations";
+import type { Language } from "../../../types/game.types";
 
 import "../shared/StageStyle.css";
 import "../shared/AdvancedHUD.css";
@@ -143,33 +145,39 @@ const COOP_PLAYER_ORDER: CoopPlayerId[] = ["P1", "P2"];
 
 const getCoopProfiles = (
   p1Name?: string,
-  p2Name?: string
-): Record<CoopPlayerId, CoopPlayerProfile> => ({
-  P1: {
-    id: "P1",
-    title: p1Name?.toUpperCase() || "MOUSE PILOT",
-    subtitle: "Click to blast bugs instantly",
-    inputHint: "Mouse click",
-    description:
-      "Click any active bug tile. This is the primary raid control for the lead player.",
-    keyRows: [["LMB"], ["Click active bugs directly"]],
-    accent: "#00ffff",
-  },
-  P2: {
-    id: "P2",
-    title: p2Name?.toUpperCase() || "NUMPAD RUNNER",
-    subtitle: "Numpad 1-9 keys",
-    inputHint: "Numpad 1-9",
-    description:
-      "Use numpad digits in grid order, from top-left to bottom-right.",
-    keyRows: [
-      ["7", "8", "9"],
-      ["4", "5", "6"],
-      ["1", "2", "3"],
-    ],
-    accent: "#ffb703",
-  },
-});
+  p2Name?: string,
+  lang: Language = "id"
+): Record<CoopPlayerId, CoopPlayerProfile> => {
+  const isEn = lang === "en";
+  return {
+    P1: {
+      id: "P1",
+      title: p1Name?.toUpperCase() || (isEn ? "MOUSE PILOT" : "PILOT MOUSE"),
+      subtitle: isEn ? "Click to blast bugs instantly" : "Klik untuk basmi bug langsung",
+      inputHint: isEn ? "Mouse click" : "Klik mouse",
+      description: isEn
+        ? "Click any active bug tile. This is the primary raid control for the lead player."
+        : "Klik kotak bug aktif. Ini adalah kontrol raid utama untuk pilot pertama.",
+      keyRows: [["LMB"], [isEn ? "Click active bugs directly" : "Klik bug aktif langsung"]],
+      accent: "#00ffff",
+    },
+    P2: {
+      id: "P2",
+      title: p2Name?.toUpperCase() || (isEn ? "NUMPAD RUNNER" : "PELARI NUMPAD"),
+      subtitle: isEn ? "Numpad 1-9 keys" : "Tombol Numpad 1-9",
+      inputHint: "Numpad 1-9",
+      description: isEn
+        ? "Use numpad digits in grid order, from top-left to bottom-right."
+        : "Gunakan angka numpad sesuai urutan grid, dari kiri-atas ke kanan-bawah.",
+      keyRows: [
+        ["7", "8", "9"],
+        ["4", "5", "6"],
+        ["1", "2", "3"],
+      ],
+      accent: "#ffb703",
+    },
+  };
+};
 
 const COOP_PLAYER_PROFILES = getCoopProfiles();
 
@@ -334,9 +342,13 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
   );
   const [showDossier, setShowDossier] = useState(false);
 
+  const language = useGameStore((state) => state.language);
+  const t = getTranslation(language);
+  const robotMessages = getRobotMessages(language);
+
   const coopProfiles = React.useMemo(
-    () => getCoopProfiles(playerData.name || undefined, p2NameFromStore || undefined),
-    [playerData.name, p2NameFromStore]
+    () => getCoopProfiles(playerData.name || undefined, p2NameFromStore || undefined, language),
+    [playerData.name, p2NameFromStore, language]
   );
 
   const [phase, setPhase] = useState<
@@ -949,10 +961,14 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
         updateCoopStats(playerId, (snapshot) => ({
           ...snapshot,
           misses: snapshot.misses + 1,
-          lastAction: "Hit an abduction trap",
+          lastAction: language === "en" ? "Hit an abduction trap" : "Terjebak sinar penculik",
         }));
 
-        pushTickerMessage(`${playerProfile.id} hit an abduction trap!`);
+        pushTickerMessage(
+          language === "en"
+            ? `${playerProfile.id} hit an abduction trap!`
+            : `${playerProfile.id} terkena sinar penculik!`
+        );
         playSound("abduct");
 
         setFeedbacks((prev) => {
@@ -977,7 +993,11 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
         }, 800);
 
         setRobotReaction("incorrect");
-        setSpeechMessage("ABDUCTION TRAP! The UFO tricked you! −300 pts! 🛸");
+        setSpeechMessage(
+          language === "en"
+            ? "ABDUCTION TRAP! The UFO tricked you! −300 pts! 🛸"
+            : "JEBAKAN PENCULIK! UFO memperdayamu! −300 poin! 🛸"
+        );
         setScreenEffect("screen-shake");
 
         window.setTimeout(() => {
@@ -995,10 +1015,14 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
       updateCoopStats(playerId, (snapshot) => ({
         ...snapshot,
         misses: snapshot.misses + 1,
-        lastAction: "Missed a clean tile",
+        lastAction: language === "en" ? "Missed a clean tile" : "Mengetuk kode bersih",
       }));
 
-      pushTickerMessage(`${playerProfile.id} missed a clean tile`);
+      pushTickerMessage(
+        language === "en"
+          ? `${playerProfile.id} tapped clean code!`
+          : `${playerProfile.id} mengetuk kode bersih!`
+      );
       playSound("wrong");
 
       setFeedbacks((prev) => {
@@ -1023,7 +1047,11 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
       }, 600);
 
       setRobotReaction("incorrect");
-      setSpeechMessage("That code was correct! Only click bugs! 🐛");
+      setSpeechMessage(
+        language === "en"
+          ? "That code was correct! Only click bugs! 🐛"
+          : "Kode itu sudah benar! Hanya ketuk kode bug! 🐛"
+      );
       setScreenEffect("screen-shake");
 
       window.setTimeout(() => {
@@ -1040,18 +1068,20 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
       updateCoopStats,
       coopProfiles,
       getMotionMs,
+      language,
     ]
   );
 
   const handleRobotClick = () => {
+    const messages = getRobotMessages(language);
     if (phase === "playing") {
       setSpeechMessage(
         isBossMode
-          ? "Attack the UFO! Squash those bugs! 🛸"
-          : "Focus on the code! Squash those bugs! 🐛"
+          ? (language === "en" ? "Attack the UFO! Squash those bugs! 🛸" : "Serang UFO! Basmi bug-bug itu! 🛸")
+          : (language === "en" ? "Focus on the code! Squash those bugs! 🐛" : "Fokus pada kode! Basmi bug-bug itu! 🐛")
       );
     } else {
-      setSpeechMessage(getRandomMessage(robotMessages.idle));
+      setSpeechMessage(getRandomMessage(messages.idle));
     }
 
     setRobotReaction("waving");
@@ -1328,16 +1358,19 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
     return (
       <div className="stage-completion">
         <div className="completion-card">
-          <h1>STAGE 6 COMPLETE!</h1>
+          <div className="completion-badge">
+            {score >= 800 ? (language === "en" ? "🏆 MISSION COMPLETE" : "🏆 MISI SELESAI") : (language === "en" ? "⚠️ STAGE COMPLETE" : "⚠️ STAGE SELESAI")}
+          </div>
+          <h1>{isBossMode ? t.stages.stage6.raidReport : t.stages.stage6.missionReport}</h1>
 
           <div className="score-info">
             <p>
-              Bugs Squashed: {bugsSquashed}/{totalBugsSpawned}
+              {language === "en" ? "Bugs Squashed:" : "Bug Dibasmi:"} {bugsSquashed}/{totalBugsSpawned}
             </p>
-            <p>Accuracy: {accuracy}%</p>
-            <p>Max Combo: {maxCombo}x</p>
-            {isBossMode && <p>Boss Damage: {bossDamageTaken} DMG</p>}
-            <p>Final Score: {score} points</p>
+            <p>{language === "en" ? "Accuracy:" : "Akurasi:"} {accuracy}%</p>
+            <p>{language === "en" ? "Max Combo:" : "Combo Maksimal:"} {maxCombo}x</p>
+            {isBossMode && <p>{language === "en" ? "Boss Damage:" : "Damage Bos:"} {bossDamageTaken} DMG</p>}
+            <p>{language === "en" ? "Final Score:" : "Skor Akhir:"} {score} {language === "en" ? "points" : "poin"}</p>
 
             <div className="star-display">
               {[1, 2, 3].map((star) => (
@@ -1353,8 +1386,8 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
 
           <p className="returning-message">
             {visitedPlanets.size >= 5
-              ? "Heading to leaderboard..."
-              : "Returning to main hub..."}
+              ? (language === "en" ? "Heading to leaderboard..." : "Menuju papan peringkat...")
+              : t.stages.stage6.returningHub}
           </p>
 
           <div className="completion-buttons">
@@ -1366,15 +1399,15 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
                 setShowDossier(true);
               }}
             >
-              🎓 SPECIALIZATION DOSSIER
+              🎓 {t.leaderboard.specializationDossierBtn.replace("🎓 ", "")}
             </button>
 
             <button className="replay-btn" onClick={handleReplay}>
-              Replay Stage
+              {language === "en" ? "Replay Stage" : "Main Ulang"}
             </button>
 
             <button className="return-btn" onClick={() => navigate("/mainhub")}>
-              Return to Hub
+              {t.leaderboard.backToHubBtn}
             </button>
           </div>
 
@@ -1491,12 +1524,12 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
               <div className="normal-tutorial-section">
                 <div className="tutorial-header-line">
                   <span className="tutorial-header-dash" />
-                  <span className="boss-coop-label">SOLO INPUT MATRIX</span>
+                  <span className="boss-coop-label">{t.stages.stage6.soloInputMatrix}</span>
                   <span className="tutorial-header-dash" />
                 </div>
 
                 <p className="tutorial-section-lede">
-                  Choose one control map. Every input targets the same 3×3 grid.
+                  {t.stages.stage6.chooseControlMap}
                 </p>
 
                 <div className="tutorial-cards-grid">
@@ -1504,14 +1537,14 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
                     <div className="tutorial-card-header">
                       <span className="tutorial-card-badge">M1</span>
                       <div>
-                        <div className="tutorial-card-title">Mouse</div>
+                        <div className="tutorial-card-title">{t.stages.stage6.mouseTitle}</div>
                         <div className="tutorial-card-subtitle">
-                          Click to blast bugs instantly
+                          {t.stages.stage6.mouseSubtitle}
                         </div>
                       </div>
                     </div>
 
-                    <div className="tutorial-card-hint">Mouse click</div>
+                    <div className="tutorial-card-hint">{t.stages.stage6.mouseHint}</div>
 
                     <div className="tutorial-card-keys">
                       <div className="tutorial-key-row">
@@ -1520,8 +1553,7 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
                     </div>
 
                     <p className="tutorial-card-desc">
-                      Click any active bug tile to squash it. This is the primary
-                      way to target and eliminate bugs on the grid.
+                      {t.stages.stage6.mouseDesc}
                     </p>
                   </div>
 
@@ -1530,15 +1562,15 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
                       <span className="tutorial-card-badge">N9</span>
                       <div>
                         <div className="tutorial-card-title">
-                          Numbers / Numpad
+                          {t.stages.stage6.numpadTitle}
                         </div>
                         <div className="tutorial-card-subtitle">
-                          Keys 1-9 to map grid
+                          {t.stages.stage6.numpadSubtitle}
                         </div>
                       </div>
                     </div>
 
-                    <div className="tutorial-card-hint">Numpad 1-9</div>
+                    <div className="tutorial-card-hint">{t.stages.stage6.numpadHint}</div>
 
                     <div className="tutorial-card-keys">
                       <div className="tutorial-key-row">
@@ -1559,8 +1591,7 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
                     </div>
 
                     <p className="tutorial-card-desc">
-                      Use numpad or number row keys to target grid positions.
-                      Keys map from top-left 7 to bottom-right 3.
+                      {t.stages.stage6.numpadDesc}
                     </p>
                   </div>
 
@@ -1569,7 +1600,7 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
                       <span className="tutorial-card-badge">KB</span>
                       <div>
                         <div className="tutorial-card-title">
-                          Keyboard Letters
+                          {t.stages.stage6.keyboardTitle}
                         </div>
                         <div className="tutorial-card-subtitle">
                           Q W E | A S D | Z X C
@@ -1577,7 +1608,7 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
                       </div>
                     </div>
 
-                    <div className="tutorial-card-hint">Letter keys</div>
+                    <div className="tutorial-card-hint">{t.stages.stage6.keyboardHint}</div>
 
                     <div className="tutorial-card-keys">
                       <div className="tutorial-key-row">
@@ -1598,8 +1629,7 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
                     </div>
 
                     <p className="tutorial-card-desc">
-                      Use letter keys as an alternative grid controller. Layout
-                      mirrors the bug grid from top-left to bottom-right.
+                      {t.stages.stage6.keyboardDesc}
                     </p>
                   </div>
                 </div>
@@ -1618,12 +1648,12 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
               <div className="bughunt-mode-strip">
                 <div className="bughunt-mode-identity">
                   <span className="bughunt-mode-beacon" />
-                  <span>MISSION MODE</span>
-                  <strong>{isBossMode ? "BOSS CO-OP" : "NORMAL OPS"}</strong>
+                  <span>{t.stages.stage6.missionMode}</span>
+                  <strong>{isBossMode ? t.stages.stage6.bossCoop : t.stages.stage6.normalOps}</strong>
                 </div>
                 <div className="bughunt-mode-capacity">
-                  <span>{isBossMode ? "LOCAL RAID LINK" : "SOLO SESSION"}</span>
-                  <strong>{isBossMode ? "2 PILOTS" : "1 PILOT"}</strong>
+                  <span>{isBossMode ? t.stages.stage6.localRaidLink : t.stages.stage6.soloSession}</span>
+                  <strong>{isBossMode ? t.stages.stage6.twoPilots : t.stages.stage6.onePilot}</strong>
                 </div>
               </div>
 
@@ -1638,16 +1668,16 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
                 <div className="bughunt-briefing-copy">
                   <h1
                     className="bughunt-title"
-                    data-text={isBossMode ? "BOSS RAID" : "BUG HUNT"}
+                    data-text={isBossMode ? t.stages.stage6.bossRaidTitle : t.stages.stage6.bugHuntTitle}
                   >
-                    {isBossMode ? "BOSS RAID" : "BUG HUNT"}
+                    {isBossMode ? t.stages.stage6.bossRaidTitle : t.stages.stage6.bugHuntTitle}
                   </h1>
 
                   <h2 className="bughunt-subtitle">
-                <span className="subtitle-line" />
-                {isBossMode
-                  ? "UFO Invasion — Code Debug Raid"
-                  : "Code Debug Challenge"}
+                    <span className="subtitle-line" />
+                    {isBossMode
+                      ? t.stages.stage6.bossSubtitle
+                      : t.stages.stage6.normalSubtitle}
                     <span className="subtitle-line" />
                   </h2>
                 </div>
@@ -1655,7 +1685,7 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
 
               {isBossMode && (
                 <div className="boss-hp-preview">
-                  <div className="boss-hp-label">UFO GLOBAL HP</div>
+                  <div className="boss-hp-label">{t.stages.stage6.ufoGlobalHp}</div>
 
                   <div className="boss-hp-bar-track">
                     <div
@@ -1678,13 +1708,13 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
                   <div>
                     <strong>
                       {isBossMode
-                        ? "Squash bugs to damage UFO"
-                        : "Tap buggy code"}
+                        ? t.stages.stage6.bossRule1Title
+                        : t.stages.stage6.huntBugsTitle}
                     </strong>
                     <p>
                       {isBossMode
-                        ? "Each bug squashed fires a laser at the boss! +100 DMG"
-                        : "Spot syntax errors and squash them! +100 pts"}
+                        ? t.stages.stage6.bossRule1Desc
+                        : t.stages.stage6.huntBugsDesc}
                     </p>
                   </div>
                 </div>
@@ -1695,13 +1725,13 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
                   <div>
                     <strong>
                       {isBossMode
-                        ? "Watch for Abduction Beams!"
-                        : "Avoid correct code"}
+                        ? t.stages.stage6.bossRule2Title
+                        : t.stages.stage6.avoidCleanTitle}
                     </strong>
                     <p>
                       {isBossMode
-                        ? "The UFO targets clean code with green beams — clicking them costs −300 pts!"
-                        : "Don't tap clean code or you lose points! −50 pts"}
+                        ? t.stages.stage6.bossRule2Desc
+                        : t.stages.stage6.avoidCleanDesc}
                     </p>
                   </div>
                 </div>
@@ -1711,12 +1741,12 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
                   <span className="rule-icon">03</span>
                   <div>
                     <strong>
-                      {isBossMode ? "Combo = More damage" : "Build combos"}
+                      {isBossMode ? t.stages.stage6.bossRule3Title : t.stages.stage6.buildCombosTitle}
                     </strong>
                     <p>
                       {isBossMode
-                        ? "Consecutive hits deal up to 3x damage!"
-                        : "Consecutive squashes multiply your score!"}
+                        ? t.stages.stage6.bossRule3Desc
+                        : t.stages.stage6.buildCombosDesc}
                     </p>
                   </div>
                 </div>
@@ -1724,8 +1754,7 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
 
               {isBossMode && (
                 <div className="boss-raid-note">
-                  <span className="boss-raid-note-icon">P2</span> All players
-                  share the boss HP. Your damage counts!
+                  <span className="boss-raid-note-icon">P2</span> {t.stages.stage6.bossRaidNote}
                 </div>
               )}
 
@@ -1740,7 +1769,7 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
 
                 <div className="timer-text-block">
                   <span className="timer-big">{GAME_DURATION}s</span>
-                  <span className="timer-sub">mission time limit</span>
+                  <span className="timer-sub">{t.stages.stage6.missionTimeLimit}</span>
                 </div>
               </div>
 
@@ -1751,7 +1780,7 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
                 onClick={startCountdown}
               >
                 <span className="btn-inner-text">
-                  {isBossMode ? "ENGAGE BOSS" : "LAUNCH MISSION"}
+                  {isBossMode ? t.stages.stage6.engageBoss : t.stages.stage6.launchMission}
                 </span>
                 <span className="btn-glow" />
                 <span className="btn-shimmer" />
@@ -1760,13 +1789,13 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
 
             {isBossMode && (
               <div className="boss-coop-section">
-                <div className="boss-coop-label">CO-OP LINK // 2 PILOTS</div>
+                <div className="boss-coop-label">{t.stages.stage6.bossCoopSectionTitle}</div>
                 <p className="tutorial-section-lede">
-                  Separate inputs, shared target grid, one global boss health pool.
+                  {t.stages.stage6.bossCoopSectionLede}
                 </p>
                 <CoopLegend profiles={coopProfiles} />
                 <div className="boss-coop-note">
-                  Shared raid session. P1 uses the mouse, P2 uses the numpad.
+                  {t.stages.stage6.bossCoopSectionNote}
                 </div>
               </div>
             )}
@@ -1783,7 +1812,7 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
 
         <div className="bughunt-countdown-overlay">
           <div className={`countdown-number ${countdown === 0 ? "go" : ""}`}>
-            {countdown > 0 ? countdown : isBossMode ? "RAID!" : "GO!"}
+            {countdown > 0 ? countdown : isBossMode ? t.stages.stage6.countdownRaid : t.stages.stage6.countdownGo}
           </div>
         </div>
       </div>
@@ -1839,7 +1868,7 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
             }`}
           >
             <h1 className="results-title">
-              {isBossMode ? "RAID REPORT" : "MISSION REPORT"}
+              {isBossMode ? t.stages.stage6.raidReport : t.stages.stage6.missionReport}
             </h1>
 
             <div className="results-stars">
@@ -1858,45 +1887,45 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
             <div className="results-grid">
               <div className="result-stat">
                 <span className="stat-value">{bugsSquashed}</span>
-                <span className="stat-label">Bugs Squashed</span>
+                <span className="stat-label">{t.stages.stage6.bugsSquashed}</span>
               </div>
 
               <div className="result-stat">
                 <span className="stat-value">{bugsMissed}</span>
-                <span className="stat-label">Bugs Missed</span>
+                <span className="stat-label">{t.stages.stage6.bugsMissed}</span>
               </div>
 
               <div className="result-stat">
                 <span className="stat-value">{wrongClicks}</span>
-                <span className="stat-label">Wrong Clicks</span>
+                <span className="stat-label">{t.stages.stage6.wrongClicks}</span>
               </div>
 
               <div className="result-stat">
                 <span className="stat-value">{accuracy}%</span>
-                <span className="stat-label">Accuracy</span>
+                <span className="stat-label">{t.stages.stage6.accuracy}</span>
               </div>
 
               {isBossMode ? (
                 <div className="result-stat highlight boss-dmg-stat">
                   <span className="stat-value">{bossDamageTaken}</span>
-                  <span className="stat-label">Boss DMG Dealt</span>
+                  <span className="stat-label">{t.stages.stage6.bossDmgDealt}</span>
                 </div>
               ) : (
                 <div className="result-stat highlight">
                   <span className="stat-value">{maxCombo}x</span>
-                  <span className="stat-label">Max Combo</span>
+                  <span className="stat-label">{t.stages.stage6.maxCombo}</span>
                 </div>
               )}
 
               <div className="result-stat highlight">
                 <span className="stat-value">{score}</span>
-                <span className="stat-label">Final Score</span>
+                <span className="stat-label">{t.stages.stage6.finalScore}</span>
               </div>
             </div>
 
             {isBossMode && (
               <div className="boss-hp-result">
-                <div className="boss-hp-label">UFO REMAINING HP</div>
+                <div className="boss-hp-label">{t.stages.stage6.ufoRemainingHp}</div>
 
                 <div className="boss-hp-bar-track">
                   <div
@@ -1914,11 +1943,11 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
 
             <div className="results-actions">
               <button className="bughunt-complete-btn" onClick={handleComplete}>
-                COMPLETE MISSION
+                {t.stages.stage6.completeMissionBtn}
               </button>
 
               <button className="bughunt-retry-btn" onClick={handleReplay}>
-                TRY AGAIN
+                {t.stages.stage6.tryAgainBtn}
               </button>
             </div>
           </div>
@@ -1983,21 +2012,21 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
                 )}
 
                 {!cell && feedback?.type === "squash" && (
-                  <div className="squash-effect">✓ SQUASHED!</div>
+                  <div className="squash-effect">{t.stages.stage6.effectSquashed}</div>
                 )}
 
                 {!cell && feedback?.type === "wrong" && (
-                  <div className="wrong-effect">✗ CLEAN CODE!</div>
+                  <div className="wrong-effect">{t.stages.stage6.effectClean}</div>
                 )}
 
                 {!cell && feedback?.type === "abducted" && (
                   <div className="abducted-effect">
-                    🛸 ABDUCTED! −{ABDUCTION_PENALTY}
+                    {t.stages.stage6.effectAbducted} −{ABDUCTION_PENALTY}
                   </div>
                 )}
 
                 {feedback?.type === "miss" && (
-                  <div className="miss-effect">ESCAPED!</div>
+                  <div className="miss-effect">{t.stages.stage6.effectEscaped}</div>
                 )}
               </div>
 
@@ -2066,7 +2095,7 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
       <div className="bughunt-hud">
         <div className="hud-left">
           <span className="hud-label">
-            {isBossMode ? "🛸 BOSS RAID" : "🐛 BUG HUNT"}
+            {isBossMode ? `🛸 ${t.stages.stage6.bossRaidTitle}` : `🐛 ${t.stages.stage6.bugHuntTitle}`}
           </span>
 
           <div className="hud-timer-bar">

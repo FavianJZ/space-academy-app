@@ -1,3 +1,5 @@
+import { useGameStore } from "../../stores/useGameStore";
+import { getTranslation } from "../../i18n/translations";
 import "./SystemInitUI.css";
 
 interface SystemInitUIProps {
@@ -7,6 +9,9 @@ interface SystemInitUIProps {
 }
 
 const SystemInitUI = ({ visible, statusText, onStartMission }: SystemInitUIProps) => {
+  const language = useGameStore((state) => state.language);
+  const t = getTranslation(language).intro.systemInit;
+
   if (!visible) return null;
 
   return (
@@ -17,13 +22,13 @@ const SystemInitUI = ({ visible, statusText, onStartMission }: SystemInitUIProps
         <div className="intro-init-brand">
           <span className="intro-init-beacon" />
           <div>
-            <span>MISSION CHANNEL // 01</span>
-            <strong>SPACE ACADEMY</strong>
+            <span>{t.missionChannel}</span>
+            <strong>{t.spaceAcademy}</strong>
           </div>
         </div>
         <div className="intro-init-signal">
-          <span>ENCRYPTED SIGNAL</span>
-          <strong>LOCKED</strong>
+          <span>{t.encryptedSignal}</span>
+          <strong>{t.locked}</strong>
         </div>
       </header>
 
@@ -33,35 +38,32 @@ const SystemInitUI = ({ visible, statusText, onStartMission }: SystemInitUIProps
       </div>
 
       <div className="intro-init-panel">
-        <span className="intro-init-kicker">COCKPIT TRANSMISSION</span>
+        <span className="intro-init-kicker">{t.cockpitTransmission}</span>
         <h1 id="intro-init-title">
-          Signal found.
-          <em>Mission unknown.</em>
+          {t.titlePre}
+          <em>{t.titleEm}</em>
         </h1>
-        <p>
-          Tautan kokpit aktif. Masuk ke rekaman penerbangan terakhir dan ambil
-          alih keputusan sebelum jalur navigasi terputus.
-        </p>
+        <p>{t.description}</p>
 
         <div className="intro-init-checks" aria-label="Status sistem">
-          <div><span>COCKPIT FEED</span><strong>ONLINE</strong></div>
-          <div><span>AI COMPANION</span><strong>STANDBY</strong></div>
-          <div><span>ROUTE MEMORY</span><strong>UNSTABLE</strong></div>
+          <div><span>{t.cockpitFeed}</span><strong>{t.online}</strong></div>
+          <div><span>{t.aiCompanion}</span><strong>{t.standby}</strong></div>
+          <div><span>{t.routeMemory}</span><strong>{t.unstable}</strong></div>
         </div>
 
         <div className="intro-init-command">
           <span className="intro-init-status">{statusText}</span>
           <button id="btn-start-mission" type="button" onClick={onStartMission}>
-            <span>ENTER COCKPIT</span>
-            <strong>BEGIN TRANSMISSION →</strong>
+            <span>{t.enterCockpit}</span>
+            <strong>{t.beginTransmission}</strong>
           </button>
         </div>
       </div>
 
       <footer className="intro-init-footer" aria-hidden="true">
-        <span>REC // 18:42:09</span>
-        <span>SECTOR 07 · OUTER RIM</span>
-        <span>AUDIO LINK READY</span>
+        <span>{t.footerRec}</span>
+        <span>{t.footerSector}</span>
+        <span>{t.footerAudio}</span>
       </footer>
     </section>
   );

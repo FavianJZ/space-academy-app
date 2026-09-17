@@ -1,5 +1,7 @@
 import React from "react";
 import type { PlanetId, PlanetMeta, StageDescription } from "../../types/planet.types";
+import { useGameStore } from "../../stores/useGameStore";
+import { getTranslation } from "../../i18n/translations";
 import "./MainHubDashboard.css";
 
 export interface DashboardStageItem {
@@ -23,18 +25,6 @@ export interface MainHubDashboardProps {
   onOpenSettings: () => void;
 }
 
-const getProgressCopy = (completedCount: number, totalStages: number) => {
-  if (completedCount >= totalStages) {
-    return "All sectors cleared";
-  }
-
-  if (completedCount === 0) {
-    return "First mission awaiting launch";
-  }
-
-  return `${totalStages - completedCount} sectors remaining`;
-};
-
 const MainHubDashboard: React.FC<MainHubDashboardProps> = ({
   playerName,
   totalScore,
@@ -46,17 +36,34 @@ const MainHubDashboard: React.FC<MainHubDashboardProps> = ({
   onOpenLeaderboard,
   onOpenSettings,
 }) => {
+  const language = useGameStore((state) => state.language);
+  const t = getTranslation(language);
+
+  const getProgressCopy = (completed: number, total: number) => {
+    if (completed >= total) {
+      return t.mainhub.allSectorsCleared;
+    }
+
+    if (completed === 0) {
+      return t.mainhub.firstMissionAwaiting;
+    }
+
+    return t.mainhub.sectorsRemaining(total - completed);
+  };
+
   const progress = totalStages > 0 ? (completedCount / totalStages) * 100 : 0;
   const selectedStage = stages.find((stage) => stage.id === selectedStageId);
   const nextStage = stages.find((stage) => !stage.completed) ?? stages[0];
+  const activeStageId = selectedStage?.id ?? nextStage?.id;
+  const activePlanetTranslation = activeStageId ? t.planets[activeStageId] : null;
 
   return (
     <section className="mh-dashboard-shell" aria-label="Mission dashboard">
       <header className="mh-dashboard-command">
         <div>
-          <p className="mh-dashboard-kicker">Space Academy command</p>
+          <p className="mh-dashboard-kicker">{t.mainhub.spaceNav}</p>
           <h1 className="mh-dashboard-title">
-            Welcome, {playerName || "Cadet"}
+            {t.mainhub.welcome} {playerName || t.mainhub.cadet}
           </h1>
           <p className="mh-dashboard-subtitle">
             {getProgressCopy(completedCount, totalStages)}
@@ -65,10 +72,10 @@ const MainHubDashboard: React.FC<MainHubDashboardProps> = ({
 
         <div className="mh-dashboard-actions" aria-label="Dashboard actions">
           <button type="button" onClick={onOpenLeaderboard}>
-            Leaderboard
+            {t.mainhub.viewLeaderboard}
           </button>
           <button type="button" onClick={onOpenSettings}>
-            Settings
+            {t.mainhub.settings}
           </button>
         </div>
       </header>
@@ -76,7 +83,7 @@ const MainHubDashboard: React.FC<MainHubDashboardProps> = ({
       <div className="mh-dashboard-grid">
         <article className="mh-dashboard-panel mh-dashboard-progress">
           <div className="mh-dashboard-panel-header">
-            <span>Mission progress</span>
+            <span>{t.mainhub.missionProgress}</span>
             <strong>
               {completedCount}/{totalStages}
             </strong>
@@ -91,15 +98,15 @@ const MainHubDashboard: React.FC<MainHubDashboardProps> = ({
           </div>
 
           <div className="mh-dashboard-score-row">
-            <span>Total score</span>
+            <span>{t.mainhub.totalScore}</span>
             <strong>{totalScore.toLocaleString()}</strong>
           </div>
         </article>
 
         <article className="mh-dashboard-panel mh-dashboard-focus">
           <div className="mh-dashboard-panel-header">
-            <span>Current target</span>
-            <strong>{selectedStage ? "Selected" : "Next"}</strong>
+            <span>{t.mainhub.currentTarget}</span>
+            <strong>{selectedStage ? t.mainhub.selected : t.mainhub.next}</strong>
           </div>
 
           <div
@@ -111,9 +118,10 @@ const MainHubDashboard: React.FC<MainHubDashboardProps> = ({
             }
           />
 
-          <h2>{selectedStage?.meta.name ?? nextStage?.meta.name}</h2>
+          <h2>{activePlanetTranslation?.name ?? selectedStage?.meta.name ?? nextStage?.meta.name}</h2>
           <p>
-            {selectedStage?.description.description ??
+            {activePlanetTranslation?.description ??
+              selectedStage?.description.description ??
               nextStage?.description.description}
           </p>
 
@@ -127,7 +135,7 @@ const MainHubDashboard: React.FC<MainHubDashboardProps> = ({
               }
             }}
           >
-            Open mission
+            {t.mainhub.openMission}
           </button>
         </article>
       </div>
@@ -135,6 +143,7 @@ const MainHubDashboard: React.FC<MainHubDashboardProps> = ({
       <nav className="mh-dashboard-roadmap" aria-label="Planet mission roadmap">
         {stages.map((stage) => {
           const isSelected = stage.id === selectedStageId;
+          const planetT = t.planets[stage.id];
 
           return (
             <button
@@ -149,11 +158,11 @@ const MainHubDashboard: React.FC<MainHubDashboardProps> = ({
             >
               <span className="mh-dashboard-stage-orbit">{stage.id}</span>
               <span className="mh-dashboard-stage-copy">
-                <strong>{stage.meta.name}</strong>
-                <small>{stage.description.displayTitle}</small>
+                <strong>{planetT?.name ?? stage.meta.name}</strong>
+                <small>{planetT?.displayTitle ?? stage.description.displayTitle}</small>
               </span>
               <span className="mh-dashboard-stage-meta">
-                {stage.score > 0 ? stage.score.toLocaleString() : "Ready"}
+                {stage.score > 0 ? stage.score.toLocaleString() : t.mainhub.ready}
               </span>
             </button>
           );

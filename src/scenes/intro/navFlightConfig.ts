@@ -112,6 +112,42 @@ export const NAV_SPAWN = {
 export const NAV_FLIGHT_BRIEFING =
   "Kendali manual aktif, Komandan. Kapal terus melaju sendiri. W turunkan hidung, S angkat hidung, A dan D miringkan sayap, Q dan E putar ekor, tahan SPASI untuk menambah dorongan. Ikuti panah dan lewati setiap gerbang biru.";
 
+export const NAV_FLIGHT_BRIEFING_EN =
+  "Manual control engaged, Commander. The vessel sustains forward momentum. W pitch down, S pitch up, A and D bank wings, Q and E yaw rudder, hold SPACE to boost thrusters. Follow the navigation markers through each blue orbital gate.";
+
+export const getNavFlightBriefing = (lang: string) =>
+  lang === "en" ? NAV_FLIGHT_BRIEFING_EN : NAV_FLIGHT_BRIEFING;
+
+export const NAV_GATE_DIALOGUES_EN: Record<string, string> = {
+  "nav-gate-01":
+    "Gate 1 cleared. Flight trajectory locked in sensors. Follow the navigation marker to the next orbital gate.",
+  "nav-gate-02":
+    "Well done. Banking left into climb; following the illuminated side of the planet.",
+  "nav-gate-03":
+    "Entering planetary shadow. Keep wings level and pitch down toward the lower corridor.",
+  "nav-gate-04":
+    "Magnetic storm incoming! Gate telemetry is ghosting. Tracking the real blue gate; ignore false pink echoes.",
+  "nav-gate-05":
+    "Heading drifted eighteen degrees. Level wings and intercept the next gate along the floor corridor.",
+  "nav-gate-06":
+    "Passing beneath floating island terrain. Boost thrusters; avoid the gravitational eddy.",
+  "nav-gate-07":
+    "Starboard flank clear. Climb around the landmass; star tracker recalibrating.",
+  "nav-gate-08":
+    "True vector resolved via star position. Ghost signals cleared. Aligning with descent corridor.",
+  "nav-gate-09":
+    "Altitude too low to re-enter orbit. Locking onto floating island as final touchdown zone.",
+  "nav-gate-10":
+    "Descent corridor locked. Final waypoint ahead before landing approach takeover.",
+};
+
+export const getNavGateDialogue = (gateId: string, defaultDialogue: string, lang: string) => {
+  if (lang === "en" && NAV_GATE_DIALOGUES_EN[gateId]) {
+    return NAV_GATE_DIALOGUES_EN[gateId];
+  }
+  return defaultDialogue;
+};
+
 export const NAV_FLIGHT_GATES: FlightGateConfig[] = [
   {
     id: "nav-gate-01",

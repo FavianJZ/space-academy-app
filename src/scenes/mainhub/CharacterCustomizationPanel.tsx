@@ -9,6 +9,8 @@ import { useGLTF } from "@react-three/drei";
 
 import AdaptiveCanvas from "../../components/common/AdaptiveCanvas";
 import { useGameAudio } from "../../hooks/useGameAudio";
+import { useGameStore } from "../../stores/useGameStore";
+import { getTranslation } from "../../i18n/translations";
 import {
   SpacemanPet,
   SpacemanPink,
@@ -44,16 +46,6 @@ type CharacterCustomizationPanelProps = {
   onPetChange: (pet: SpacemanPetId) => void;
   onClose: () => void;
 };
-
-const CUSTOMIZATION_TABS: readonly {
-  id: CharacterCustomizationTab;
-  label: string;
-  code: string;
-}[] = [
-  { id: "color", label: "Color", code: "01" },
-  { id: "hat", label: "Hat", code: "02" },
-  { id: "pet", label: "Pet", code: "03" },
-];
 
 const CustomizationIcon = ({
   tab,
@@ -282,6 +274,15 @@ const CharacterCustomizationPanel = ({
   onPetChange,
   onClose,
 }: CharacterCustomizationPanelProps) => {
+  const language = useGameStore((state) => state.language);
+  const t = getTranslation(language).customizer;
+
+  const customizationTabs = [
+    { id: "color" as const, label: t.colorTab, code: "01" },
+    { id: "hat" as const, label: t.hatTab, code: "02" },
+    { id: "pet" as const, label: t.petTab, code: "03" },
+  ];
+
   const { getMotionMs, playSfx } = useGameAudio();
   const [activeTab, setActiveTab] =
     useState<CharacterCustomizationTab>("color");
@@ -628,7 +629,7 @@ const CharacterCustomizationPanel = ({
                   <span className="character-customizer-pet-equip-burst" />
                   <span className="character-customizer-pet-equip-orbit" />
                   <span className="character-customizer-pet-equip-copy">
-                    <small>COMPANION LINKED</small>
+                    <small>{t.linked}</small>
                     <strong>{petEffectOption.shortLabel}</strong>
                   </span>
                 </div>
@@ -645,7 +646,7 @@ const CharacterCustomizationPanel = ({
                 <strong>{character.toUpperCase()} / ACTIVE</strong>
               </div>
               <div>
-                <span>{activeTab === "pet" ? "COMPANION" : "HEADGEAR"}</span>
+                <span>{activeTab === "pet" ? (language === "en" ? "COMPANION" : "PENDAMPING") : (language === "en" ? "HEADGEAR" : "AKSESORI KEPALA")}</span>
                 <strong>
                   {(activeTab === "pet"
                     ? selectedPetOption.shortLabel
@@ -662,7 +663,7 @@ const CharacterCustomizationPanel = ({
               role="tablist"
               aria-label="Customization categories"
             >
-              {CUSTOMIZATION_TABS.map((tab) => (
+              {customizationTabs.map((tab) => (
                 <button
                   key={tab.id}
                   id={`customizer-tab-${tab.id}`}
@@ -692,11 +693,11 @@ const CharacterCustomizationPanel = ({
                 <div className="character-customizer-section-heading">
                   <div>
                     <span className="character-customizer-eyebrow">
-                      CHROMATIC ARRAY
+                      {t.suitPaletteEyebrow}
                     </span>
-                    <h3>Select suit color</h3>
+                    <h3>{t.suitPaletteTitle}</h3>
                   </div>
-                  <span>{SPACEMAN_COLOR_OPTIONS.length} TONES</span>
+                  <span>{SPACEMAN_COLOR_OPTIONS.length} {t.units}</span>
                 </div>
 
                 <div className="character-customizer-color-grid">
@@ -726,7 +727,7 @@ const CharacterCustomizationPanel = ({
                         <span className="character-customizer-color-name">
                           {option.shortLabel}
                         </span>
-                        <small>{isSelected ? "EQUIPPED" : "AVAILABLE"}</small>
+                        <small>{isSelected ? t.equipped : t.available}</small>
                       </button>
                     );
                   })}
@@ -736,7 +737,7 @@ const CharacterCustomizationPanel = ({
                   className="character-customizer-announcement"
                   aria-live="polite"
                 >
-                  {selectedOption.label} equipped.
+                  {t.equippedAnnouncement(selectedOption.label)}
                 </p>
               </div>
             )}
@@ -751,11 +752,11 @@ const CharacterCustomizationPanel = ({
                 <div className="character-customizer-section-heading">
                   <div>
                     <span className="character-customizer-eyebrow">
-                      HEADGEAR ARRAY
+                      {t.headgearEyebrow}
                     </span>
-                    <h3>Fit helmet attachment</h3>
+                    <h3>{t.headgearTitle}</h3>
                   </div>
-                  <span>{SPACEMAN_HAT_OPTIONS.length} UNITS</span>
+                  <span>{SPACEMAN_HAT_OPTIONS.length} {t.units}</span>
                 </div>
 
                 <div className="character-customizer-hat-grid">
@@ -790,7 +791,7 @@ const CharacterCustomizationPanel = ({
                         <span className="character-customizer-hat-copy">
                           <strong>{option.shortLabel}</strong>
                           <small>{option.description}</small>
-                          <em>{isSelected ? "EQUIPPED" : "AVAILABLE"}</em>
+                          <em>{isSelected ? t.equipped : t.available}</em>
                         </span>
                       </button>
                     );
@@ -801,7 +802,7 @@ const CharacterCustomizationPanel = ({
                   className="character-customizer-announcement"
                   aria-live="polite"
                 >
-                  {selectedHatOption.label} equipped.
+                  {t.equippedAnnouncement(selectedHatOption.label)}
                 </p>
               </div>
             )}
@@ -816,16 +817,15 @@ const CharacterCustomizationPanel = ({
                 <div className="character-customizer-section-heading character-customizer-pet-heading">
                   <div>
                     <span className="character-customizer-eyebrow">
-                      COMPANION ARRAY
+                      {t.companionEyebrow}
                     </span>
-                    <h3>Choose formation partner</h3>
+                    <h3>{t.companionTitle}</h3>
                   </div>
-                  <span>{SPACEMAN_PET_OPTIONS.length - 1} SIGNALS</span>
+                  <span>{SPACEMAN_PET_OPTIONS.length - 1} {t.signals}</span>
                 </div>
 
                 <p className="character-customizer-pet-intro">
-                  Pet menjaga posisi di sisi pilot. Preview dikunci agar ukuran
-                  dan siluet bisa diperiksa tanpa rotasi otomatis.
+                  {t.companionIntro}
                 </p>
 
                 <div className="character-customizer-pet-grid">
@@ -865,7 +865,7 @@ const CharacterCustomizationPanel = ({
                             <em>{option.rarity}</em>
                           </span>
                           <small>{option.description}</small>
-                          <b>{isSelected ? "LINKED" : "AVAILABLE"}</b>
+                          <b>{isSelected ? t.linked : t.available}</b>
                         </span>
                       </button>
                     );
@@ -876,7 +876,7 @@ const CharacterCustomizationPanel = ({
                   className="character-customizer-announcement"
                   aria-live="polite"
                 >
-                  {selectedPetOption.label} equipped.
+                  {t.equippedAnnouncement(selectedPetOption.label)}
                 </p>
               </div>
             )}
@@ -886,10 +886,10 @@ const CharacterCustomizationPanel = ({
         <footer className="character-customizer-footer">
           <span>
             <i />
-            PROFILE AUTO-SAVED
+            {t.autoSaved}
           </span>
           <button type="button" data-audio-cue="none" onClick={onClose}>
-            CLOSE TERMINAL
+            {t.closeTerminal}
             <svg viewBox="0 0 24 24" aria-hidden="true">
               <path d="M5 12h13M14 7l5 5-5 5" />
             </svg>

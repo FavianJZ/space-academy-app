@@ -13,13 +13,18 @@ import {
 import { FloatingParticles } from "../shared/FloatingParticles";
 import { SpeechBubble } from "../shared/SpeechBubble";
 import {
-  robotMessages,
+  getRobotMessages,
   getRandomMessage,
 } from "../shared/speechBubbleContent";
 import {
   getElapsedStageSeconds,
   getStageTimestamp,
 } from "../shared/stageTiming";
+import {
+  getPipelineChallenges,
+  type PipelineStep,
+} from "../../../i18n/gameplayContent";
+import { getTranslation } from "../../../i18n/translations";
 
 import "../shared/StageStyle.css";
 import "../shared/AdvancedHUD.css";
@@ -27,149 +32,6 @@ import "../shared/AdvancedHUD.css";
 interface Stage3PuzzleGameProps {
   planetId: number;
 }
-
-interface PipelineStep {
-  id: number;
-  correctStep: number; // 1, 2, 3, 4
-  title: string;
-  subtitle: string;
-  icon: string;
-  tag: string;
-}
-
-interface PipelineChallenge {
-  id: number;
-  title: string;
-  category: string;
-  description: string;
-  steps: PipelineStep[];
-}
-
-const pipelineChallenges: PipelineChallenge[] = [
-  {
-    id: 1,
-    title: "SDLC Lifecycle Sequence",
-    category: "SOFTWARE DEVELOPMENT LIFECYCLE",
-    description:
-      "Susun tahapan SDLC berstandar industri berikut dalam urutan proses yang benar (Tahap 1 s.d. 4):",
-    steps: [
-      {
-        id: 101,
-        correctStep: 1,
-        title: "Requirement Analysis",
-        subtitle: "Analisis kebutuhan user, scope proyek & spesifikasi sistem",
-        icon: "📋",
-        tag: "PHASE 01",
-      },
-      {
-        id: 102,
-        correctStep: 2,
-        title: "System Architecture",
-        subtitle: "Rancang diagram UML, skema database ERD & modularitas",
-        icon: "🏛️",
-        tag: "PHASE 02",
-      },
-      {
-        id: 103,
-        correctStep: 3,
-        title: "Implementation (Coding)",
-        subtitle: "Menulis kode bersih, type-safe, dan terstruktur modular",
-        icon: "💻",
-        tag: "PHASE 03",
-      },
-      {
-        id: 104,
-        correctStep: 4,
-        title: "Testing & QA Audit",
-        subtitle: "Uji unit test, integrasi, dan validasi bebas bug (Zero Defect)",
-        icon: "🛡️",
-        tag: "PHASE 04",
-      },
-    ],
-  },
-  {
-    id: 2,
-    title: "Client-Server Request Architecture",
-    category: "ENTERPRISE WEB DATA FLOW",
-    description:
-      "Susun alur transmisi data dari interaksi pengguna hingga penyimpanan permanen di server:",
-    steps: [
-      {
-        id: 201,
-        correctStep: 1,
-        title: "UI Event Trigger",
-        subtitle: "Pengguna mengklik tombol aksi pada aplikasi antarmuka",
-        icon: "👆",
-        tag: "STEP 01",
-      },
-      {
-        id: 202,
-        correctStep: 2,
-        title: "API Gateway Dispatch",
-        subtitle: "Mengirim payload JSON terenkripsi melalui protokol HTTPS",
-        icon: "🌐",
-        tag: "STEP 02",
-      },
-      {
-        id: 203,
-        correctStep: 3,
-        title: "Backend Business Logic",
-        subtitle: "Server memvalidasi auth token, otorisasi & logika komputasi",
-        icon: "⚙️",
-        tag: "STEP 03",
-      },
-      {
-        id: 204,
-        correctStep: 4,
-        title: "Database Commit",
-        subtitle: "Mengeksekusi query SQL & menyimpan record persisten",
-        icon: "💾",
-        tag: "STEP 04",
-      },
-    ],
-  },
-  {
-    id: 3,
-    title: "Modern DevOps & CI/CD Pipeline",
-    category: "CLOUD AUTOMATION & DEPLOYMENT",
-    description:
-      "Susun alur rilis kode otomatis dari laptop software engineer ke server cloud produksi:",
-    steps: [
-      {
-        id: 301,
-        correctStep: 1,
-        title: "Feature Code Commit",
-        subtitle: "Engineer menulis fitur baru dan commit ke Git branch",
-        icon: "🌿",
-        tag: "STAGE 01",
-      },
-      {
-        id: 302,
-        correctStep: 2,
-        title: "Pull Request & Review",
-        subtitle: "Peer code review dan persetujuan standardisasi tim",
-        icon: "👀",
-        tag: "STAGE 02",
-      },
-      {
-        id: 303,
-        correctStep: 3,
-        title: "Automated Build & Test",
-        subtitle: "Server CI menjalankan linter, build bundle & security checks",
-        icon: "🤖",
-        tag: "STAGE 03",
-      },
-      {
-        id: 304,
-        correctStep: 4,
-        title: "Production Deployment",
-        subtitle: "Rilis kontainer Docker otomatis ke cluster server cloud",
-        icon: "🚀",
-        tag: "STAGE 04",
-      },
-    ],
-  },
-];
 
 // Shuffle helper ensuring the result is NOT accidentally solved initially
 function shuffleSteps(steps: PipelineStep[]): PipelineStep[] {
@@ -195,10 +57,13 @@ const INITIAL_TIME = 90;
 const Stage3PuzzleGame: React.FC<Stage3PuzzleGameProps> = ({ planetId }) => {
   const navigate = useNavigate();
   const { playSfx } = useGameAudio();
+  const language = useGameStore((state) => state.language);
+  const t = getTranslation(language);
+  const pipelineChallenges = getPipelineChallenges(language);
 
   const [challengeIdx, setChallengeIdx] = useState(0);
   const [currentSteps, setCurrentSteps] = useState<PipelineStep[]>(() =>
-    shuffleSteps(pipelineChallenges[0].steps)
+    shuffleSteps(getPipelineChallenges(language)[0].steps)
   );
   const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
   const [isChallengeComplete, setIsChallengeComplete] = useState(false);
@@ -222,11 +87,18 @@ const Stage3PuzzleGame: React.FC<Stage3PuzzleGameProps> = ({ planetId }) => {
 
   const currentChallenge = pipelineChallenges[challengeIdx];
 
+  useEffect(() => {
+    const challenges = getPipelineChallenges(language);
+    const safeIdx = Math.min(challengeIdx, challenges.length - 1);
+    setCurrentSteps(shuffleSteps(challenges[safeIdx].steps));
+  }, [language]);
+
   const timeLeftRef = useRef(timeLeft);
   timeLeftRef.current = timeLeft;
 
   const handleRobotClick = () => {
-    setSpeechMessage(getRandomMessage(robotMessages.idle));
+    const messages = getRobotMessages(language);
+    setSpeechMessage(getRandomMessage(messages.idle));
     setRobotReaction("waving");
     setTimeout(() => setRobotReaction("thinking"), 2000);
   };
@@ -265,10 +137,11 @@ const Stage3PuzzleGame: React.FC<Stage3PuzzleGameProps> = ({ planetId }) => {
       clearTimeout(transitionRef.current);
       transitionRef.current = null;
     }
-    if (challengeIdx < pipelineChallenges.length - 1) {
+    const challenges = getPipelineChallenges(language);
+    if (challengeIdx < challenges.length - 1) {
       setChallengeIdx((prev) => {
         const nextIdx = prev + 1;
-        setCurrentSteps(shuffleSteps(pipelineChallenges[nextIdx].steps));
+        setCurrentSteps(shuffleSteps(challenges[nextIdx].steps));
         return nextIdx;
       });
       setIsChallengeComplete(false);
@@ -277,7 +150,7 @@ const Stage3PuzzleGame: React.FC<Stage3PuzzleGameProps> = ({ planetId }) => {
     } else {
       handleComplete(true);
     }
-  }, [challengeIdx, handleComplete]);
+  }, [challengeIdx, handleComplete, language]);
 
   // Timer logic
   useEffect(() => {
@@ -333,7 +206,11 @@ const Stage3PuzzleGame: React.FC<Stage3PuzzleGameProps> = ({ planetId }) => {
         setIsChallengeComplete(true);
         playSfx("circuitConnect");
         setRobotReaction("celebrating");
-        setSpeechMessage("Pipeline Verified! Alur data tersinkronisasi.");
+        setSpeechMessage(
+          language === "en"
+            ? "Pipeline Verified! Data flow synchronized."
+            : "Pipeline Terverifikasi! Alur data tersinkronisasi."
+        );
         setScreenEffect("screen-flash-green");
         setTimeout(() => setScreenEffect(""), 500);
 
@@ -371,38 +248,43 @@ const Stage3PuzzleGame: React.FC<Stage3PuzzleGameProps> = ({ planetId }) => {
       <div className="stage-puzzle completion-screen">
         <div className="completion-card hud-3d-card">
           <div className="completion-badge">
-            {finalScore >= 300 ? "🏆 MISSION COMPLETE" : "⚠️ PIPELINE STANDBY"}
+            {finalScore >= 300
+              ? t.stages.stage3.stageComplete
+              : language === "en"
+              ? "⚠️ PIPELINE STANDBY"
+              : "⚠️ PIPELINE SIAGA"}
           </div>
-          <h2>System Architecture Verified!</h2>
+          <h2>{t.stages.stage3.passedTitle}</h2>
           <p className="completion-subtitle">
-            Seluruh pipeline SDLC dan arsitektur data berhasil dirangkai secara
-            presisi.
+            {language === "en"
+              ? "All SDLC pipelines and data architectures have been assembled with precision."
+              : "Seluruh pipeline SDLC dan arsitektur data berhasil dirangkai secara presisi."}
           </p>
           <div className="score-display">
-            <span className="score-label">FINAL SCORE</span>
+            <span className="score-label">{language === "en" ? "FINAL SCORE" : "SKOR AKHIR"}</span>
             <span className="score-value">{finalScore} PTS</span>
           </div>
           <div style={{ display: "flex", gap: "20px", justifyContent: "center", margin: "16px 0" }}>
             <div className="completion-stat-chip">
-              <span className="stat-label">TOTAL MOVES</span>
+              <span className="stat-label">{language === "en" ? "TOTAL MOVES" : "TOTAL LANGKAH"}</span>
               <span className="stat-value">{moves}</span>
             </div>
             <div className="completion-stat-chip">
-              <span className="stat-label">TIME LEFT</span>
+              <span className="stat-label">{language === "en" ? "TIME LEFT" : "SISA WAKTU"}</span>
               <span className="stat-value">{timeLeft}s</span>
             </div>
             <div className="completion-stat-chip">
-              <span className="stat-label">LEVELS</span>
-              <span className="stat-value">{pipelineChallenges.length}/3</span>
+              <span className="stat-label">{language === "en" ? "LEVELS" : "LEVEL"}</span>
+              <span className="stat-value">{pipelineChallenges.length}/{pipelineChallenges.length}</span>
             </div>
           </div>
-          <p className="returning-message">Returning to main hub...</p>
+          <p className="returning-message">{t.stages.stage3.returningHub}</p>
           <div className="completion-buttons">
             <button
               className="return-btn"
               onClick={() => navigate("/mainhub")}
             >
-              Return to Hub
+              {language === "en" ? "Return to Hub" : "Kembali ke Hub"}
             </button>
           </div>
         </div>
@@ -433,7 +315,7 @@ const Stage3PuzzleGame: React.FC<Stage3PuzzleGameProps> = ({ planetId }) => {
             minWidth: "160px",
           }}
         >
-          🔄 RESET CURRENT PIPELINE
+          {language === "en" ? "🔄 RESET CURRENT PIPELINE" : "🔄 RESET PIPELINE SAAT INI"}
         </button>
       </div>
 
@@ -509,7 +391,7 @@ const Stage3PuzzleGame: React.FC<Stage3PuzzleGameProps> = ({ planetId }) => {
                 marginBottom: "6px",
               }}
             >
-              {currentChallenge.category} • LEVEL {challengeIdx + 1}/3
+              {currentChallenge.category} • {language === "en" ? "LEVEL" : "LEVEL"} {challengeIdx + 1}/{pipelineChallenges.length}
             </div>
             <h1 style={{ fontSize: "1.6rem", margin: "4px 0" }}>
               {currentChallenge.title}
@@ -582,12 +464,12 @@ const Stage3PuzzleGame: React.FC<Stage3PuzzleGameProps> = ({ planetId }) => {
               }}
             >
               {selectedIdx !== null
-                ? "👉 Click another card to SWAP position"
-                : "💡 Tap any card to select, then tap another to SWAP"}
+                ? (language === "en" ? "👉 Click another card to SWAP position" : "👉 Klik kartu lain untuk TUKAR posisi")
+                : (language === "en" ? "💡 Tap any card to select, then tap another to SWAP" : "💡 Ketuk kartu untuk memilih, lalu ketuk kartu lain untuk TUKAR")}
             </div>
 
             <div className="puzzle-moves-badge">
-              <span className="moves-label">MOVES</span>
+              <span className="moves-label">{language === "en" ? "MOVES" : "LANGKAH"}</span>
               <span className="moves-count">{moves}</span>
             </div>
           </div>
@@ -645,7 +527,7 @@ const Stage3PuzzleGame: React.FC<Stage3PuzzleGameProps> = ({ planetId }) => {
                     }}
                   >
                     <span className="pipeline-slot-label">
-                      SLOT {idx + 1}
+                      {language === "en" ? "SLOT" : "SLOT"} {idx + 1}
                     </span>
                     <span
                       className="pipeline-tag-badge"
@@ -679,10 +561,10 @@ const Stage3PuzzleGame: React.FC<Stage3PuzzleGameProps> = ({ planetId }) => {
                     }`}
                   >
                     {isSelected
-                      ? "★ SELECTED"
+                      ? (language === "en" ? "★ SELECTED" : "★ DIPILIH")
                       : isCorrectPosition
-                      ? "✔ IN POSITION"
-                      : "TAP TO SWAP"}
+                      ? (language === "en" ? "✔ IN POSITION" : "✔ POSISI BENAR")
+                      : (language === "en" ? "TAP TO SWAP" : "KETUK UNTUK TUKAR")}
                   </div>
                 </div>
               );
@@ -705,7 +587,7 @@ const Stage3PuzzleGame: React.FC<Stage3PuzzleGameProps> = ({ planetId }) => {
               <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                 <span style={{ fontSize: "1.2rem" }}>⚡</span>
                 <span>
-                  PIPELINE VERIFIED! DATA FLOW SYNCHRONIZED
+                  {language === "en" ? "PIPELINE VERIFIED! DATA FLOW SYNCHRONIZED" : "PIPELINE TERVERIFIKASI! ALUR DATA TERSINKRONISASI"}
                 </span>
               </div>
               <button
@@ -727,8 +609,8 @@ const Stage3PuzzleGame: React.FC<Stage3PuzzleGameProps> = ({ planetId }) => {
                 }}
               >
                 {challengeIdx < pipelineChallenges.length - 1
-                  ? `LANJUT LEVEL ${challengeIdx + 2} ➔`
-                  : "SELESAIKAN MISI ➔"}
+                  ? (language === "en" ? `NEXT LEVEL ${challengeIdx + 2} ➔` : `LANJUT LEVEL ${challengeIdx + 2} ➔`)
+                  : (language === "en" ? "COMPLETE MISSION ➔" : "SELESAIKAN MISI ➔")}
               </button>
             </div>
           )}

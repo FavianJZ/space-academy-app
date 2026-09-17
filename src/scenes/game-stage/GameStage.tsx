@@ -1,6 +1,7 @@
 import React, { Suspense, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useGameStore } from "../../stores/useGameStore";
+import { getTranslation } from "../../i18n/translations";
 import {
   Stage1Introduction,
   Stage2MultipleChoice,
@@ -35,6 +36,8 @@ const GameStage: React.FC = () => {
   const { stageId } = useParams<{ stageId: string }>();
   const navigate = useNavigate();
   const playerData = useGameStore((state) => state.playerData);
+  const language = useGameStore((state) => state.language);
+  const t = getTranslation(language);
 
   const parsedStageId = Number(stageId || "1");
   const planetId: StageId = isValidStageId(parsedStageId) ? parsedStageId : 1;
@@ -43,9 +46,11 @@ const GameStage: React.FC = () => {
   if (!isValidStageId(parsedStageId)) {
     return (
       <div className="game-stage-error">
-        <span>INVALID MISSION VECTOR</span>
-        <h1>Stage not found</h1>
-        <button onClick={() => navigate("/mainhub")}>Return to Main Hub</button>
+        <span>{language === "en" ? "INVALID MISSION VECTOR" : "VEKTOR MISI TIDAK VALID"}</span>
+        <h1>{language === "en" ? "Stage not found" : "Tahapan tidak ditemukan"}</h1>
+        <button onClick={() => navigate("/mainhub")}>
+          {t.stages.common.returnToMainHub}
+        </button>
       </div>
     );
   }
@@ -53,9 +58,11 @@ const GameStage: React.FC = () => {
   if (!playerData.name) {
     return (
       <div className="game-stage-error">
-        <span>IDENTITY LINK REQUIRED</span>
-        <h1>Pilot data not found</h1>
-        <button onClick={() => navigate("/")}>Return to induction</button>
+        <span>{language === "en" ? "IDENTITY LINK REQUIRED" : "TAUTAN IDENTITAS DIBUTUHKAN"}</span>
+        <h1>{language === "en" ? "Pilot data not found" : "Data pilot tidak ditemukan"}</h1>
+        <button onClick={() => navigate("/")}>
+          {language === "en" ? "Return to induction" : "Kembali ke induksi"}
+        </button>
       </div>
     );
   }
@@ -101,8 +108,8 @@ const GameStage: React.FC = () => {
         </div>
 
         <div className="gs-stage-identity">
-          <span>{stageMeta.module}</span>
-          <strong>{stageMeta.planet}</strong>
+          <span>{t.planets[planetId]?.stageTitle ?? stageMeta.module}</span>
+          <strong>{t.planets[planetId]?.name?.toUpperCase() ?? stageMeta.planet}</strong>
           <div className="gs-stage-track" aria-hidden="true">
             {[1, 2, 3, 4, 5, 6].map((step) => (
               <i key={step} className={step <= planetId ? "active" : ""} />
@@ -115,8 +122,8 @@ const GameStage: React.FC = () => {
           type="button"
           onClick={() => navigate("/mainhub")}
         >
-          <span>EXIT MODULE</span>
-          <strong>RETURN HUB</strong>
+          <span>{t.stages.common.exitModule}</span>
+          <strong>{t.stages.common.returnHub}</strong>
         </button>
       </header>
 
@@ -147,6 +154,8 @@ export const CompletionScreen: React.FC = () => {
   const specializationResult = useGameStore((state) => state.specializationResult);
   const refreshSpecializationProfile = useGameStore((state) => state.refreshSpecializationProfile);
   const isAllPlanetsVisited = visitedPlanets.size >= 6;
+  const language = useGameStore((state) => state.language);
+  const t = getTranslation(language);
 
   const [showDossier, setShowDossier] = React.useState(false);
 
@@ -178,25 +187,27 @@ export const CompletionScreen: React.FC = () => {
   return (
     <div className="completion-screen">
       <div className="completion-content">
-        <span className="completion-kicker">ACADEMY MISSION REPORT</span>
-        <h1>MISSION COMPLETE</h1>
+        <span className="completion-kicker">
+          {language === "en" ? "ACADEMY MISSION REPORT" : "LAPORAN MISI AKADEMI"}
+        </span>
+        <h1>{t.stages.common.missionComplete}</h1>
         <p className="completion-message">
           {isAllPlanetsVisited
-            ? `All academy modules are complete. Final score: ${totalScore}`
-            : "Mission data synchronized. Your result has been recorded."}
+            ? t.stages.common.allModulesComplete(totalScore)
+            : t.stages.common.missionSynced}
         </p>
 
         <div className="score-board">
-          <h2>MISSION SCORE</h2>
+          <h2>{t.stages.common.missionScore}</h2>
           <div className="score-display">{totalScore}</div>
           {isAllPlanetsVisited && (
-            <p className="completion-rank">LEADERBOARD LINK AVAILABLE</p>
+            <p className="completion-rank">{t.stages.common.leaderboardLinkAvailable}</p>
           )}
         </div>
 
         {isAllPlanetsVisited && (
           <div className="leaderboard-preview">
-            <h3>TOP 5 PILOTS</h3>
+            <h3>{t.stages.common.top5Pilots}</h3>
             <div className="mini-leaderboard">
               {leaderboard.slice(0, 5).map((entry, index) => (
                 <div key={`${entry.playerName}-${index}`} className="leaderboard-mini-row">
@@ -218,13 +229,13 @@ export const CompletionScreen: React.FC = () => {
             }}
           >
             {isAllPlanetsVisited
-              ? "🎓 VIEW CERTIFIED GRADUATE DOSSIER"
-              : "📊 VIEW SPECIALIZATION DOSSIER"}
+              ? t.stages.common.viewGraduateDossier
+              : t.stages.common.viewSpecializationDossier}
           </button>
         )}
 
         <button className="menu-button" onClick={handleNextAction}>
-          {isAllPlanetsVisited ? "View full leaderboard" : "Return to Main Hub"}
+          {isAllPlanetsVisited ? t.stages.common.viewFullLeaderboard : t.stages.common.returnToMainHub}
         </button>
       </div>
 

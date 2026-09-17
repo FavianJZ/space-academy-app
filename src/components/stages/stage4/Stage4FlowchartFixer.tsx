@@ -15,13 +15,18 @@ import {
   SpeechBubble,
 } from "../shared/SpeechBubble";
 import {
-  robotMessages,
+  getRobotMessages,
   getRandomMessage,
 } from "../shared/speechBubbleContent";
 import {
   getElapsedStageSeconds,
   getStageTimestamp,
 } from "../shared/stageTiming";
+import {
+  getFlowchartChallenges,
+  type FlowchartChallenge,
+} from "../../../i18n/gameplayContent";
+import { getTranslation } from "../../../i18n/translations";
 
 import "../shared/StageStyle.css";
 import "../shared/AdvancedHUD.css";
@@ -29,97 +34,6 @@ import "../shared/AdvancedHUD.css";
 interface Stage4FlowchartFixerProps {
   planetId: number;
 }
-
-interface FlowchartChallenge {
-  id: number;
-  description: string;
-  startBlock: string;
-  decisionBlock: string;
-  endBlock: string;
-  correctPath: "true" | "false";
-  explanation: string;
-}
-
-const challengePool: FlowchartChallenge[] = [
-  {
-    id: 1,
-    description: "Check if the input number is greater than 5",
-    startBlock: "START: Input = 8",
-    decisionBlock: "Is Input > 5?",
-    endBlock: "Output: TRUE",
-    correctPath: "true",
-    explanation: "Since 8 is greater than 5, the TRUE path is correct.",
-  },
-  {
-    id: 2,
-    description: "Determine if a variable is even",
-    startBlock: "START: Number = 7",
-    decisionBlock: "Is Number % 2 == 0?",
-    endBlock: "Output: EVEN/ODD",
-    correctPath: "false",
-    explanation:
-      "7 is odd, so 7 % 2 != 0, making the FALSE path correct.",
-  },
-  {
-    id: 3,
-    description: "Check if username is valid",
-    startBlock: 'START: Username = "admin123"',
-    decisionBlock: "Length >= 5?",
-    endBlock: "Output: VALID",
-    correctPath: "true",
-    explanation:
-      '"admin123" has 8 characters, which is >= 5, so TRUE is correct.',
-  },
-  {
-    id: 4,
-    description: "Check if age qualifies for voting",
-    startBlock: "START: Age = 16",
-    decisionBlock: "Is Age >= 18?",
-    endBlock: "Output: ELIGIBLE",
-    correctPath: "false",
-    explanation:
-      "16 is less than 18, so the FALSE path is correct — not yet eligible.",
-  },
-  {
-    id: 5,
-    description: "Verify password length requirement",
-    startBlock: 'START: Password = "sec3"',
-    decisionBlock: "Length >= 8?",
-    endBlock: "Output: REJECTED",
-    correctPath: "false",
-    explanation:
-      '"sec3" has only 4 characters (< 8), so FALSE path leads to REJECTED.',
-  },
-  {
-    id: 6,
-    description: "Check if score passes the threshold",
-    startBlock: "START: Score = 85",
-    decisionBlock: "Is Score >= 70?",
-    endBlock: "Output: PASS",
-    correctPath: "true",
-    explanation: "85 is greater than 70, so TRUE path leads to PASS.",
-  },
-  {
-    id: 7,
-    description: "Determine if temperature is freezing",
-    startBlock: "START: Temp = -3°C",
-    decisionBlock: "Is Temp <= 0?",
-    endBlock: "Output: FREEZING",
-    correctPath: "true",
-    explanation:
-      "-3 is less than or equal to 0, so the TRUE path is correct.",
-  },
-  {
-    id: 8,
-    description: "Check if discount applies for bulk purchase",
-    startBlock: "START: Quantity = 45",
-    decisionBlock: "Is Quantity > 50?",
-    endBlock: "Output: DISCOUNT",
-    correctPath: "false",
-    explanation:
-      "45 is not greater than 50, so FALSE — no bulk discount applies.",
-  },
-];
 
 function shuffleChallenges<T>(arr: T[]): T[] {
   const shuffled = [...arr];
@@ -140,10 +54,16 @@ const Stage4FlowchartFixer: React.FC<Stage4FlowchartFixerProps> = ({
 }) => {
   const navigate = useNavigate();
   const { playSfx } = useGameAudio();
+  const language = useGameStore((state) => state.language);
+  const t = getTranslation(language);
 
-  const [challenges] = useState<FlowchartChallenge[]>(() =>
-    shuffleChallenges(challengePool).slice(0, CHALLENGE_COUNT)
+  const [challenges, setChallenges] = useState<FlowchartChallenge[]>(() =>
+    shuffleChallenges(getFlowchartChallenges(language)).slice(0, CHALLENGE_COUNT)
   );
+
+  useEffect(() => {
+    setChallenges(shuffleChallenges(getFlowchartChallenges(language)).slice(0, CHALLENGE_COUNT));
+  }, [language]);
 
   const [currentChallengeIdx, setCurrentChallengeIdx] = useState(0);
   const [selectedPath, setSelectedPath] = useState<"true" | "false" | null>(
@@ -273,7 +193,8 @@ const Stage4FlowchartFixer: React.FC<Stage4FlowchartFixerProps> = ({
   }, [handleComplete, timeLeft]);
 
   const handleRobotClick = () => {
-    setSpeechMessage(getRandomMessage(robotMessages.idle));
+    const messages = getRobotMessages(language);
+    setSpeechMessage(getRandomMessage(messages.idle));
     setRobotReaction("waving");
 
     window.setTimeout(() => {
@@ -334,13 +255,14 @@ const Stage4FlowchartFixer: React.FC<Stage4FlowchartFixerProps> = ({
     setSelectedPath(path);
     setShowExplanation(true);
 
+    const messages = getRobotMessages(language);
     if (path === currentChallenge.correctPath) {
       const reaction = playSfx("feedbackCorrect");
       const speedScore = calculateSpeedScore();
 
       setScore((prev) => prev + speedScore);
       setRobotReaction("correct");
-      setSpeechMessage(getRandomMessage(robotMessages.correct));
+      setSpeechMessage(getRandomMessage(messages.correct));
       setScreenEffect("screen-flash-green");
       setFeedbackStatus("success");
 
@@ -351,7 +273,7 @@ const Stage4FlowchartFixer: React.FC<Stage4FlowchartFixerProps> = ({
     } else {
       const reaction = playSfx("feedbackIncorrect");
       setRobotReaction("incorrect");
-      setSpeechMessage(getRandomMessage(robotMessages.incorrect));
+      setSpeechMessage(getRandomMessage(messages.incorrect));
       setScreenEffect("screen-shake");
       setFeedbackStatus("failure");
 
@@ -421,21 +343,24 @@ const Stage4FlowchartFixer: React.FC<Stage4FlowchartFixerProps> = ({
     return (
       <div className="stage-completion">
         <div className="completion-card">
-          <h1>STAGE 4 COMPLETE!</h1>
+          <div className="completion-badge">
+            {score >= 200 ? t.stages.stage4.perfectScore : t.stages.stage4.stageComplete}
+          </div>
+          <h1>{t.stages.stage4.passedTitle}</h1>
 
           <div className="score-info">
             <p>
-              Correct Flowcharts: {Math.floor(score / 100)}/
+              {language === "en" ? "Correct Flowcharts:" : "Flowchart Benar:"} {Math.floor(score / 100)}/
               {challenges.length}
             </p>
-            <p>Score: {score} points</p>
+            <p>{language === "en" ? "Score:" : "Skor:"} {score} {language === "en" ? "points" : "poin"}</p>
           </div>
 
-          <p className="returning-message">Returning to main hub...</p>
+          <p className="returning-message">{t.stages.stage4.returningHub}</p>
 
           <div className="completion-buttons">
             <button className="replay-btn" onClick={handleReplay}>
-              Replay Stage
+              {language === "en" ? "Replay Stage" : "Main Ulang"}
             </button>
 
             <button
@@ -445,7 +370,7 @@ const Stage4FlowchartFixer: React.FC<Stage4FlowchartFixerProps> = ({
                 navigate("/mainhub");
               }}
             >
-              Return to Hub
+              {language === "en" ? "Return to Hub" : "Kembali ke Hub"}
             </button>
           </div>
 
@@ -551,7 +476,7 @@ const Stage4FlowchartFixer: React.FC<Stage4FlowchartFixerProps> = ({
                   }}
                 >
                   <h1 style={{ margin: 0 }}>
-                    Challenge {currentChallengeIdx + 1}/{challenges.length}
+                    {language === "en" ? "Challenge" : "Tantangan"} {currentChallengeIdx + 1}/{challenges.length}
                   </h1>
 
                   <div
@@ -614,10 +539,14 @@ const Stage4FlowchartFixer: React.FC<Stage4FlowchartFixerProps> = ({
                   onClick={handleDropZoneTap}
                 >
                   {selectedPath
-                    ? `PATH: ${selectedPath.toUpperCase()}`
+                    ? `${language === "en" ? "PATH" : "JALUR"}: ${selectedPath.toUpperCase()}`
                     : tappedConnector
-                      ? `Tap to place ${tappedConnector.toUpperCase()} Path`
-                      : "Drag or Tap Connector Here"}
+                      ? language === "en"
+                        ? `Tap to place ${tappedConnector.toUpperCase()} Path`
+                        : `Ketuk untuk menaruh Jalur ${tappedConnector.toUpperCase()}`
+                      : language === "en"
+                        ? "Drag or Tap Connector Here"
+                        : "Tarik atau Ketuk Konektor Di Sini"}
                 </div>
 
                 <div className="flow-arrow">↓</div>
@@ -633,9 +562,9 @@ const Stage4FlowchartFixer: React.FC<Stage4FlowchartFixerProps> = ({
           </div>
 
           <div className="connector-palette">
-            <h3>Connectors</h3>
+            <h3>{language === "en" ? "Connectors" : "Konektor"}</h3>
             <p className="palette-hint">
-              Drag or tap a connector, then place it
+              {language === "en" ? "Drag or tap a connector, then place it" : "Tarik atau ketuk konektor, lalu pasang"}
             </p>
 
             <div
@@ -646,7 +575,7 @@ const Stage4FlowchartFixer: React.FC<Stage4FlowchartFixerProps> = ({
               onDragStart={(e) => handleDragStart(e, "true")}
               onClick={() => handleConnectorTap("true")}
             >
-              [T] TRUE Path
+              {language === "en" ? "[T] TRUE Path" : "[T] Jalur TRUE (Benar)"}
             </div>
 
             <div
@@ -657,7 +586,7 @@ const Stage4FlowchartFixer: React.FC<Stage4FlowchartFixerProps> = ({
               onDragStart={(e) => handleDragStart(e, "false")}
               onClick={() => handleConnectorTap("false")}
             >
-              [F] FALSE Path
+              {language === "en" ? "[F] FALSE Path" : "[F] Jalur FALSE (Salah)"}
             </div>
 
             <div
@@ -688,22 +617,22 @@ const Stage4FlowchartFixer: React.FC<Stage4FlowchartFixerProps> = ({
 
         {showExplanation && feedbackStatus && (
           <div className={`feedback-modal ${feedbackStatus}`}>
-            <h3>{feedbackStatus === "success" ? "CORRECT!" : "TRY AGAIN"}</h3>
+            <h3>{feedbackStatus === "success" ? (language === "en" ? "CORRECT!" : "BENAR!") : (language === "en" ? "TRY AGAIN" : "COBA LAGI")}</h3>
             <p>{currentChallenge.explanation}</p>
 
             <div className="hud-sweep-btn-wrapper" style={{ marginTop: 10 }}>
               {feedbackStatus === "success" ? (
                 <button className="next-btn hud-sweep-btn" onClick={handleNext}>
                   {currentChallengeIdx === challenges.length - 1
-                    ? "FINISH STAGE"
-                    : "NEXT CHALLENGE"}
+                    ? (language === "en" ? "FINISH STAGE" : "SELESAIKAN STAGE")
+                    : (language === "en" ? "NEXT CHALLENGE" : "TANTANGAN BERIKUTNYA")}
                 </button>
               ) : (
                 <button
                   className="retry-btn hud-sweep-btn"
                   onClick={handleRetryChallenge}
                 >
-                  TRY AGAIN
+                  {language === "en" ? "TRY AGAIN" : "COBA LAGI"}
                 </button>
               )}
             </div>

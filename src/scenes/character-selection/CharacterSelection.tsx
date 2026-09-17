@@ -23,10 +23,11 @@ import {
   fetchDeviceAccounts,
   type SavedDeviceAccount,
 } from "../../services/deviceAccountService";
+import { getTranslation } from "../../i18n/translations";
 
 import "./CharacterSelection.css";
 
-type CandidateProfile = {
+export type CandidateProfile = {
   id: Character;
   sequence: string;
   callsign: string;
@@ -38,40 +39,20 @@ type CandidateProfile = {
   traits: readonly string[];
 };
 
-const CANDIDATES: readonly CandidateProfile[] = [
+const CANDIDATE_BASES = [
   {
-    id: "pink",
+    id: "pink" as const,
     sequence: "01",
-    callsign: "NOVA",
-    role: "EXPLORATION OFFICER",
-    description:
-      "Pilot adaptif dengan naluri eksplorasi kuat. Unggul saat misi membutuhkan keberanian dan improvisasi cepat.",
     accent: "#ff86c8",
     accentRgb: "255, 134, 200",
-    metrics: [
-      { label: "AGILITY", value: 91 },
-      { label: "CURIOSITY", value: 96 },
-      { label: "RESOLVE", value: 88 },
-    ],
-    traits: ["ADAPTIVE", "BRAVE", "CURIOUS"],
   },
   {
-    id: "white",
+    id: "white" as const,
     sequence: "02",
-    callsign: "PULSE",
-    role: "SYSTEMS OFFICER",
-    description:
-      "Pilot presisi dengan fokus teknis tinggi. Tetap tenang ketika sistem kritis membutuhkan keputusan terukur.",
     accent: "#77eaff",
     accentRgb: "119, 234, 255",
-    metrics: [
-      { label: "LOGIC", value: 95 },
-      { label: "PRECISION", value: 93 },
-      { label: "COMPOSURE", value: 90 },
-    ],
-    traits: ["PRECISE", "STEADY", "ANALYTIC"],
   },
-];
+] as const;
 
 const CalibrationParticles = ({ color }: { color: string }) => {
   const pointsRef = useRef<THREE.Points>(null);
@@ -352,6 +333,10 @@ const CharacterSelection = () => {
   const { playSfx } = useGameAudio();
   const storedCharacter = useGameStore((state) => state.character);
   const setCharacter = useGameStore((state) => state.setCharacter);
+  const language = useGameStore((state) => state.language);
+  const setLanguage = useGameStore((state) => state.setLanguage);
+  const t = getTranslation(language).characterSelection;
+
   const [selected, setSelected] = useState<Character>(storedCharacter);
   const [isCommitting, setIsCommitting] = useState(false);
   const [isCompact, setIsCompact] = useState(false);
@@ -377,8 +362,22 @@ const CharacterSelection = () => {
     checkDevice();
   }, [checkDevice]);
 
-  const candidateIndex = CANDIDATES.findIndex((candidate) => candidate.id === selected);
-  const candidate = CANDIDATES[candidateIndex] ?? CANDIDATES[0];
+  const candidates: CandidateProfile[] = useMemo(() => {
+    return CANDIDATE_BASES.map((base) => {
+      const trans = t.candidates[base.id];
+      return {
+        ...base,
+        callsign: trans.callsign,
+        role: trans.role,
+        description: trans.description,
+        metrics: trans.metrics,
+        traits: trans.traits,
+      };
+    });
+  }, [t]);
+
+  const candidateIndex = candidates.findIndex((candidate) => candidate.id === selected);
+  const candidate = candidates[candidateIndex] ?? candidates[0];
 
   useEffect(() => {
     const updateViewport = () => {
@@ -406,11 +405,11 @@ const CharacterSelection = () => {
   const cycleCandidate = useCallback(
     (direction: -1 | 1) => {
       if (isCommitting) return;
-      const nextIndex = (candidateIndex + direction + CANDIDATES.length) % CANDIDATES.length;
+      const nextIndex = (candidateIndex + direction + candidates.length) % candidates.length;
       playSfx("uiTabSwitch");
-      setSelected(CANDIDATES[nextIndex].id);
+      setSelected(candidates[nextIndex].id);
     },
-    [candidateIndex, isCommitting, playSfx]
+    [candidateIndex, candidates, isCommitting, playSfx]
   );
 
   const confirmCandidate = useCallback(() => {
@@ -490,73 +489,99 @@ const CharacterSelection = () => {
           <div className="cs-brand-lockup">
             <span className="cs-beacon" />
             <div>
-              <span>CADET INDUCTION // 00</span>
-              <strong>SPACE ACADEMY</strong>
+              <span>{t.cadetInduction} // 00</span>
+              <strong>{t.spaceAcademy}</strong>
             </div>
           </div>
 
-          {/* Device Profile Checker / Save Slot Button */}
-          <div className="cs-device-slot-action">
-            <button
-              type="button"
-              className={`cs-device-btn ${
-                deviceIsFull ? "full" : deviceAccounts.length > 0 ? "active" : "fresh"
-              }`}
-              onClick={() => {
-                playSfx("uiTabSwitch");
-                setShowDeviceModal(true);
-              }}
-              title="Cek Profil & Hero Tersimpan di Perangkat Ini (Maks 2 Akun)"
-            >
-              <span className="cs-device-btn-icon">🎮</span>
-              <span className="cs-device-btn-text">
-                DEVICE MEMORY: <strong>{deviceAccounts.length}/2</strong>
-              </span>
-              <span className="cs-device-btn-badge">
-                {deviceIsFull
-                  ? "2/2 FULL"
-                  : deviceAccounts.length > 0
-                  ? "PILOT SAVED"
-                  : "FRESH"}
-              </span>
-              {deviceAccounts.length > 0 && <span className="cs-device-pulse" />}
-            </button>
-          </div>
+          <div className="cs-topbar-actions">
+            {/* Language Switcher Feature */}
+            <div className="cs-lang-switcher" role="group" aria-label="Language selection">
+              <button
+                type="button"
+                className={`cs-lang-btn ${language === "id" ? "active" : ""}`}
+                onClick={() => {
+                  playSfx("uiTabSwitch");
+                  setLanguage("id");
+                }}
+                title="Bahasa Indonesia"
+              >
+                <span className="cs-lang-flag">🇮🇩</span> ID
+              </button>
+              <span className="cs-lang-sep">/</span>
+              <button
+                type="button"
+                className={`cs-lang-btn ${language === "en" ? "active" : ""}`}
+                onClick={() => {
+                  playSfx("uiTabSwitch");
+                  setLanguage("en");
+                }}
+                title="English"
+              >
+                <span className="cs-lang-flag">🇬🇧</span> EN
+              </button>
+            </div>
 
-          <div className="cs-link-state">
-            <span>BIOMETRIC LINK</span>
-            <div className="cs-link-track" aria-hidden="true">
-              <i className="active" />
-              <i className="active" />
-              <i />
-              <i />
+            {/* Device Profile Checker / Save Slot Button */}
+            <div className="cs-device-slot-action">
+              <button
+                type="button"
+                className={`cs-device-btn ${
+                  deviceIsFull ? "full" : deviceAccounts.length > 0 ? "active" : "fresh"
+                }`}
+                onClick={() => {
+                  playSfx("uiTabSwitch");
+                  setShowDeviceModal(true);
+                }}
+                title={t.deviceBtnTitle}
+              >
+                <span className="cs-device-btn-icon">🎮</span>
+                <span className="cs-device-btn-text">
+                  {t.deviceMemory}: <strong>{deviceAccounts.length}/2</strong>
+                </span>
+                <span className="cs-device-btn-badge">
+                  {deviceIsFull
+                    ? t.deviceFull
+                    : deviceAccounts.length > 0
+                    ? t.deviceSaved
+                    : t.deviceFresh}
+                </span>
+                {deviceAccounts.length > 0 && <span className="cs-device-pulse" />}
+              </button>
+            </div>
+
+            <div className="cs-link-state">
+              <span>{t.biometricLink}</span>
+              <div className="cs-link-track" aria-hidden="true">
+                <i className="active" />
+                <i className="active" />
+                <i />
+                <i />
+              </div>
             </div>
           </div>
         </header>
 
         <section className="cs-copy" aria-labelledby="candidate-heading">
-          <span className="cs-kicker">PILOT CALIBRATION BAY</span>
+          <span className="cs-kicker">{t.kicker}</span>
           <h1 id="candidate-heading">
-            Pilih siapa yang
-            <em>memulai misi.</em>
+            {t.headingPre}{" "}
+            <em>{t.headingEm}</em>
           </h1>
-          <p>
-            Tinjau profil, putar kandidat, lalu kunci pilotmu. Pilihan ini akan
-            dibawa ke seluruh perjalanan Space Academy.
-          </p>
+          <p>{t.description}</p>
           <div className="cs-input-hint" aria-label="Kontrol">
-            <span><kbd>←</kbd><kbd>→</kbd> GANTI PILOT</span>
-            <span><kbd>ENTER</kbd> KONFIRMASI</span>
+            <span><kbd>←</kbd><kbd>→</kbd> {t.hintChangePilot}</span>
+            <span><kbd>ENTER</kbd> {t.hintConfirm}</span>
           </div>
         </section>
 
         <aside className="cs-dossier" aria-live="polite">
           <div className="cs-dossier-heading">
-            <span>CANDIDATE DOSSIER</span>
+            <span>{t.candidateDossier}</span>
             <strong>{candidate.sequence} / 02</strong>
           </div>
           <div className="cs-dossier-name">
-            <span>CALLSIGN</span>
+            <span>{t.callsign}</span>
             <h2>{candidate.callsign}</h2>
             <p>{candidate.role}</p>
           </div>
@@ -582,7 +607,7 @@ const CharacterSelection = () => {
         </aside>
 
         <div className="cs-stage-readout" aria-hidden="true">
-          <span>LIVE BIOMETRIC SCAN</span>
+          <span>{t.liveScan}</span>
           <strong>{candidate.callsign} // {candidate.sequence}</strong>
         </div>
 
@@ -593,13 +618,13 @@ const CharacterSelection = () => {
             data-audio-cue="none"
             onClick={() => cycleCandidate(-1)}
             disabled={isCommitting}
-            aria-label="Kandidat sebelumnya"
+            aria-label={t.prevCandidate}
           >
             ←
           </button>
 
           <div className="cs-candidate-tabs" role="radiogroup" aria-label="Daftar kandidat">
-            {CANDIDATES.map((item) => {
+            {candidates.map((item) => {
               const active = item.id === selected;
               return (
                 <button
@@ -629,7 +654,7 @@ const CharacterSelection = () => {
             data-audio-cue="none"
             onClick={() => cycleCandidate(1)}
             disabled={isCommitting}
-            aria-label="Kandidat berikutnya"
+            aria-label={t.nextCandidate}
           >
             →
           </button>
@@ -641,17 +666,17 @@ const CharacterSelection = () => {
             onClick={confirmCandidate}
             disabled={isCommitting}
           >
-            <span>{isCommitting ? "SYNCING PROFILE" : "LOCK PILOT"}</span>
-            <strong>{isCommitting ? "•••" : "CONFIRM →"}</strong>
+            <span>{isCommitting ? t.btnSyncing : t.btnLockPilot}</span>
+            <strong>{isCommitting ? "•••" : t.btnConfirm}</strong>
           </button>
         </nav>
       </div>
 
       <div className="cs-transition" aria-hidden={!isCommitting}>
         <div className="cs-transition-line" />
-        <span>IDENTITY ACCEPTED</span>
+        <span>{t.identityAccepted}</span>
         <strong>{candidate.callsign}</strong>
-        <small>OPENING MISSION CHANNEL...</small>
+        <small>{t.openingChannel}</small>
       </div>
 
       <DeviceAccountModal

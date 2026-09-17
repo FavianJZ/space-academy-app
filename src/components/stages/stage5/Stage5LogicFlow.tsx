@@ -15,28 +15,24 @@ import {
   SpeechBubble,
 } from "../shared/SpeechBubble";
 import {
-  robotMessages,
+  getRobotMessages,
   getRandomMessage,
 } from "../shared/speechBubbleContent";
 import {
   getElapsedStageSeconds,
   getStageTimestamp,
 } from "../shared/stageTiming";
+import {
+  getLogicLevels,
+  type LogicLevel,
+} from "../../../i18n/gameplayContent";
+import { getTranslation } from "../../../i18n/translations";
 
 import "../shared/StageStyle.css";
 import "../shared/AdvancedHUD.css";
 
 interface Stage5LogicFlowProps {
   planetId: number;
-}
-
-interface LogicLevel {
-  id: number;
-  scenario: string;
-  factValue: number | string;
-  conditionText: string;
-  correctPath: "true" | "false";
-  explanation: string;
 }
 
 interface Wire {
@@ -51,76 +47,6 @@ interface RenderedWire {
   y2: number;
   color: string;
 }
-
-const levelPool: LogicLevel[] = [
-  {
-    id: 1,
-    scenario: "Cloud Storage Quota Monitor",
-    factValue: "Free Storage: 15 GB",
-    conditionText: "Is Free Storage < 20 GB?",
-    correctPath: "true",
-    explanation:
-      "15 GB is less than the 20 GB threshold. TRUE — storage warning triggered, auto-cleanup pipeline initiated.",
-  },
-  {
-    id: 2,
-    scenario: "API Server Rate Limiter",
-    factValue: "Requests/sec: 380",
-    conditionText: "Is Requests/sec > 500?",
-    correctPath: "false",
-    explanation: "380 is NOT greater than 500. FALSE — traffic is within safe limits, no throttling needed.",
-  },
-  {
-    id: 3,
-    scenario: "Security Token Expiration",
-    factValue: "Token Age: 36 Hours",
-    conditionText: "Is Token Age > 24 Hours?",
-    correctPath: "true",
-    explanation:
-      "36 hours exceeds the 24-hour policy. TRUE — token expired, user must re-authenticate.",
-  },
-  {
-    id: 4,
-    scenario: "Database Connection Pool",
-    factValue: "Active Connections: 85",
-    conditionText: "Is Connections >= 100?",
-    correctPath: "false",
-    explanation:
-      "85 is NOT >= 100. FALSE — connection pool still has capacity, no queue overflow.",
-  },
-  {
-    id: 5,
-    scenario: "Server Memory Usage Alert",
-    factValue: "RAM Usage: 92%",
-    conditionText: "Is RAM Usage > 90%?",
-    correctPath: "true",
-    explanation: "92% exceeds the 90% threshold. TRUE — critical memory alert, horizontal scaling triggered.",
-  },
-  {
-    id: 6,
-    scenario: "Firewall Intrusion Detection",
-    factValue: "Failed Login Attempts: 12",
-    conditionText: "Is Failed Attempts >= 10?",
-    correctPath: "true",
-    explanation: "12 >= 10. TRUE — suspicious activity detected, IP address quarantined by firewall.",
-  },
-  {
-    id: 7,
-    scenario: "Container Orchestrator Health",
-    factValue: "Running Pods: 3 of 5",
-    conditionText: "Is Running Pods < 4?",
-    correctPath: "true",
-    explanation: "3 is less than 4. TRUE — unhealthy cluster detected, Kubernetes auto-scaling initiated.",
-  },
-  {
-    id: 8,
-    scenario: "CI/CD Pipeline Gate",
-    factValue: "Test Coverage: 72%",
-    conditionText: "Is Coverage >= 80%?",
-    correctPath: "false",
-    explanation: "72% is NOT >= 80%. FALSE — deployment blocked, code coverage below quality gate.",
-  },
-];
 
 function shuffleLevels<T>(arr: T[]): T[] {
   const shuffled = [...arr];
@@ -139,10 +65,16 @@ const STAGE_TIME_LIMIT = 60;
 const Stage5LogicFlow: React.FC<Stage5LogicFlowProps> = ({ planetId }) => {
   const navigate = useNavigate();
   const { playSfx } = useGameAudio();
+  const language = useGameStore((state) => state.language);
+  const t = getTranslation(language);
 
-  const [levels] = useState<LogicLevel[]>(() =>
-    shuffleLevels(levelPool).slice(0, LEVEL_COUNT)
+  const [levels, setLevels] = useState<LogicLevel[]>(() =>
+    shuffleLevels(getLogicLevels(language)).slice(0, LEVEL_COUNT)
   );
+
+  useEffect(() => {
+    setLevels(shuffleLevels(getLogicLevels(language)).slice(0, LEVEL_COUNT));
+  }, [language]);
 
   const [currentLevelIdx, setCurrentLevelIdx] = useState(0);
   const [wires, setWires] = useState<Wire[]>([]);
@@ -318,7 +250,8 @@ const Stage5LogicFlow: React.FC<Stage5LogicFlowProps> = ({ planetId }) => {
   }, [wires, status, currentLevelIdx]);
 
   const handleRobotClick = () => {
-    setSpeechMessage(getRandomMessage(robotMessages.idle));
+    const messages = getRobotMessages(language);
+    setSpeechMessage(getRandomMessage(messages.idle));
     setRobotReaction("waving");
 
     window.setTimeout(() => {
@@ -468,6 +401,7 @@ const Stage5LogicFlow: React.FC<Stage5LogicFlowProps> = ({ planetId }) => {
 
     if (!hasStartToDiamond || !hasDiamondToBulb) return;
 
+    const messages = getRobotMessages(language);
     if (hasDiamondToBulb.from === `diamond-${currentLevel.correctPath}`) {
       setStatus("success");
       const reaction = playSfx("feedbackCorrect");
@@ -476,7 +410,7 @@ const Stage5LogicFlow: React.FC<Stage5LogicFlowProps> = ({ planetId }) => {
 
       setScore((prev) => prev + speedScore);
       setRobotReaction("correct");
-      setSpeechMessage(getRandomMessage(robotMessages.correct));
+      setSpeechMessage(getRandomMessage(messages.correct));
       setScreenEffect("screen-flash-green");
 
       window.setTimeout(() => {
@@ -487,7 +421,7 @@ const Stage5LogicFlow: React.FC<Stage5LogicFlowProps> = ({ planetId }) => {
       setStatus("failure");
       const reaction = playSfx("feedbackIncorrect");
       setRobotReaction("incorrect");
-      setSpeechMessage(getRandomMessage(robotMessages.incorrect));
+      setSpeechMessage(getRandomMessage(messages.incorrect));
       setScreenEffect("screen-shake");
 
       window.setTimeout(() => {
@@ -557,20 +491,23 @@ const Stage5LogicFlow: React.FC<Stage5LogicFlowProps> = ({ planetId }) => {
     return (
       <div className="stage-completion">
         <div className="completion-card">
-          <h1>STAGE 5 COMPLETE!</h1>
+          <div className="completion-badge">
+            {score >= 200 ? t.stages.stage5.stageComplete : (language === "en" ? "⚠️ LOGIC CIRCUITS INCOMPLETE" : "⚠️ RANGKAIAN LOGIKA BELUM LENGKAP")}
+          </div>
+          <h1>{t.stages.stage5.passedTitle}</h1>
 
           <div className="score-info">
             <p>
-              Logic Circuits Fixed: {Math.floor(score / 100)}/{levels.length}
+              {language === "en" ? "Logic Circuits Fixed:" : "Sirkuit Logika Selesai:"} {Math.floor(score / 100)}/{levels.length}
             </p>
-            <p>Score: {score} points</p>
+            <p>{language === "en" ? "Score:" : "Skor:"} {score} {language === "en" ? "points" : "poin"}</p>
           </div>
 
-          <p className="returning-message">Returning to main hub...</p>
+          <p className="returning-message">{t.stages.stage5.returningHub}</p>
 
           <div className="completion-buttons">
             <button className="replay-btn" onClick={handleReplay}>
-              Replay Stage
+              {language === "en" ? "Replay Stage" : "Main Ulang"}
             </button>
 
             <button
@@ -580,7 +517,7 @@ const Stage5LogicFlow: React.FC<Stage5LogicFlowProps> = ({ planetId }) => {
                 navigate("/mainhub");
               }}
             >
-              Return to Hub
+              {language === "en" ? "Return to Hub" : "Kembali ke Hub"}
             </button>
           </div>
 
@@ -670,7 +607,7 @@ const Stage5LogicFlow: React.FC<Stage5LogicFlowProps> = ({ planetId }) => {
 
       <div className="logic-header-overlay">
         <h2>
-          Pipeline Challenge {currentLevelIdx + 1}/{levels.length}
+          {language === "en" ? "Pipeline Challenge" : "Tantangan Pipeline"} {currentLevelIdx + 1}/{levels.length}
         </h2>
         <p>{currentLevel.scenario}</p>
 
@@ -744,7 +681,7 @@ const Stage5LogicFlow: React.FC<Stage5LogicFlowProps> = ({ planetId }) => {
         </svg>
 
         <div className="circuit-component start-component">
-          <div className="component-label">POWER SOURCE</div>
+          <div className="component-label">{language === "en" ? "POWER SOURCE" : "SUMBER DAYA"}</div>
           <div className="component-value">{currentLevel.factValue}</div>
 
           <div
@@ -808,14 +745,16 @@ const Stage5LogicFlow: React.FC<Stage5LogicFlowProps> = ({ planetId }) => {
             <div className="bulb-filament" />
           </div>
 
-          <div className="component-label">INDICATOR</div>
+          <div className="component-label">{language === "en" ? "INDICATOR" : "INDIKATOR"}</div>
         </div>
       </div>
 
       {status !== "playing" && (
         <div className={`feedback-modal ${status}`}>
           <h3>
-            {status === "success" ? "CIRCUIT COMPLETE!" : "SHORT CIRCUIT!"}
+            {status === "success"
+              ? (language === "en" ? "CIRCUIT COMPLETE!" : "SIRKUIT LENGKAP!")
+              : (language === "en" ? "SHORT CIRCUIT!" : "KONSLETING!")}
           </h3>
           <p>{currentLevel.explanation}</p>
 
@@ -823,15 +762,15 @@ const Stage5LogicFlow: React.FC<Stage5LogicFlowProps> = ({ planetId }) => {
             {status === "success" ? (
               <button className="next-btn hud-sweep-btn" onClick={handleNext}>
                 {currentLevelIdx === levels.length - 1
-                  ? "FINISH MISSION"
-                  : "NEXT LEVEL"}
+                  ? (language === "en" ? "FINISH MISSION" : "SELESAIKAN MISI")
+                  : (language === "en" ? "NEXT LEVEL" : "LEVEL BERIKUTNYA")}
               </button>
             ) : (
               <button
                 className="retry-btn hud-sweep-btn"
                 onClick={handleRetryLevel}
               >
-                TRY AGAIN
+                {language === "en" ? "TRY AGAIN" : "COBA LAGI"}
               </button>
             )}
           </div>

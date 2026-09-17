@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
-
+import { useGameStore } from "../../stores/useGameStore";
+import { getTranslation } from "../../i18n/translations";
 import {
   FLIGHT_TUNING,
   LANDING_GATE_INDEX,
@@ -26,6 +27,10 @@ export const NavFlightHUD: React.FC<NavFlightHUDProps> = ({
   visible,
   telemetryRef,
 }) => {
+  const language = useGameStore((state) => state.language);
+  const t = getTranslation(language).intro.hud;
+  const isEn = language === "en";
+
   const reticleRef = useRef<HTMLDivElement>(null);
   const reticleLabelRef = useRef<HTMLSpanElement>(null);
   const edgeRef = useRef<HTMLDivElement>(null);
@@ -54,14 +59,13 @@ export const NavFlightHUD: React.FC<NavFlightHUDProps> = ({
       frame = window.requestAnimationFrame(tick);
       const telemetry = telemetryRef.current;
 
-if (reticleRef.current) {
+      if (reticleRef.current) {
         reticleRef.current.style.transform = `translate(${
           telemetry.screenX * 100
         }vw, ${telemetry.screenY * 100}vh)`;
       }
 
       if (edgeRef.current) {
-        
         edgeRef.current.style.transform = `rotate(${telemetry.bearingDeg}deg) translateY(-38vh)`;
       }
 
@@ -69,7 +73,6 @@ if (reticleRef.current) {
       if (distanceRef.current) distanceRef.current.textContent = distanceText;
       if (edgeLabelRef.current) {
         edgeLabelRef.current.textContent = distanceText;
-        
         edgeLabelRef.current.style.transform = `rotate(${-telemetry.bearingDeg}deg)`;
       }
       if (reticleLabelRef.current) {
@@ -93,9 +96,9 @@ if (reticleRef.current) {
         ).toFixed(0)} M/S`;
       }
       if (attitudeRef.current) {
-        attitudeRef.current.textContent = `PITCH ${telemetry.pitchDeg
+        attitudeRef.current.textContent = `${t.pitch} ${telemetry.pitchDeg
           .toFixed(0)
-          .padStart(3, " ")}°   ROLL ${telemetry.rollDeg
+          .padStart(3, " ")}°   ${t.roll} ${telemetry.rollDeg
           .toFixed(0)
           .padStart(4, " ")}°`;
       }
@@ -122,7 +125,7 @@ if (reticleRef.current) {
 
     frame = window.requestAnimationFrame(tick);
     return () => window.cancelAnimationFrame(frame);
-  }, [telemetryRef, visible]);
+  }, [telemetryRef, visible, t.pitch, t.roll]);
 
   const landingClass = discrete.isLandingGate ? " is-landing" : "";
 
@@ -151,13 +154,13 @@ if (reticleRef.current) {
       <div className={`nav-flight-target${landingClass}`}>
         <b>
           {discrete.isLandingGate
-            ? "LANDING GATE"
+            ? t.landingGate
             : NAV_FLIGHT_GATES[discrete.gateIndex]?.code ?? "--"}
         </b>
         <i>
           {discrete.isLandingGate
-            ? "ORBIT AMBIL ALIH"
-            : `GERBANG ${discrete.gateIndex + 1} / ${LANDING_GATE_INDEX}`}
+            ? t.orbitTakeover
+            : `${t.gate} ${discrete.gateIndex + 1} / ${LANDING_GATE_INDEX}`}
         </i>
         <div className="nav-flight-progress">
           {NAV_FLIGHT_GATES.map((gate, index) => (
@@ -178,14 +181,14 @@ if (reticleRef.current) {
 
       <div className="nav-flight-throttle">
         <div className="nav-flight-throttle-row">
-          <span>THROTTLE</span>
+          <span>{t.throttle}</span>
           <strong ref={throttleValueRef}>0%</strong>
         </div>
         <div className="nav-flight-bar">
           <span ref={throttleBarRef} />
         </div>
         <div className="nav-flight-throttle-row">
-          <span>VELOCITY</span>
+          <span>{t.velocity}</span>
           <strong ref={speedValueRef}>
             {(FLIGHT_TUNING.minSpeed * 42).toFixed(0)} M/S
           </strong>
@@ -194,7 +197,7 @@ if (reticleRef.current) {
           <span ref={speedBarRef} />
         </div>
         <div ref={attitudeRef} className="nav-flight-attitude">
-          PITCH 0° ROLL 0°
+          {t.pitch} 0° {t.roll} 0°
         </div>
       </div>
 
@@ -203,34 +206,36 @@ if (reticleRef.current) {
           discrete.gateIndex > 1 ? " is-dim" : ""
         }`}
       >
-        <span>FLIGHT CONTROL</span>
+        <span>{isEn ? "FLIGHT CONTROLS" : "KONTROL PENERBANGAN"}</span>
         <dl>
           <dt>
             <kbd>W</kbd>
             <kbd>S</kbd>
           </dt>
-          <dd>PITCH — turunkan / angkat hidung</dd>
+          <dd>{isEn ? "PITCH — pitch nose down / up" : "PITCH — turunkan / angkat hidung"}</dd>
           <dt>
             <kbd>A</kbd>
             <kbd>D</kbd>
           </dt>
-          <dd>ROLL — miringkan sayap kiri / kanan</dd>
+          <dd>{isEn ? "ROLL — bank wings left / right" : "ROLL — miringkan sayap kiri / kanan"}</dd>
           <dt>
             <kbd>Q</kbd>
             <kbd>E</kbd>
           </dt>
-          <dd>YAW — putar ekor kiri / kanan</dd>
+          <dd>{isEn ? "YAW — steer rudder left / right" : "YAW — putar ekor kiri / kanan"}</dd>
           <dt>
             <kbd className="wide">SPACE</kbd>
           </dt>
-          <dd>TAHAN — tambah dorongan</dd>
+          <dd>{isEn ? "HOLD — boost main thruster" : "TAHAN — tambah dorongan"}</dd>
         </dl>
       </div>
 
       <div
         className={`nav-flight-hint${discrete.idleHint ? " is-visible" : ""}`}
       >
-        IKUTI PANAH BIRU MENUJU GERBANG BERIKUTNYA
+        {isEn
+          ? "FOLLOW BLUE MARKER TOWARD NEXT ORBITAL GATE"
+          : "IKUTI PANAH BIRU MENUJU GERBANG BERIKUTNYA"}
       </div>
 
       <div
@@ -238,7 +243,9 @@ if (reticleRef.current) {
           discrete.boundaryWarning ? " is-visible" : ""
         }`}
       >
-        BATAS SEKTOR // AUTOPILOT MENGOREKSI HALUAN
+        {isEn
+          ? "SECTOR BOUNDARY // AUTOPILOT CORRECTING HEADING"
+          : "BATAS SEKTOR // AUTOPILOT MENGOREKSI HALUAN"}
       </div>
     </div>
   );

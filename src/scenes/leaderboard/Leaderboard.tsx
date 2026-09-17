@@ -5,12 +5,16 @@ import { fetchGlobalLeaderboard } from "../../services/leaderboardService";
 import { supabase, isSupabaseEnabled } from "../../lib/supabase";
 import type { LeaderboardEntry } from "../../types/game.types";
 import { CadetDossierModal } from "../../components/specialization/CadetDossierModal";
+import { getTranslation } from "../../i18n/translations";
 import "./Leaderboard.css";
 
 const Leaderboard: React.FC = () => {
   const navigate = useNavigate();
   const [remoteEntries, setRemoteEntries] = useState<LeaderboardEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  const language = useGameStore((state) => state.language);
+  const t = getTranslation(language).leaderboard;
 
   const leaderboardEntries = useGameStore((state) => state.leaderboard);
   const addLeaderboardEntry = useGameStore((state) => state.addLeaderboardEntry);
@@ -133,12 +137,12 @@ const Leaderboard: React.FC = () => {
     <div className="leaderboard-container">
       <div className="leaderboard-content">
         <div className="leaderboard-header">
-          <h1>🏆 SPACE ACADEMY LEADERBOARD 🏆</h1>
+          <h1>{t.title}</h1>
           <p>
-            Global Rankings - Top 50 Players
+            {t.subtitle}
             {isLoading ? (
               <span style={{ marginLeft: 8, fontSize: "0.8em", opacity: 0.7 }}>
-                ⏳ Syncing...
+                {t.syncing}
               </span>
             ) : isSupabaseEnabled() ? (
               <span
@@ -161,11 +165,11 @@ const Leaderboard: React.FC = () => {
                     display: "inline-block",
                   }}
                 />
-                LIVE Realtime
+                {t.live}
               </span>
             ) : (
               <span style={{ marginLeft: 8, fontSize: "0.8em", opacity: 0.5 }}>
-                📱 Offline
+                {t.offline}
               </span>
             )}
           </p>
@@ -176,14 +180,14 @@ const Leaderboard: React.FC = () => {
           <div className="user-rank-banner">
             <div className="user-rank-banner-left">
               <span className="user-rank-pulse" />
-              <span className="user-rank-label">YOUR RANK:</span>
+              <span className="user-rank-label">{t.yourRank}</span>
               <span className="user-rank-number">#{userRank}</span>
               <span className="user-rank-player">
-                {userEntry.playerName} <span className="you-badge">(YOU)</span>
+                {userEntry.playerName} <span className="you-badge">{t.youTag}</span>
               </span>
             </div>
             <div className="user-rank-banner-right">
-              <span className="user-rank-score-label">SCORE:</span>
+              <span className="user-rank-score-label">{t.scoreLabel}</span>
               <span className="user-rank-score-val">
                 {userEntry.totalScore.toLocaleString()} PTS
               </span>
@@ -193,13 +197,13 @@ const Leaderboard: React.FC = () => {
           <div className="user-rank-banner pending">
             <div className="user-rank-banner-left">
               <span className="user-rank-pulse" />
-              <span className="user-rank-label">CURRENT PILOT:</span>
+              <span className="user-rank-label">{t.currentPilot}</span>
               <span className="user-rank-player">
-                {currentPlayerName} <span className="you-badge">(YOU)</span>
+                {currentPlayerName} <span className="you-badge">{t.youTag}</span>
               </span>
             </div>
             <div className="user-rank-banner-right">
-              <span className="user-rank-score-label">SCORE:</span>
+              <span className="user-rank-score-label">{t.scoreLabel}</span>
               <span className="user-rank-score-val">
                 {totalScore.toLocaleString()} PTS
               </span>
@@ -211,10 +215,10 @@ const Leaderboard: React.FC = () => {
           <table className="leaderboard-table">
             <thead>
               <tr>
-                <th className="rank-col">Rank</th>
-                <th className="name-col">Player Name</th>
-                <th className="major-col">Major</th>
-                <th className="score-col">Score</th>
+                <th className="rank-col">{t.rankCol}</th>
+                <th className="name-col">{t.nameCol}</th>
+                <th className="major-col">{t.majorCol}</th>
+                <th className="score-col">{t.scoreCol}</th>
               </tr>
             </thead>
 
@@ -249,7 +253,7 @@ const Leaderboard: React.FC = () => {
                         <td className="name-col">
                           <span className="player-name-text">{entry.playerName}</span>
                           {isCurrentPlayer && (
-                            <span className="you-badge">(YOU)</span>
+                            <span className="you-badge">{t.youTag}</span>
                           )}
                         </td>
 
@@ -285,7 +289,7 @@ const Leaderboard: React.FC = () => {
                         </td>
                         <td className="name-col">
                           <span className="player-name-text">{userEntry.playerName}</span>
-                          <span className="you-badge">(YOU)</span>
+                          <span className="you-badge">{t.youTag}</span>
                         </td>
                         <td className="major-col">{userEntry.major || "-"}</td>
                         <td className="score-col">
@@ -305,8 +309,7 @@ const Leaderboard: React.FC = () => {
                       color: "#00ffff",
                     }}
                   >
-                    No scores yet. Complete the game to appear on the
-                    leaderboard!
+                    {t.noScoresYet}
                   </td>
                 </tr>
               )}
@@ -323,11 +326,11 @@ const Leaderboard: React.FC = () => {
                 setShowDossier(true);
               }}
             >
-              🎓 SPECIALIZATION DOSSIER
+              {t.specializationDossierBtn}
             </button>
           )}
           <button className="back-button" onClick={() => navigate("/mainhub")}>
-            BACK TO HUB
+            {t.backToHubBtn}
           </button>
         </div>
       </div>

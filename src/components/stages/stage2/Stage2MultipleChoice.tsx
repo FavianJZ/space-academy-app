@@ -15,13 +15,15 @@ import {
   SpeechBubble,
 } from "../shared/SpeechBubble";
 import {
-  robotMessages,
+  getRobotMessages,
   getRandomMessage,
 } from "../shared/speechBubbleContent";
 import {
   getElapsedStageSeconds,
   getStageTimestamp,
 } from "../shared/stageTiming";
+import { getQuizQuestions, type Question } from "../../../i18n/gameplayContent";
+import { getTranslation } from "../../../i18n/translations";
 
 import "../shared/StageStyle.css";
 import "../shared/AdvancedHUD.css";
@@ -29,161 +31,6 @@ import "../shared/AdvancedHUD.css";
 interface Stage2MultipleChoiceProps {
     planetId: number;
 }
-
-interface Question {
-    id: number;
-    question: string;
-    options: { label: string; text: string }[];
-    correctAnswer: string;
-    explanation: string;
-}
-
-const quizQuestionPool: Question[] = [
-    {
-        id: 1,
-        question: 'What is a "bug" in software engineering?',
-        options: [
-            { label: 'a', text: 'An unexpected error or defect in code causing unintended behavior' },
-            { label: 'b', text: 'A biological insect trapped inside hardware' },
-            { label: 'c', text: 'A special high-speed processor instruction' },
-            { label: 'd', text: 'A new feature requested by clients' },
-        ],
-        correctAnswer: 'a',
-        explanation: 'A software bug is an error, flaw, or fault in a computer program that causes it to produce an incorrect or unexpected result.',
-    },
-    {
-        id: 2,
-        question: 'What is the main purpose of version control systems like Git?',
-        options: [
-            { label: 'a', text: 'To compile and compress 3D game models' },
-            { label: 'b', text: 'To track code history and enable seamless team collaboration' },
-            { label: 'c', text: 'To provide electrical power to servers' },
-            { label: 'd', text: 'To automatically design UI color themes' },
-        ],
-        correctAnswer: 'b',
-        explanation: 'Version control systems like Git track code changes, allow developers to revert mistakes, and coordinate work across distributed teams.',
-    },
-    {
-        id: 3,
-        question: 'What is an API (Application Programming Interface)?',
-        options: [
-            { label: 'a', text: 'A bridge that allows different software applications to communicate' },
-            { label: 'b', text: 'A physical cable connecting your keyboard to computer' },
-            { label: 'c', text: 'A database table encryption format' },
-            { label: 'd', text: 'An operating system background wallpaper' },
-        ],
-        correctAnswer: 'a',
-        explanation: 'An API defines rules and protocols that allow different applications, services, and microservices to exchange data smoothly.',
-    },
-    {
-        id: 4,
-        question: 'Which principle states that a module should have only one reason to change?',
-        options: [
-            { label: 'a', text: 'Open/Closed Principle' },
-            { label: 'b', text: 'Single Responsibility Principle' },
-            { label: 'c', text: 'Dependency Inversion Principle' },
-            { label: 'd', text: 'Interface Segregation Principle' },
-        ],
-        correctAnswer: 'b',
-        explanation: 'The Single Responsibility Principle (SRP) states that a module should have only one reason to change, promoting code organization.',
-    },
-    {
-        id: 5,
-        question: 'What is refactoring in software development?',
-        options: [
-            { label: 'a', text: 'Fixing bugs in production' },
-            { label: 'b', text: 'Improving code structure without changing functionality' },
-            { label: 'c', text: 'Adding new features to the application' },
-            { label: 'd', text: 'Testing the entire codebase' },
-        ],
-        correctAnswer: 'b',
-        explanation: 'Refactoring is the process of restructuring code to improve its quality and maintainability without altering its functionality.',
-    },
-    {
-        id: 6,
-        question: 'What does HTML stand for?',
-        options: [
-            { label: 'a', text: 'Hyper Text Markup Language' },
-            { label: 'b', text: 'High Tech Modern Language' },
-            { label: 'c', text: 'Hyper Transfer Markup Language' },
-            { label: 'd', text: 'Home Tool Markup Language' },
-        ],
-        correctAnswer: 'a',
-        explanation: 'HTML stands for Hyper Text Markup Language. It is the standard markup language for creating web pages.',
-    },
-    {
-        id: 7,
-        question: 'Which data structure uses FIFO (First In, First Out)?',
-        options: [
-            { label: 'a', text: 'Stack' },
-            { label: 'b', text: 'Queue' },
-            { label: 'c', text: 'Tree' },
-            { label: 'd', text: 'Graph' },
-        ],
-        correctAnswer: 'b',
-        explanation: 'A Queue uses FIFO ordering — the first element added is the first one removed. Stacks use LIFO (Last In, First Out).',
-    },
-    {
-        id: 8,
-        question: 'What is the time complexity of binary search?',
-        options: [
-            { label: 'a', text: 'O(n)' },
-            { label: 'b', text: 'O(n²)' },
-            { label: 'c', text: 'O(log n)' },
-            { label: 'd', text: 'O(1)' },
-        ],
-        correctAnswer: 'c',
-        explanation: 'Binary search has O(log n) time complexity because it halves the search space with each comparison.',
-    },
-    {
-        id: 9,
-        question: 'What does CSS stand for?',
-        options: [
-            { label: 'a', text: 'Computer Style Sheets' },
-            { label: 'b', text: 'Creative Style System' },
-            { label: 'c', text: 'Cascading Style Sheets' },
-            { label: 'd', text: 'Colorful Style Sheets' },
-        ],
-        correctAnswer: 'c',
-        explanation: 'CSS stands for Cascading Style Sheets. It describes how HTML elements should be displayed on screen.',
-    },
-    {
-        id: 10,
-        question: 'Which of these is NOT a valid JavaScript data type?',
-        options: [
-            { label: 'a', text: 'Boolean' },
-            { label: 'b', text: 'Float' },
-            { label: 'c', text: 'Symbol' },
-            { label: 'd', text: 'BigInt' },
-        ],
-        correctAnswer: 'b',
-        explanation: '"Float" is not a JavaScript data type. JavaScript uses "Number" for all numeric values. Valid types include Boolean, Symbol, BigInt, String, etc.',
-    },
-    {
-        id: 11,
-        question: 'What is an algorithm?',
-        options: [
-            { label: 'a', text: 'A programming language' },
-            { label: 'b', text: 'A step-by-step procedure to solve a problem' },
-            { label: 'c', text: 'A type of computer hardware' },
-            { label: 'd', text: 'A database management system' },
-        ],
-        correctAnswer: 'b',
-        explanation: 'An algorithm is a finite set of well-defined instructions used to solve a class of problems or perform a computation.',
-    },
-    {
-        id: 12,
-        question: 'Which sorting algorithm has the best average-case time complexity?',
-        options: [
-            { label: 'a', text: 'Bubble Sort — O(n²)' },
-            { label: 'b', text: 'Selection Sort — O(n²)' },
-            { label: 'c', text: 'Merge Sort — O(n log n)' },
-            { label: 'd', text: 'Insertion Sort — O(n²)' },
-        ],
-        correctAnswer: 'c',
-        explanation: 'Merge Sort has O(n log n) average-case complexity, which is better than the O(n²) of Bubble, Selection, and Insertion Sort.',
-    },
-];
 
 function shuffleArray<T>(arr: T[]): T[] {
     const shuffled = [...arr];
@@ -219,9 +66,16 @@ const QUIZ_QUESTION_COUNT = 3;
 const Stage2MultipleChoice: React.FC<Stage2MultipleChoiceProps> = ({ planetId }) => {
     const navigate = useNavigate();
     const { playSfx } = useGameAudio();
-    const [quizQuestions] = useState<Question[]>(() =>
-        randomizeQuestions(quizQuestionPool).slice(0, QUIZ_QUESTION_COUNT)
+    const language = useGameStore((state) => state.language);
+    const t = getTranslation(language);
+    const [quizQuestions, setQuizQuestions] = useState<Question[]>(() =>
+        randomizeQuestions(getQuizQuestions(language)).slice(0, QUIZ_QUESTION_COUNT)
     );
+
+    useEffect(() => {
+        setQuizQuestions(randomizeQuestions(getQuizQuestions(language)).slice(0, QUIZ_QUESTION_COUNT));
+    }, [language]);
+
     const [currentQuestionIdx, setCurrentQuestionIdx] = useState(0);
     const [selectedAnswers, setSelectedAnswers] = useState<Map<number, string>>(new Map());
     const [showExplanation, setShowExplanation] = useState(false);
@@ -242,7 +96,7 @@ const Stage2MultipleChoice: React.FC<Stage2MultipleChoiceProps> = ({ planetId })
     const [speechMessage, setSpeechMessage] = useState('');
     const [screenEffect, setScreenEffect] = useState('');
 
-const [tilt, setTilt] = useState({ x: 0, y: 0 });
+    const [tilt, setTilt] = useState({ x: 0, y: 0 });
 
     useEffect(() => {
         const startedAt = getStageTimestamp();
@@ -250,7 +104,7 @@ const [tilt, setTilt] = useState({ x: 0, y: 0 });
         stageStartRef.current = startedAt;
     }, []);
 
-useEffect(() => {
+    useEffect(() => {
         timerRef.current = setInterval(() => {
             setTimeLeft((prev) => {
                 if (prev <= 1) {
@@ -274,7 +128,7 @@ useEffect(() => {
     const userAnswer = selectedAnswers.get(currentQuestion.id);
     const isCorrect = userAnswer === currentQuestion.correctAnswer;
 
-const calculateSpeedScore = (): number => {
+    const calculateSpeedScore = (): number => {
         const answerTime = (getStageTimestamp() - questionStartTimeRef.current) / 1000;
         const speedScore = Math.max(20, Math.round(100 * (3 / Math.max(answerTime, 0.5))));
         return Math.min(speedScore, 300); 
@@ -287,12 +141,12 @@ const calculateSpeedScore = (): number => {
             setSelectedAnswers(newAnswers);
             setShowExplanation(true);
 
-if (label === currentQuestion.correctAnswer) {
+            if (label === currentQuestion.correctAnswer) {
                 const reaction = playSfx("feedbackCorrect");
                 const speedScore = calculateSpeedScore();
                 setScore(prev => prev + speedScore);
                 setRobotReaction('correct');
-                setSpeechMessage(getRandomMessage(robotMessages.correct));
+                setSpeechMessage(getRandomMessage(getRobotMessages(language).correct));
                 setScreenEffect('screen-flash-green');
                 setFeedbackStatus('success');
                 setTimeout(() => { setScreenEffect(''); setRobotReaction('idle'); }, reaction.motionMs);
@@ -304,7 +158,7 @@ if (label === currentQuestion.correctAnswer) {
             } else {
                 const reaction = playSfx("feedbackIncorrect");
                 setRobotReaction('incorrect');
-                setSpeechMessage(getRandomMessage(robotMessages.incorrect));
+                setSpeechMessage(getRandomMessage(getRobotMessages(language).incorrect));
                 setScreenEffect('screen-shake');
                 setFeedbackStatus('failure');
                 setTimeout(() => { setScreenEffect(''); setRobotReaction('idle'); }, reaction.motionMs);
@@ -313,7 +167,7 @@ if (label === currentQuestion.correctAnswer) {
     };
 
     const handleRobotClick = () => {
-        setSpeechMessage(getRandomMessage(robotMessages.idle));
+        setSpeechMessage(getRandomMessage(getRobotMessages(language).idle));
         setRobotReaction('waving');
         setTimeout(() => setRobotReaction('idle'), 2000);
     };
@@ -377,20 +231,20 @@ useEffect(() => {
             <div className="stage-completion">
                 <div className="completion-card">
                     <div className="completion-badge">
-                        {correctCount === quizQuestions.length ? "🏆 PERFECT SCORE" : "✅ STAGE 2 COMPLETE"}
+                        {correctCount === quizQuestions.length ? t.stages.stage2.perfectScore : t.stages.stage2.stageComplete}
                     </div>
-                    <h1>THEORY ASSESSMENT PASSED!</h1>
+                    <h1>{t.stages.stage2.passedTitle}</h1>
                     <div style={{ display: "flex", gap: "20px", justifyContent: "center", margin: "16px 0" }}>
                         <div className="completion-stat-chip">
-                            <span className="stat-label">CORRECT</span>
+                            <span className="stat-label">{t.stages.stage2.correct}</span>
                             <span className="stat-value">{correctCount}/{quizQuestions.length}</span>
                         </div>
                         <div className="completion-stat-chip">
-                            <span className="stat-label">SCORE</span>
+                            <span className="stat-label">{t.stages.stage2.score}</span>
                             <span className="stat-value">{score}</span>
                         </div>
                     </div>
-                    <p className="returning-message">Returning to main hub...</p>
+                    <p className="returning-message">{t.stages.stage2.returningHub}</p>
                     <div className="robot-celebration">
                         <AdaptiveCanvas camera={{ position: [0, 1, 5], fov: 50 }} dpr={[1, 1.1]} quality="low">
                             <ambientLight intensity={0.8} />
@@ -472,7 +326,7 @@ useEffect(() => {
                     </div>
 
                     <div className="quiz-header">
-                        <h1>Question {currentQuestionIdx + 1}/{quizQuestions.length}</h1>
+                        <h1>{t.stages.stage2.questionLabel} {currentQuestionIdx + 1}/{quizQuestions.length}</h1>
                     </div>
 
                     <div className="quiz-body hud-terminal-body">
@@ -514,15 +368,15 @@ useEffect(() => {
 
                 {showExplanation && feedbackStatus && (
                     <div className={`feedback-modal ${feedbackStatus}`}>
-                        <h3>{feedbackStatus === 'success' ? 'CORRECT!' : 'TRY AGAIN'}</h3>
+                        <h3>{feedbackStatus === 'success' ? t.stages.stage2.correctFeedback : t.stages.stage2.tryAgainFeedback}</h3>
                         <p>{currentQuestion.explanation}</p>
                         <div className="hud-sweep-btn-wrapper" style={{ marginTop: '10px' }}>
                           {feedbackStatus === 'success' ? (
                               <button className="next-btn hud-sweep-btn" onClick={handleNext}>
-                                  {currentQuestionIdx === quizQuestions.length - 1 ? 'FINISH QUIZ' : 'NEXT QUESTION'}
+                                  {currentQuestionIdx === quizQuestions.length - 1 ? t.stages.stage2.finishQuiz : t.stages.stage2.nextQuestion}
                               </button>
                           ) : (
-                              <button className="retry-btn hud-sweep-btn" onClick={handleRetryQuestion}>TRY AGAIN</button>
+                              <button className="retry-btn hud-sweep-btn" onClick={handleRetryQuestion}>{t.stages.stage2.tryAgainFeedback}</button>
                           )}
                         </div>
                     </div>

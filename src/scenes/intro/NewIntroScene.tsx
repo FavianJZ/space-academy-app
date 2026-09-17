@@ -3,6 +3,7 @@ import React, {
   useState,
   useCallback,
   useEffect,
+  useMemo,
   useRef,
 } from "react";
 import { useFrame } from "@react-three/fiber";
@@ -21,6 +22,7 @@ import {
   speakNarration,
 } from "../../audio/speechNarration";
 import { useGameStore } from "../../stores/useGameStore";
+import { getTranslation } from "../../i18n/translations";
 
 import { AsteroidObject, CockpitModel } from "../../components/models";
 import AdaptiveCanvas from "../../components/common/AdaptiveCanvas";
@@ -83,75 +85,11 @@ const PHASE_INDEX: Record<GamePhase, number> = {
   completed: 4,
 };
 
-const PHASE_LABEL: Record<GamePhase, string> = {
-  idle: "AWAITING AUTHORIZATION",
-  initializing: "SYSTEM HANDSHAKE",
-  intro: "AI TRANSMISSION",
-  navigation: "ROUTE DECISION",
-  crisis: "SYSTEM ANOMALY",
-  crash: "EMERGENCY DESCENT",
-  stranded: "UNKNOWN PLANET // LANDED",
-  completed: "RECORD CLOSED",
-};
-
-const ROUTE_PRESENTATION: Record<
-  NavigationRoute,
-  {
-    code: string;
-    title: string;
-    accent: string;
-    locked: string;
-    crisis: string;
-    climax: string;
-    approach: string;
-    touchdown: string;
-    metric: string;
-  }
-> = {
-  Mesin: {
-    code: "ENG-01",
-    title: "ENGINE RECOVERY",
-    accent: "#ff934d",
-    locked: "SERVICE DRONES DEPLOYED",
-    crisis: "THERMAL RUNAWAY",
-    climax: "DAMAGED MODULE JETTISONED",
-    approach: "LANDING PAD ACQUIRED // GEAR DOWN",
-    touchdown: "MAIN GEAR CONTACT // BRAKING",
-    metric: "CORE TEMP",
-  },
-  Navigasi: {
-    code: "NAV-02",
-    title: "MANUAL ORBIT",
-    accent: "#58e7ff",
-    locked: "WAYPOINT GATES ACQUIRED",
-    crisis: "MAGNETIC GHOST SIGNALS",
-    climax: "TRUE VECTOR RECOVERED",
-    approach: "VISUAL APPROACH // GEAR DOWN",
-    touchdown: "RUNWAY ALIGNMENT // CONTACT",
-    metric: "VECTOR DRIFT",
-  },
-  Bensin: {
-    code: "FUEL-03",
-    title: "RESERVE GLIDE",
-    accent: "#83ffa2",
-    locked: "RESERVE TANK CONNECTED",
-    crisis: "FUEL SEAL RUPTURE",
-    climax: "ZERO THRUST // GLIDE PROFILE",
-    approach: "UNPOWERED APPROACH // FLARE READY",
-    touchdown: "GLIDE COMPLETE // WHEELS SAFE",
-    metric: "FUEL RESERVE",
-  },
-  Blackhole: {
-    code: "GRAV-04",
-    title: "GRAVITY SLINGSHOT",
-    accent: "#c17aff",
-    locked: "SINGULARITY APPROACH",
-    crisis: "EVENT HORIZON BREACH",
-    climax: "GRAVITY EJECTION // ATTITUDE STABLE",
-    approach: "EMERGENCY VECTOR // GEAR DOWN",
-    touchdown: "SUSPENSION LOAD // MOTION ZERO",
-    metric: "TIDAL FORCE",
-  },
+const ROUTE_ACCENTS: Record<NavigationRoute, string> = {
+  Mesin: "#ff934d",
+  Navigasi: "#58e7ff",
+  Bensin: "#83ffa2",
+  Blackhole: "#c17aff",
 };
 
 const getRouteBeatIndex = (beat: IntroStoryBeat) => {
@@ -160,20 +98,6 @@ const getRouteBeatIndex = (beat: IntroStoryBeat) => {
   if (beat === "route-climax") return 2;
   if (beat === "route-crisis") return 1;
   return 0;
-};
-
-const getRouteBeatLabel = (
-  route: NavigationRoute,
-  beat: IntroStoryBeat
-) => {
-  const presentation = ROUTE_PRESENTATION[route];
-  if (beat === "route-crisis") return presentation.crisis;
-  if (beat === "route-climax") return presentation.climax;
-  if (beat === "route-approach") return presentation.approach;
-  if (beat === "route-touchdown" || beat === "stranded") {
-    return presentation.touchdown;
-  }
-  return presentation.locked;
 };
 
 const CockpitLightingRig: React.FC<{
@@ -417,6 +341,8 @@ export const NewIntroScene: React.FC<{
 }> = ({ onComplete }) => {
   const { playSound, stopSound } = useIntroAudio();
   const { playSfx } = useGameAudio();
+  const language = useGameStore((state) => state.language);
+  const t = getTranslation(language);
   const speechVolume = useGameStore((state) => state.sfxVolume);
   const { state: gameState, setPhase, setWarpSpeed, setShaking, setAlarmActive } =
     useIntroGameState();
@@ -438,6 +364,70 @@ export const NewIntroScene: React.FC<{
   const [selectedRoute, setSelectedRoute] = useState<NavigationRoute>();
   const [isStranded, setIsStranded] = useState(false);
   const [manualStage, setManualStage] = useState<ManualFlightStage>("off");
+
+  const routePresentation = useMemo(() => {
+    const r = t.intro.routes;
+    return {
+      Mesin: {
+        code: r.Mesin.code,
+        title: r.Mesin.title,
+        accent: ROUTE_ACCENTS.Mesin,
+        locked: r.Mesin.locked,
+        crisis: r.Mesin.crisis,
+        climax: r.Mesin.climax,
+        approach: r.Mesin.approach,
+        touchdown: r.Mesin.touchdown,
+        metric: r.Mesin.metric,
+      },
+      Navigasi: {
+        code: r.Navigasi.code,
+        title: r.Navigasi.title,
+        accent: ROUTE_ACCENTS.Navigasi,
+        locked: r.Navigasi.locked,
+        crisis: r.Navigasi.crisis,
+        climax: r.Navigasi.climax,
+        approach: r.Navigasi.approach,
+        touchdown: r.Navigasi.touchdown,
+        metric: r.Navigasi.metric,
+      },
+      Bensin: {
+        code: r.Bensin.code,
+        title: r.Bensin.title,
+        accent: ROUTE_ACCENTS.Bensin,
+        locked: r.Bensin.locked,
+        crisis: r.Bensin.crisis,
+        climax: r.Bensin.climax,
+        approach: r.Bensin.approach,
+        touchdown: r.Bensin.touchdown,
+        metric: r.Bensin.metric,
+      },
+      Blackhole: {
+        code: r.Blackhole.code,
+        title: r.Blackhole.title,
+        accent: ROUTE_ACCENTS.Blackhole,
+        locked: r.Blackhole.locked,
+        crisis: r.Blackhole.crisis,
+        climax: r.Blackhole.climax,
+        approach: r.Blackhole.approach,
+        touchdown: r.Blackhole.touchdown,
+        metric: r.Blackhole.metric,
+      },
+    };
+  }, [t]);
+
+  const getRouteBeatLabel = useCallback(
+    (route: NavigationRoute, beat: IntroStoryBeat) => {
+      const presentation = routePresentation[route];
+      if (beat === "route-crisis") return presentation.crisis;
+      if (beat === "route-climax") return presentation.climax;
+      if (beat === "route-approach") return presentation.approach;
+      if (beat === "route-touchdown" || beat === "stranded") {
+        return presentation.touchdown;
+      }
+      return presentation.locked;
+    },
+    [routePresentation]
+  );
 
 const courseRef = useRef<NavCourseState>(createNavCourseState());
   const telemetryRef = useRef<NavFlightTelemetry>(createNavFlightTelemetry());
@@ -494,8 +484,8 @@ const courseRef = useRef<NavCourseState>(createNavCourseState());
       const narrationFinished =
         useVoice && speechVolume > 0
           ? speakNarration(message, {
-              lang: "id-ID",
-              preferredVoiceLanguage: "id",
+              lang: language === "en" ? "en-US" : "id-ID",
+              preferredVoiceLanguage: language,
               pitch: 1.3,
               rate: 1.1,
               volume: speechVolume,
@@ -522,7 +512,7 @@ const courseRef = useRef<NavCourseState>(createNavCourseState());
       dialogueRunRef.current = null;
       setDialogueVisible(false);
     },
-    [playSound, speechVolume, stopActiveDialogue, stopSound]
+    [language, playSound, speechVolume, stopActiveDialogue, stopSound]
   );
 
   const handlePhaseChange = useCallback((phase: GamePhase) => {
@@ -571,8 +561,8 @@ const courseRef = useRef<NavCourseState>(createNavCourseState());
 
   const handleStranded = useCallback(() => {
     setIsStranded(true);
-    setStatusText("> EMERGENCY LANDING CONFIRMED // IDENTITY CORE OFFLINE");
-  }, []);
+    setStatusText(t.intro.emergencyLandingConfirmed);
+  }, [t.intro.emergencyLandingConfirmed]);
 
   const handleManualStageChange = useCallback((stage: ManualFlightStage) => {
     if (stage === "flying") {
@@ -631,14 +621,14 @@ const courseRef = useRef<NavCourseState>(createNavCourseState());
 
   const handleStartMission = useCallback(() => {
     setInitUIVisible(false);
-    setStatusText("> MENGAKTIFKAN PROTOKOL PENERBANGAN... OK");
+    setStatusText(t.intro.flightProtocolActive);
     playSound("bgm");
     playSound("sfxEngine");
 
     transitionTimerRef.current = window.setTimeout(() => {
       startIntroCinematic();
     }, 900);
-  }, [playSound, startIntroCinematic]);
+  }, [playSound, startIntroCinematic, t.intro.flightProtocolActive]);
 
   const handleRouteSelect = useCallback(
     (route: NavigationRoute) => {
@@ -778,7 +768,7 @@ const courseRef = useRef<NavCourseState>(createNavCourseState());
           <div className="intro-ops-identity">
             <span className="intro-ops-beacon" />
             <div>
-              <span>FLIGHT RECORD // 01</span>
+              <span>{t.intro.flightRecord}</span>
               <strong>SPACE ACADEMY</strong>
             </div>
           </div>
@@ -786,11 +776,11 @@ const courseRef = useRef<NavCourseState>(createNavCourseState());
           <div className="intro-phase-status">
             <span>
               {selectedRoute
-                ? `${ROUTE_PRESENTATION[selectedRoute].code} 
+                ? `${routePresentation[selectedRoute].code} // ${getRouteBeatLabel(
                     selectedRoute,
                     storyBeat
                   )}`
-                : PHASE_LABEL[gameState.phase]}
+                : t.intro.phases[gameState.phase]}
             </span>
             <div className="intro-phase-track" aria-hidden="true">
               {[0, 1, 2, 3, 4].map((step) => (
@@ -829,20 +819,20 @@ const courseRef = useRef<NavCourseState>(createNavCourseState());
           }`}
           style={
             {
-              "--route-accent": ROUTE_PRESENTATION[selectedRoute].accent,
+              "--route-accent": ROUTE_ACCENTS[selectedRoute],
             } as React.CSSProperties
           }
           aria-label={`Telemetry rute ${selectedRoute}`}
         >
           <div className="intro-route-telemetry-heading">
-            <span>{ROUTE_PRESENTATION[selectedRoute].code}</span>
-            <strong>{ROUTE_PRESENTATION[selectedRoute].title}</strong>
+            <span>{routePresentation[selectedRoute].code}</span>
+            <strong>{routePresentation[selectedRoute].title}</strong>
           </div>
           <div className="intro-route-telemetry-state">
             <i aria-hidden="true" />
             <span>
               {isStranded
-                ? "TOUCHDOWN CONFIRMED"
+                ? t.intro.touchdownConfirmed
                 : getRouteBeatLabel(selectedRoute, storyBeat)}
             </span>
           </div>
@@ -856,7 +846,7 @@ const courseRef = useRef<NavCourseState>(createNavCourseState());
               />
             ))}
           </div>
-          <small>{ROUTE_PRESENTATION[selectedRoute].metric}</small>
+          <small>{routePresentation[selectedRoute].metric}</small>
         </aside>
       )}
 
@@ -867,9 +857,9 @@ const courseRef = useRef<NavCourseState>(createNavCourseState());
           data-testid={isStranded ? "intro-authentication" : "intro-skip"}
           onClick={handleComplete}
         >
-          <span>{isStranded ? "RECOVERY PROTOCOL" : "SKIP RECORD"}</span>
+          <span>{isStranded ? t.intro.recoveryProtocol : t.intro.skipRecord}</span>
           <strong>
-            {isStranded ? "MULAI AUTENTIKASI →" : "BEDROOM →"}
+            {isStranded ? t.intro.beginAuthentication : t.intro.toBedroom}
           </strong>
         </button>
       )}

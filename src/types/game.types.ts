@@ -14,6 +14,8 @@ export type PlanetId = 1 | 2 | 3 | 4 | 5 | 6;
 
 export type Major = "IPA" | "IPS" | "";
 
+export type Language = "id" | "en";
+
 export interface PlayerData {
   name: string;
   phone: string;
@@ -95,6 +97,9 @@ export interface GameState {
   sfxVolume: number;
   setMusicVolume: (volume: number) => void;
   setSfxVolume: (volume: number) => void;
+
+  language: Language;
+  setLanguage: (lang: Language) => void;
 
   planetLeaderboards: PlanetLeaderboardEntry[];
   addPlanetLeaderboardEntry: (entry: PlanetLeaderboardEntry) => void;

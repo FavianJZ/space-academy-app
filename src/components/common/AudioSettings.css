@@ -856,6 +856,79 @@ body:has(.mainhub-scene .welcome-message .settings-btn)
   }
 }
 
+/* Language Selection Channel */
+.audio-settings-channel--lang {
+  border-color: rgba(117, 222, 246, 0.28);
+  background:
+    linear-gradient(110deg, color-mix(in srgb, var(--audio-settings-accent) 8%, transparent), transparent 60%),
+    rgba(4, 23, 34, 0.72);
+}
+
+.audio-settings-lang-pills {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.audio-settings-lang-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 38px;
+  padding: 6px 14px;
+  border: 1px solid rgba(117, 222, 246, 0.26);
+  border-radius: 4px;
+  background: rgba(6, 26, 38, 0.75);
+  color: #9ec8d7;
+  font-family: "Roboto Mono", monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  cursor: pointer;
+  transition: all 180ms ease;
+}
+
+.audio-settings-lang-pill:hover {
+  color: #fff;
+  border-color: var(--audio-settings-accent);
+  background: rgba(10, 38, 56, 0.88);
+  transform: translateY(-1px);
+}
+
+.audio-settings-lang-pill.active {
+  color: #ffffff;
+  border-color: var(--audio-settings-accent);
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--audio-settings-accent) 24%, transparent), rgba(6, 30, 44, 0.95)),
+    rgba(4, 25, 38, 0.95);
+  box-shadow:
+    0 0 16px color-mix(in srgb, var(--audio-settings-accent) 35%, transparent),
+    inset 0 0 10px color-mix(in srgb, var(--audio-settings-accent) 18%, transparent);
+}
+
+.audio-settings-lang-pill .lang-flag {
+  font-size: 14px;
+  line-height: 1;
+}
+
+@media (max-width: 640px) {
+  .audio-settings-channel--lang .audio-settings-channel-head {
+    grid-template-columns: 36px minmax(0, 1fr);
+  }
+
+  .audio-settings-lang-pills {
+    grid-column: 1 / -1;
+    margin-top: 8px;
+    width: 100%;
+  }
+
+  .audio-settings-lang-pill {
+    flex: 1;
+    justify-content: center;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .audio-settings-overlay,
   .audio-settings-dialog,

@@ -316,6 +316,13 @@ export const useGameStore = create<GameState>()(
         scheduleSettingsSync(get);
       },
 
+      language: "id" as const,
+
+      setLanguage: (language) => {
+        set({ language });
+        scheduleSettingsSync(get);
+      },
+
       planetLeaderboards: [],
 
       addPlanetLeaderboardEntry: (entry) => {
@@ -660,7 +667,7 @@ export const useGameStore = create<GameState>()(
     {
       name: STORAGE_KEY,
       storage,
-      version: 7,
+      version: 8,
       
       migrate: (persistedState, version) => {
         const state = persistedState as GameState;
@@ -711,7 +718,15 @@ export const useGameStore = create<GameState>()(
               }
             : botLeaderboardCleanedState;
 
-        return botLeaderboardRecalibratedState as GameState;
+        const languageMigratedState =
+          version < 8
+            ? {
+                ...botLeaderboardRecalibratedState,
+                language: ((botLeaderboardRecalibratedState as any).language as "id" | "en") || "id",
+              }
+            : botLeaderboardRecalibratedState;
+
+        return languageMigratedState as GameState;
       },
     }
   )
