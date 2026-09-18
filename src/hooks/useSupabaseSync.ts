@@ -12,10 +12,21 @@ import {
 import { submitScore } from "../services/scoreService";
 import { submitLeaderboardEntry } from "../services/leaderboardService";
 import { dealBossDamage as remoteDealBossDamage } from "../services/bossService";
-import { snapshotCurrentStoreAccount } from "../services/deviceAccountService";
+import {
+  snapshotCurrentStoreAccount,
+  syncAllLocalAccountsToSupabase,
+} from "../services/deviceAccountService";
 
 export function useSupabaseSync(): void {
   const hasRegistered = useRef(false);
+
+  // Auto-sync existing local accounts to Supabase on mount (recovery for offline/failed syncs)
+  useEffect(() => {
+    if (!isSupabaseEnabled()) return;
+    syncAllLocalAccountsToSupabase().catch((err) =>
+      console.warn("[useSupabaseSync] Initial sync warning:", err)
+    );
+  }, []);
 
   const playerData = useGameStore((s) => s.playerData);
   const character = useGameStore((s) => s.character);

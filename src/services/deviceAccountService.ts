@@ -6,7 +6,16 @@ import type {
   SpacemanPetId,
 } from "../types/customization.types";
 import { useGameStore } from "../stores/useGameStore";
-import { getLocalPlayerId, setLocalPlayerId } from "./playerService";
+import {
+  getLocalPlayerId,
+  setLocalPlayerId,
+  registerPlayer,
+  updatePlayer,
+  markGameCompleted,
+  markIntroCompleted,
+} from "./playerService";
+import { submitScore } from "./scoreService";
+import { submitLeaderboardEntry } from "./leaderboardService";
 
 export interface SavedDeviceAccount {
   id: string;
@@ -156,14 +165,29 @@ export async function fetchDeviceAccounts(): Promise<{
   // Fetch remote players registered with this deviceId from Supabase
   if (isSupabaseEnabled() && supabase) {
     try {
-      const { data: remoteRows, error } = await supabase
+      let remoteRows: any[] | null = null;
+      const { data, error } = await supabase
         .from("players")
         .select("*, leaderboard(total_score)")
         .eq("device_id", deviceId)
         .order("created_at", { ascending: true })
         .limit(MAX_ACCOUNTS_PER_DEVICE);
 
-      if (!error && remoteRows) {
+      if (!error && data) {
+        remoteRows = data;
+      } else if (error && (error.code === "PGRST204" || error.message?.includes("device_id"))) {
+        // Fallback if device_id column doesn't exist yet in Supabase
+        if (localAccounts.length > 0) {
+          const names = localAccounts.map((a) => a.name);
+          const { data: fallbackRows } = await supabase
+            .from("players")
+            .select("*, leaderboard(total_score)")
+            .in("name", names);
+          remoteRows = fallbackRows;
+        }
+      }
+
+      if (remoteRows) {
         for (const row of remoteRows) {
           const key = row.name.toLowerCase();
           const existing = mergedMap.get(key);
@@ -198,12 +222,120 @@ export async function fetchDeviceAccounts(): Promise<{
   const accounts = Array.from(mergedMap.values()).slice(0, MAX_ACCOUNTS_PER_DEVICE);
   setLocalSavedAccounts(accounts);
 
+  // Background recovery: sync all local accounts to Supabase
+  if (isSupabaseEnabled()) {
+    syncAllLocalAccountsToSupabase().catch((err) =>
+      console.warn("[deviceAccountService] Background sync warning:", err)
+    );
+  }
+
   return {
     deviceId,
     accounts,
     canCreateNew: accounts.length < MAX_ACCOUNTS_PER_DEVICE,
     isFull: accounts.length >= MAX_ACCOUNTS_PER_DEVICE,
   };
+}
+
+/**
+ * Sync a local SavedDeviceAccount to Supabase database (Player, Scores, Leaderboard, Specialization)
+ */
+export async function syncAccountToSupabase(account: SavedDeviceAccount): Promise<string | null> {
+  if (!isSupabaseEnabled()) return null;
+  if (!account.name?.trim()) return null;
+
+  try {
+    // 1. Register or retrieve player in Supabase
+    const playerId = await registerPlayer({
+      name: account.name.trim(),
+      phone: account.phone || "",
+      school: account.school || "",
+      major: account.major || "",
+      character_type: account.character,
+      spaceman_color: account.spacemanColor,
+      spaceman_hat: account.spacemanHat,
+      spaceman_pet: account.spacemanPet,
+      specialization_result: account.specializationResult,
+    });
+
+    if (!playerId) {
+      console.warn("[deviceAccountService] Could not resolve playerId in Supabase for account:", account.name);
+      return null;
+    }
+
+    // 2. Mark progress flags
+    if (account.isGameCompleted || account.visitedPlanetsCount >= 6) {
+      await markGameCompleted(playerId);
+      await markIntroCompleted(playerId);
+    }
+
+    // 3. Update specialization if exists
+    if (account.specializationResult) {
+      await updatePlayer(playerId, {
+        specialization_result: account.specializationResult,
+      });
+    }
+
+    // 4. Sync planet scores
+    if (account.planetScores && account.planetScores.length > 0) {
+      for (const [, scoreData] of account.planetScores) {
+        if (scoreData && scoreData.score > 0) {
+          await submitScore(
+            scoreData.planetId,
+            scoreData.stageId,
+            scoreData.score,
+            0,
+            playerId
+          );
+        }
+      }
+    }
+
+    // 5. Sync total score to leaderboard
+    if (account.totalScore > 0) {
+      await submitLeaderboardEntry(
+        account.name,
+        account.totalScore,
+        account.major || "",
+        playerId
+      );
+    }
+
+    // 6. Update cached account id with real Supabase UUID if it was previously local
+    if (account.id !== playerId) {
+      account.id = playerId;
+      const localList = getLocalSavedAccounts();
+      const idx = localList.findIndex(
+        (a) => a.name.toLowerCase() === account.name.toLowerCase()
+      );
+      if (idx >= 0) {
+        localList[idx].id = playerId;
+        setLocalSavedAccounts(localList);
+      }
+    }
+
+    console.log(`[deviceAccountService] Sukses sinkronisasi akun "${account.name}" ke Supabase Cloud (ID: ${playerId})!`);
+    return playerId;
+  } catch (err) {
+    console.error("[deviceAccountService] Error saat sinkronisasi akun ke Supabase:", err);
+    return null;
+  }
+}
+
+/**
+ * Synchronize all locally saved device accounts to Supabase
+ */
+export async function syncAllLocalAccountsToSupabase(): Promise<number> {
+  if (!isSupabaseEnabled()) return 0;
+  const accounts = getLocalSavedAccounts();
+  if (accounts.length === 0) return 0;
+
+  let successCount = 0;
+  for (const acc of accounts) {
+    const res = await syncAccountToSupabase(acc);
+    if (res) successCount++;
+  }
+  return successCount;
 }
 
 /**
@@ -243,6 +375,9 @@ export function activateDeviceAccount(account: SavedDeviceAccount): void {
 
   // Re-snapshot to update last active timestamp
   snapshotCurrentStoreAccount();
+
+  // Trigger sync in background for this account
+  syncAccountToSupabase(account).catch(console.warn);
 }
 
 /**

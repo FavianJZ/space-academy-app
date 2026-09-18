@@ -5,11 +5,12 @@ export async function submitScore(
   planetId: number,
   stageId: number,
   score: number,
-  completionTime?: number
+  completionTime?: number,
+  playerIdOverride?: string
 ): Promise<boolean> {
   if (!isSupabaseEnabled()) return false;
 
-  const playerId = getLocalPlayerId();
+  const playerId = playerIdOverride || getLocalPlayerId();
   if (!playerId) return false;
 
 const { data: existing } = await supabase!

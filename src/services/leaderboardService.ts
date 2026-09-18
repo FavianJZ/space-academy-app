@@ -14,11 +14,12 @@ interface LeaderboardRow {
 export async function submitLeaderboardEntry(
   playerName: string,
   totalScore: number,
-  major: string
+  major: string,
+  playerIdOverride?: string
 ): Promise<boolean> {
   if (!isSupabaseEnabled()) return false;
 
-  const playerId = getLocalPlayerId();
+  const playerId = playerIdOverride || getLocalPlayerId();
   if (!playerId) return false;
 
 const { data: existing } = await supabase!

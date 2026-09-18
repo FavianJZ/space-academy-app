@@ -12,6 +12,7 @@ import {
   fetchDeviceAccounts,
   activateDeviceAccount,
   prepareNewCadetSlot,
+  syncAllLocalAccountsToSupabase,
   type SavedDeviceAccount,
   MAX_ACCOUNTS_PER_DEVICE,
 } from "../../services/deviceAccountService";
@@ -142,6 +143,9 @@ export const DeviceAccountModal: React.FC<DeviceAccountModalProps> = ({
   const loadData = async () => {
     try {
       setIsRefreshing(true);
+      await syncAllLocalAccountsToSupabase().catch((e) =>
+        console.warn("[DeviceAccountModal] Auto sync warning:", e)
+      );
       const res = await fetchDeviceAccounts();
       setDeviceId(res.deviceId);
       setAccounts(res.accounts);

@@ -84,21 +84,36 @@ if (cleanName) {
     }
   }
 
-const { data: row, error } = await supabase!
+  const insertPayload: Record<string, unknown> = {
+    name: cleanName,
+    phone: cleanPhone,
+    school: data.school || "",
+    major: data.major || "",
+    character_type: data.character_type || "pink",
+    spaceman_color: data.spaceman_color || "original",
+    spaceman_hat: data.spaceman_hat || "none",
+    spaceman_pet: data.spaceman_pet || "none",
+    device_id: data.device_id || getLocalDeviceId(),
+  };
+
+  let { data: row, error } = await supabase!
     .from("players")
-    .insert({
-      name: cleanName,
-      phone: cleanPhone,
-      school: data.school || "",
-      major: data.major || "",
-      character_type: data.character_type || "pink",
-      spaceman_color: data.spaceman_color || "original",
-      spaceman_hat: data.spaceman_hat || "none",
-      spaceman_pet: data.spaceman_pet || "none",
-      device_id: data.device_id || getLocalDeviceId(),
-    })
+    .insert(insertPayload)
     .select("id")
     .single();
+
+  // If column device_id does not exist in Supabase schema, retry without device_id
+  if (error && (error.code === "PGRST204" || error.message?.includes("device_id"))) {
+    console.warn("[playerService] Supabase schema does not have 'device_id' column. Retrying insert without device_id...");
+    delete insertPayload.device_id;
+    const retry = await supabase!
+      .from("players")
+      .insert(insertPayload)
+      .select("id")
+      .single();
+    row = retry.data;
+    error = retry.error;
+  }
 
   if (error) {
     console.error("[playerService] Register player gagal di Supabase:", error.message);
@@ -132,10 +147,21 @@ export async function updatePlayer(
   if (data.spaceman_pet !== undefined) payload.spaceman_pet = data.spaceman_pet;
   if (data.specialization_result !== undefined) payload.specialization_result = data.specialization_result;
 
-  const { error } = await supabase!
+  let { error } = await supabase!
     .from("players")
     .update(payload)
     .eq("id", playerId);
+
+  // If update fails because device_id column does not exist, retry without device_id
+  if (error && (error.code === "PGRST204" || error.message?.includes("device_id"))) {
+    console.warn("[playerService] Supabase schema does not have 'device_id'. Retrying update without device_id...");
+    delete payload.device_id;
+    const retry = await supabase!
+      .from("players")
+      .update(payload)
+      .eq("id", playerId);
+    error = retry.error;
+  }
 
   if (error) {
     console.error("[playerService] update failed:", error.message);
