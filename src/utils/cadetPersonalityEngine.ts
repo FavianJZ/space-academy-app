@@ -48,6 +48,7 @@ export interface CadetPersonalityProfile {
     keySkillsMatched: string[];
     industryOutlook: string;
   };
+  adaptiveRecommendation: string;
 }
 
 const STAGE_CONFIGS: Record<
@@ -101,79 +102,130 @@ export function generateCadetPersonalityProfile(
   const totalPlayTime = signals?.totalTimePlayedSeconds || 0;
   const route = signals?.routeSelected || "";
 
-  // 1. Determine Dynamic Compound Signature Title
-  let signatureTitle = "Tactical Computing Specialist";
-  let signatureTagline = "Adaptive Problem Solver & Systems Explorer";
+  const primaryKey = result.primaryArchetype;
+  const secondaryKey = result.secondaryArchetype;
+  const primaryMeta = ARCHETYPE_METAS[primaryKey];
+  const secondaryMeta = ARCHETYPE_METAS[secondaryKey];
 
-  const isHighSystem = radar.system >= 70;
-  const isHighAi = radar.aiLogic >= 70;
-  const isHighDebug = radar.debugging >= 70;
-  const isHighCreative = radar.creative >= 70;
+  // 1. Determine Dynamic Compound Signature Title & Tagline (12 Archetype Pairings)
+  const SIGNATURE_MATRIX: Record<string, { title: string; tagline: string }> = {
+    "SYSTEM_ARCHITECT+AI_LOGIC_PIONEER": {
+      title: "Enterprise AI & Scalable Systems Architect",
+      tagline: "Synthesizes high-level cloud architectures with rigorous algorithmic reasoning.",
+    },
+    "SYSTEM_ARCHITECT+CYBER_DEBUGGER": {
+      title: "Resilient Infrastructure & Enterprise Security Lead",
+      tagline: "Engineers mission-critical distributed systems hardened against cyber threats and downtime.",
+    },
+    "SYSTEM_ARCHITECT+CREATIVE_TECH_DEV": {
+      title: "Visionary Interactive Systems Architect",
+      tagline: "Bridges complex backend microservices with elegant, high-impact user experiences.",
+    },
+    "AI_LOGIC_PIONEER+SYSTEM_ARCHITECT": {
+      title: "Computational Systems & Intelligent Pipeline Pioneer",
+      tagline: "Transforms massive data streams and predictive machine models into structured enterprise flows.",
+    },
+    "AI_LOGIC_PIONEER+CYBER_DEBUGGER": {
+      title: "Algorithmic Forensic & Deep Logic Investigator",
+      tagline: "Methodical investigator excelling in computational precision, threat modeling, and defect isolation.",
+    },
+    "AI_LOGIC_PIONEER+CREATIVE_TECH_DEV": {
+      title: "Cognitive Interaction & Generative Tech Specialist",
+      tagline: "Combines mathematical deduction and intelligent algorithms with immersive digital products.",
+    },
+    "CYBER_DEBUGGER+SYSTEM_ARCHITECT": {
+      title: "Defensive Cloud Security & Reliability Engineer",
+      tagline: "Relentless guardian of system architecture, specialized in vulnerability mitigation and zero defects.",
+    },
+    "CYBER_DEBUGGER+AI_LOGIC_PIONEER": {
+      title: "Cyber Threat Intelligence & Forensic Analyst",
+      tagline: "Applies deep algorithmic analysis to isolate security vulnerabilities and neutralize digital threats.",
+    },
+    "CYBER_DEBUGGER+CREATIVE_TECH_DEV": {
+      title: "Interactive QA & Product Reliability Specialist",
+      tagline: "Combines sharp perceptual defect observation with passionate empathy for user experience.",
+    },
+    "CREATIVE_TECH_DEV+SYSTEM_ARCHITECT": {
+      title: "Interactive Systems & Digital Experience Architect",
+      tagline: "Master of 3D WebGL interfaces, real-time spatial interaction, and scalable frontend engines.",
+    },
+    "CREATIVE_TECH_DEV+AI_LOGIC_PIONEER": {
+      title: "Intelligent Interactive Experience Developer",
+      tagline: "Designs responsive, AI-infused human-computer interfaces with intuitive visual harmony.",
+    },
+    "CREATIVE_TECH_DEV+CYBER_DEBUGGER": {
+      title: "Defensive UI/UX & Frontend Reliability Specialist",
+      tagline: "Builds flawless interactive applications marrying cutting-edge aesthetics with strict code safety.",
+    },
+  };
 
-  if (isHighSystem && isHighAi) {
-    signatureTitle = "Enterprise AI & Scalable Systems Architect";
-    signatureTagline =
-      "Synthesizes high-level cloud architectures with rigorous algorithmic reasoning.";
-  } else if (isHighAi && isHighDebug) {
-    signatureTitle = "Algorithmic Forensic & Deep Logic Investigator";
-    signatureTagline =
-      "Methodical investigator excelling in computational precision and defect isolation.";
-  } else if (isHighSystem && isHighCreative) {
-    signatureTitle = "Visionary Interactive Systems Engineer";
-    signatureTagline =
-      "Bridges the gap between robust architectural backbones and immersive digital experiences.";
-  } else if (isHighDebug && isHighCreative) {
-    signatureTitle = "Interactive QA & Product Reliability Engineer";
-    signatureTagline =
-      "Combines sharp perceptual observation with deep passion for seamless user interactions.";
-  } else if (isHighSystem) {
-    signatureTitle = "Cloud Infrastructure & Enterprise Systems Lead";
-    signatureTagline =
-      "Instinctive mastery of structured information pipelines, modularity, and enterprise flows.";
-  } else if (isHighAi) {
-    signatureTitle = "Computational Logic & Data Systems Specialist";
-    signatureTagline =
-      "Excels at rapid conceptual reasoning, mathematical deduction, and predictive thinking.";
-  } else if (isHighDebug) {
-    signatureTitle = "Cyber Resilience & Software Quality Specialist";
-    signatureTagline =
-      "Sharp-eyed defender dedicated to system integrity, vulnerability mitigation, and zero-defect code.";
-  } else if (isHighCreative) {
-    signatureTitle = "Immersive Technology & Digital Product Developer";
-    signatureTagline =
-      "Pioneering digital craftsman driven by aesthetics, responsiveness, and human-centric tech.";
-  } else {
-    signatureTitle = "Versatile Polymath Cadence Operator";
-    signatureTagline =
-      "Balanced cognitive foundation with equal aptitude across multi-disciplinary computing domains.";
+  const pairKey = `${primaryKey}+${secondaryKey}`;
+  let signatureTitle = SIGNATURE_MATRIX[pairKey]?.title;
+  let signatureTagline = SIGNATURE_MATRIX[pairKey]?.tagline;
+
+  if (!signatureTitle) {
+    if (result.confidenceLevel < 50) {
+      signatureTitle = "Foundational Computing & Orbital Flight Trainee";
+      signatureTagline = "Currently exploring foundational competencies across computational thinking and system navigation.";
+    } else {
+      signatureTitle = `${primaryMeta.title} Specialist`;
+      signatureTagline = `${primaryMeta.tagline}`;
+    }
   }
 
   // 2. Behavioral Style & Decision-Making Traits
-  let decisionMakingTrait =
-    "Sistematis & Terencana (Analytical Deliberation)";
+  let decisionMakingTrait = "Sistematis & Terencana (Analytical Deliberation)";
   let behavioralStyle = "Fokus pada struktur baku dan konsistensi pipeline.";
-  let efficiencyRating = "Optimal Stability & Predictable Execution";
 
-  if (route.includes("2") || route.toLowerCase().includes("manual")) {
-    decisionMakingTrait = "Eksploratif & Berani Mengambil Risiko Terukur";
-    behavioralStyle =
-      "Menunjukkan inisiatif mandiri, siap menghadapi manuver tak terduga, dan adaptif terhadap dinamika kontrol lapangan.";
-  } else if (route.includes("4") || route.toLowerCase().includes("cadence")) {
-    decisionMakingTrait = "Kalkulatif, Berbasis Data & Heuristik Cepat";
-    behavioralStyle =
-      "Mengutamakan optimalisasi komputasi, kalkulasi efisiensi rute, dan penalaran logis sebelum mengeksekusi aksi.";
+  switch (primaryKey) {
+    case "AI_LOGIC_PIONEER":
+      decisionMakingTrait = "Kalkulatif & Berbasis Data (Mathematical Deduction)";
+      behavioralStyle = "Mengutamakan optimalisasi komputasi, penalaran induktif, dan kalkulasi heuristik sebelum eksekusi.";
+      break;
+    case "CYBER_DEBUGGER":
+      decisionMakingTrait = "Refleks Cepat & Tanggap Anomali (Rapid Threat Neutralization)";
+      behavioralStyle = "Daya observasi tinggi terhadap anomali kode, sigap mengeliminasi defect, dan berorientasi zero-error.";
+      break;
+    case "CREATIVE_TECH_DEV":
+      decisionMakingTrait = "Eksploratif & Adaptif (Dynamic Problem Solving)";
+      behavioralStyle = "Responsif terhadap dinamika interaksi, peka terhadap estetika digital, dan berani mencoba pendekatan baru.";
+      break;
+    case "SYSTEM_ARCHITECT":
+    default:
+      decisionMakingTrait = "Sistematis & Terstruktur (SDLC Pipeline Orchestration)";
+      behavioralStyle = "Fokus pada struktur modular, kejelasan dependensi alur kerja, dan konsistensi pipeline enterprise.";
+      break;
   }
 
-  if (totalPlayTime > 0 && totalPlayTime < 240 && result.confidenceLevel >= 75) {
-    efficiencyRating = "High-Velocity Rapid Thinker (Kecepatan Di Atas Rata-rata)";
-  } else if (result.confidenceLevel >= 75) {
-    efficiencyRating = "Thorough & Diligent Investigator (Presisi Tinggi)";
+  if (route.includes("2") || route.toLowerCase().includes("manual")) {
+    behavioralStyle += " Menunjukkan inisiatif navigasi mandiri pada situasi tak terduga.";
+  } else if (route.includes("4") || route.toLowerCase().includes("cadence")) {
+    behavioralStyle += " Menerapkan kalkulasi efisiensi tinggi dalam setiap pergerakan.";
+  }
+
+  // Efficiency Rating
+  let efficiencyRating = "Steadily Calibrating Foundations (Proses Adaptasi Terarah)";
+  const completedStages = Object.values(records).filter((r) => r.completed);
+  const totalScore = completedStages.reduce((sum, r) => sum + (r.score || 0), 0);
+  const avgScore = completedStages.length > 0 ? totalScore / completedStages.length : 0;
+
+  if (completedStages.length >= 5) {
+    if (avgScore >= 800 || (totalPlayTime > 0 && totalPlayTime < 300)) {
+      efficiencyRating = "Tier-1 Apex Mastery (Performa Puncak Prestasi Akademi)";
+    } else if (avgScore >= 500) {
+      efficiencyRating = "High-Velocity Rapid Thinker (Kecepatan Di Atas Rata-rata)";
+    } else {
+      efficiencyRating = "Thorough & Diligent Investigator (Presisi Tinggi)";
+    }
+  } else if (completedStages.length >= 2) {
+    if (avgScore >= 400) {
+      efficiencyRating = "Agile Intermediate Operator (Adaptasi Cepat & Konsisten)";
+    } else {
+      efficiencyRating = "Diligent Precision Trainee (Ketelitian Bertahap)";
+    }
   }
 
   // 3. Narrative Synthesis
-  const primaryMeta = ARCHETYPE_METAS[result.primaryArchetype];
-  const secondaryMeta = ARCHETYPE_METAS[result.secondaryArchetype];
-
   const displayName = cadet.callsign || cadet.name || "Kadet Antariksa";
   const cognitiveProfileSummary =
     `Berdasarkan data telemetri simulasi antariksa, Kadet ${displayName} (${cadet.school} — ${cadet.major}) ` +
@@ -199,9 +251,11 @@ export function generateCadetPersonalityProfile(
       score: radar.system,
       level: getLevel(radar.system),
       descriptor:
-        radar.system >= 70
-          ? "Pemahaman arsitektur sistematis, menyukai struktur modular dan integrasi alur kerja teratur."
-          : "Fondasi struktural baik; mampu mengikuti alur kerja dan memecah masalah bertahap.",
+        radar.system >= 75
+          ? "Pemahaman arsitektur sistematis, unggul dalam struktur modular enterprise dan alur integrasi dependensi bertingkat."
+          : radar.system >= 50
+          ? "Fondasi struktural solid; mampu mengikuti alur kerja rekayasa software dan memecah proses menjadi modul teratur."
+          : "Fondasi struktural berkembang; sedang membangun pemahaman siklus hidup software dan perancangan alur sistem.",
       actionableFeedback:
         "Tingkatkan eksplorasi arsitektur cloud mikroservis dan orchestration pipeline di SOCS BINUS Bekasi.",
     },
@@ -211,9 +265,11 @@ export function generateCadetPersonalityProfile(
       score: radar.aiLogic,
       level: getLevel(radar.aiLogic),
       descriptor:
-        radar.aiLogic >= 70
-          ? "Penalaran induktif & deduktif tajam, unggul dalam memecahkan teka-teki logika biner dan algoritma rekursif."
-          : "Logika analitis konsisten; dapat ditingkatkan melalui latihan problem solving algoritma bertingkat.",
+        radar.aiLogic >= 75
+          ? "Penalaran induktif & deduktif tajam, unggul dalam memecahkan teka-teki logika biner dan algoritma rekursif kompleks."
+          : radar.aiLogic >= 50
+          ? "Logika analitis konsisten; mampu mengaplikasikan prinsip komputasi terstruktur dalam problem solving."
+          : "Logika komputasi berkembang; disarankan memperbanyak latihan pemodelan matematis dan penalaran algoritma.",
       actionableFeedback:
         "Dalami machine learning models dan neural computational pathways di peminatan Artificial Intelligence.",
     },
@@ -223,9 +279,11 @@ export function generateCadetPersonalityProfile(
       score: radar.debugging,
       level: getLevel(radar.debugging),
       descriptor:
-        radar.debugging >= 70
-          ? "Mata elang terhadap anomali kode, ketelitian observasi tinggi dalam mengisolasi bug kritis."
-          : "Ketelitian verifikasi stabil; memiliki insting perlindungan sistem terhadap kegagalan operasional.",
+        radar.debugging >= 75
+          ? "Mata elang terhadap anomali kode, ketelitian observasi tinggi, dan refleks kilat dalam mengisolasi bug kritis."
+          : radar.debugging >= 50
+          ? "Ketelitian verifikasi stabil; memiliki naluri pertahanan sistem terhadap kegagalan operasional software."
+          : "Ketelitian observasi sedang terasah; terus latih insting audit kode dan pendeteksian celah kerentanan.",
       actionableFeedback:
         "Pertajam keterampilan automated unit testing, vulnerability assessment, dan ethical hacking.",
     },
@@ -235,9 +293,11 @@ export function generateCadetPersonalityProfile(
       score: radar.creative,
       level: getLevel(radar.creative),
       descriptor:
-        radar.creative >= 70
-          ? "Peka terhadap responsivitas interaksi, estetika visual digital, dan eksplorasi antarmuka real-time."
-          : "Apresiasi pengalaman pengguna baik; mampu menyelaraskan aspek fungsi dan estetika.",
+        radar.creative >= 75
+          ? "Peka terhadap responsivitas interaksi, estetika visual digital modern, dan eksplorasi antarmuka real-time 3D."
+          : radar.creative >= 50
+          ? "Apresiasi pengalaman pengguna baik; mampu menyelaraskan aspek fungsi kontrol dan estetika visual interaktif."
+          : "Pemahaman interaksi digital berkembang; siap mengeksplorasi teknologi grafis modern dan mekanika interaksi.",
       actionableFeedback:
         "Kembangkan kompetensi WebGL, 3D interactive graphics, dan real-time game engine technology.",
     },
@@ -251,7 +311,6 @@ export function generateCadetPersonalityProfile(
       const isDone = !!rec?.completed;
       const sc = rec?.score ?? 0;
       const timeSec = rec?.timeSpentSeconds ?? 0;
-      const attempts = rec?.attemptsCount ?? 1;
 
       let grade: "S" | "A+" | "A" | "B" | "IN TRAINING" = "IN TRAINING";
       let evalText =
@@ -259,59 +318,127 @@ export function generateCadetPersonalityProfile(
       let highlight = "Standby Status";
 
       if (isDone) {
-        if (sc >= 300 || (sc >= 100 && attempts === 1)) {
-          grade = "S";
-        } else if (sc >= 200 || attempts <= 2) {
-          grade = "A+";
-        } else if (sc >= 100) {
-          grade = "A";
-        } else {
-          grade = "B";
-        }
-
         switch (stageId) {
-          case 1:
-            evalText =
-              timeSec < 45
-                ? `Adaptabilitas orientasi sangat kilat (${timeSec}s). Berhasil menguasai instrumen kapal tanpa disorientasi kosmik.`
-                : `Menyelesaikan onboarding sistem penerbangan dengan prosedur tertib dan akurasi kalibrasi stabil (${timeSec}s).`;
-            highlight = `${timeSec}s Onboarding Speed`;
+          case 1: { // Novaris (Par 500, Par Time 60s)
+            if (timeSec <= 40) {
+              grade = "S";
+              evalText = `Manuver orientasi penerbangan luar biasa kilat (${timeSec}s). Berhasil menguasai kokpit orbital dengan refleks adaptasi sempurna.`;
+              highlight = `${timeSec}s Apex Reflex`;
+            } else if (timeSec <= 65) {
+              grade = "A+";
+              evalText = `Prosedur kalibrasi instrumen antariksa diselesaikan dengan tertib, presisi, dan stabil (${timeSec}s).`;
+              highlight = `${timeSec}s Smooth Navigation`;
+            } else if (timeSec <= 90) {
+              grade = "A";
+              evalText = `Menuntaskan orientasi penerbangan sistematis (${timeSec}s); instrumen dasar siap mendukung penerbangan antarplanet.`;
+              highlight = `${timeSec}s Orbital Check`;
+            } else {
+              grade = "B";
+              evalText = `Berhasil menyelesaikan orientasi pesawat (${timeSec}s); memerlukan adaptasi instrumen tambahan pada gravitasi nol.`;
+              highlight = `${timeSec}s Standard Pass`;
+            }
             break;
-          case 2:
-            evalText =
-              sc >= 250
-                ? `Skor ${sc} poin membuktikan penguasaan konsep komputasi dasar dan logika sains yang sangat prima.`
-                : `Menuntaskan kuis komputasi (${sc} pts) dengan daya analisa rasional dan konsistensi jawaban yang baik.`;
-            highlight = `${sc} Pts Conceptual Recall`;
+          }
+          case 2: { // Quizara (Algorithmic Multiple Choice)
+            if (sc >= 550) {
+              grade = "S";
+              evalText = `Skor gemilang ${sc} poin membuktikan penguasaan konsep komputasi dasar dan logika sains yang sangat prima tanpa celah.`;
+              highlight = `${sc} Pts Flawless Recall`;
+            } else if (sc >= 400) {
+              grade = "A+";
+              evalText = `Pemahaman algoritma komputasi kuat (${sc} pts); penalaran rasional terbukti konsisten di hampir seluruh topik sains.`;
+              highlight = `${sc} Pts High Retention`;
+            } else if (sc >= 250) {
+              grade = "A";
+              evalText = `Menuntaskan kuis logika komputasi (${sc} pts) dengan daya analisis baik; fondasi konseptual siap dikembangkan ke tingkat lanjut.`;
+              highlight = `${sc} Pts Solid Logic`;
+            } else {
+              grade = "B";
+              evalText = `Menyelesaikan evaluasi kuis (${sc} pts); disarankan memperdalam struktur data dasar dan computational thinking.`;
+              highlight = `${sc} Pts Foundation Base`;
+            }
             break;
-          case 3:
-            evalText =
-              attempts === 1
-                ? `Berhasil merangkai seluruh sekuens arsitektur SDLC dan pipeline data secara presisi! Memiliki pemahaman alur kerja software kelas enterprise.`
-                : `Menuntaskan sekuens arsitektur pipeline sistem dengan pemahaman alur kerja rekayasa software yang baik.`;
-            highlight = "SDLC Pipeline Mastery";
+          }
+          case 3: { // Puzzlon (SDLC Pipeline Sequencer)
+            if (sc >= 450) {
+              grade = "S";
+              evalText = `Merangkai seluruh sekuens arsitektur SDLC dan pipeline data secara presisi (${sc} pts)! Memiliki visi alur rekayasa software enterprise.`;
+              highlight = "SDLC Pipeline Mastery";
+            } else if (sc >= 350) {
+              grade = "A+";
+              evalText = `Konfigurasi tahapan rekayasa perangkat lunak disusun rapi (${sc} pts); alur integrasi komponen sistem berjalan mulus.`;
+              highlight = "Modular Pipeline Flow";
+            } else if (sc >= 250) {
+              grade = "A";
+              evalText = `Menuntaskan sekuens arsitektur pipeline (${sc} pts) dengan pemahaman siklus hidup software yang teratur.`;
+              highlight = "Structured Assembly";
+            } else {
+              grade = "B";
+              evalText = `Berhasil menyusun komponen dasar pipeline (${sc} pts); memerlukan latihan lanjutan pada pemetaan dependensi sistem.`;
+              highlight = "Basic Pipeline Order";
+            }
             break;
-          case 4:
-            evalText =
-              attempts === 1
-                ? `Perbaikan flowchart Flowra dilakukan secara presisi tanpa redundansi. Pemahaman alur branching sistem sempurna.`
-                : `Menyelaraskan kembali percabangan logika pipeline Flowra; mampu mengidentifikasi hambatan alur proses.`;
-            highlight = "Flawless Process Branching";
+          }
+          case 4: { // Flowra (Flowchart Process Branching)
+            if (sc >= 500) {
+              grade = "S";
+              evalText = `Perbaikan percabangan logika Flowra tuntas sempurna (${sc} pts) tanpa redundansi! Pemahaman alur branching dan UI flow kelas atas.`;
+              highlight = "Flawless Process Branching";
+            } else if (sc >= 350) {
+              grade = "A+";
+              evalText = `Menyelaraskan diagram alir Flowra dengan tepat (${sc} pts); mampu mengidentifikasi dan membenahi hambatan logika proses.`;
+              highlight = "Optimal Decision Logic";
+            } else if (sc >= 220) {
+              grade = "A";
+              evalText = `Berhasil memetakan alur keputusan sistem (${sc} pts); struktur diagram alir fungsional dan berjalan sesuai spesifikasi.`;
+              highlight = "Valid Flow Decomposition";
+            } else {
+              grade = "B";
+              evalText = `Menyelesaikan perbaikan alur dasar (${sc} pts); disarankan memperdalam efisiensi branching dan kondisional sistem.`;
+              highlight = "Iterative Branching Fix";
+            }
             break;
-          case 5:
-            evalText =
-              timeSec < 60
-                ? `Kecepatan analisis pipeline cloud Logitron (${timeSec}s) menunjukkan penguasaan logika backend infrastructure level tinggi.`
-                : `Berhasil mengkonfigurasi seluruh sirkuit logika Cloud & Backend Pipeline Logitron dengan verifikasi kondisi yang akurat.`;
-            highlight = `${timeSec}s Cloud Logic Synthesis`;
+          }
+          case 5: { // Logitron (Logic Array & Cloud Infrastructure)
+            if (sc >= 250 || (sc >= 200 && timeSec < 40)) {
+              grade = "S";
+              evalText = `Sirkuit logika gerbang dan pipeline cloud Logitron (${sc} pts, ${timeSec}s) disintesis kilat dengan logika biner tajam.`;
+              highlight = `${timeSec}s Cloud Logic Synthesis`;
+            } else if (sc >= 180) {
+              grade = "A+";
+              evalText = `Konfigurasi array logika cloud berjalan stabil (${sc} pts); verifikasi kondisi gerbang logika akurat dan terencana.`;
+              highlight = "Synchronized Cloud Gates";
+            } else if (sc >= 130) {
+              grade = "A";
+              evalText = `Menuntaskan routing data cloud Logitron (${sc} pts); memahami prinsip dasar boolean gate dan integrasi backend.`;
+              highlight = "Binary Logic Alignment";
+            } else {
+              grade = "B";
+              evalText = `Menghubungkan jalur logika sistem (${sc} pts); memerlukan pengasahan kecepatan pada gerbang logika bertingkat.`;
+              highlight = "Fundamental Logic Link";
+            }
             break;
-          case 6:
-            evalText =
-              sc >= 300
-                ? `Karantina bug Ultimara tuntas sempurna (${sc} pts)! Daya observasi tajam layaknya Cyber Security Auditor profesional.`
-                : `Berhasil mendeteksi anomali kode Ultimara; memiliki potensi besar dalam software testing dan QA defense.`;
-            highlight = "Zero-Defect Code Inspection";
+          }
+          case 6: { // Ultimara (Cyber Bug Quarantine & QA Defense)
+            if (sc >= 2800) {
+              grade = "S";
+              evalText = `Karantina bug Ultimara tuntas sempurna (${sc} pts)! Daya observasi tajam dan refleks defensif setara Cyber Security Auditor profesional.`;
+              highlight = "Zero-Defect Code Quarantine";
+            } else if (sc >= 2200) {
+              grade = "A+";
+              evalText = `Daya eliminasi anomali kode impresif (${sc} pts); ketelitian pengamatan tinggi dalam mengisolasi defect sistem sebelum eskalasi.`;
+              highlight = `${sc} Pts Robust Bug Isolation`;
+            } else if (sc >= 1400) {
+              grade = "A";
+              evalText = `Berhasil mendeteksi anomali kritis Ultimara (${sc} pts); memiliki potensi kuat dalam automated testing dan defensive security.`;
+              highlight = `${sc} Pts Security Quarantine`;
+            } else {
+              grade = "B";
+              evalText = `Menetralisir ancaman bug dasar (${sc} pts); disarankan meningkatkan ketangkasan observasi defect dalam kondisi stres operasional.`;
+              highlight = "Target Threat Mitigation";
+            }
             break;
+          }
         }
       }
 
@@ -341,8 +468,24 @@ export function generateCadetPersonalityProfile(
       ...secondaryMeta.careerPaths.slice(0, 2),
     ],
     industryOutlook:
-      "Tingkat serapan industri 98.4% dengan peluang karir internasional di sektor Cloud Enterprise, AI Research, Cybersecurity, dan Modern Interactive Tech.",
+      primaryKey === "AI_LOGIC_PIONEER"
+        ? "Peluang karir terdepan di era AI dengan pertumbuhan pasar kecerdasan buatan global mencapai 37.3% CAGR."
+        : primaryKey === "CYBER_DEBUGGER"
+        ? "Kebutuhan tenaga ahli keamanan siber & QA global defisit 3.4 juta profesional, menjamin prospek karir sangat tinggi."
+        : primaryKey === "CREATIVE_TECH_DEV"
+        ? "Ekspansi industri game, WebGL 3D, dan spatial interactive tech menawarkan peluang karir kreatif global bernilai tinggi."
+        : "Tingkat serapan industri 98.4% dengan peluang karir internasional di sektor Cloud Enterprise, DevOps, dan Software Engineering.",
   };
+
+  // 7. Dynamic Adaptive Recommendation
+  const adaptiveRecommendation =
+    primaryKey === "CYBER_DEBUGGER"
+      ? `Tingkatkan mitigasi arsitektur pertahanan sistem dan otomasi pengujian mendalam; kombinasikan ketelitian observasi Anda dengan pilar ${secondaryMeta.title} di ekosistem SOCS BINUS Bekasi.`
+      : primaryKey === "AI_LOGIC_PIONEER"
+      ? `Eksplorasi pemodelan machine learning mutakhir dan penalaran algoritma rekursif; hubungkan ketajaman komputasi Anda dengan pilar ${secondaryMeta.title} di ekosistem SOCS BINUS Bekasi.`
+      : primaryKey === "CREATIVE_TECH_DEV"
+      ? `Tingkatkan integrasi grafika 3D WebGL dan optimalisasi performa rendering interaktif; wujudkan imajinasi spasial Anda bersama pilar ${secondaryMeta.title} di SOCS BINUS Bekasi.`
+      : `Pertahankan disiplin modularitas cloud dan orkestrasi pipeline skala besar; arahkan visi arsitektur Anda bersama pilar ${secondaryMeta.title} ke standar internasional di SOCS BINUS Bekasi.`;
 
   return {
     signatureTitle,
@@ -354,5 +497,6 @@ export function generateCadetPersonalityProfile(
     pillarDiagnostics,
     stageEvaluations,
     socsAcademicAlignment,
+    adaptiveRecommendation,
   };
 }

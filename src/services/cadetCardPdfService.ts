@@ -1,5 +1,6 @@
 import { jsPDF } from "jspdf";
 import type {
+  SpecializationArchetypeKey,
   SpecializationResult,
   TelemetrySignals,
 } from "../types/specialization.types";
@@ -684,21 +685,31 @@ export async function generateCadetCardPdf(
   const archW = (rightW - 76) / 2; // ~456
   const archH = 132;
 
+  // Map each archetype key to its exact radar score
+  const archetypeScoreMap: Record<SpecializationArchetypeKey, number> = {
+    SYSTEM_ARCHITECT: result.radarScores.system,
+    AI_LOGIC_PIONEER: result.radarScores.aiLogic,
+    CYBER_DEBUGGER: result.radarScores.debugging,
+    CREATIVE_TECH_DEV: result.radarScores.creative,
+  };
+  const primaryScore = archetypeScoreMap[primaryKey] ?? result.radarScores.system;
+  const secondaryScore = archetypeScoreMap[secondaryKey] ?? result.radarScores.aiLogic;
+
   // Primary Archetype Card
-  drawRoundedRect(rightX + 32, archY, archW, archH, 12, "rgba(255, 143, 201, 0.09)", primaryMeta.color, 1.8);
+  drawRoundedRect(rightX + 32, archY, archW, archH, 12, `${primaryMeta.color}15`, primaryMeta.color, 1.8);
   // Header tag
-  drawRoundedRect(rightX + 46, archY + 14, 175, 22, 5, "rgba(255, 143, 201, 0.2)", primaryMeta.color, 1);
+  drawRoundedRect(rightX + 46, archY + 14, 185, 22, 5, `${primaryMeta.color}30`, primaryMeta.color, 1);
   ctx.fillStyle = primaryMeta.color;
   ctx.font = "bold 10px 'Segoe UI', Arial, sans-serif";
   ctx.letterSpacing = "1px";
   ctx.textAlign = "center";
-  ctx.fillText("⬡ PRIMARY SPECIALIZATION", rightX + 46 + 175 / 2, archY + 29);
+  ctx.fillText("⬡ PRIMARY SPECIALIZATION", rightX + 46 + 185 / 2, archY + 29);
 
   // Score Badge
   drawRoundedRect(rightX + archW - 100, archY + 14, 88, 22, 5, "rgba(255, 255, 255, 0.08)");
   ctx.fillStyle = "#ffffff";
   ctx.font = "bold 11px 'Segoe UI', Arial, sans-serif";
-  ctx.fillText(`${result.radarScores.system}% LEADING`, rightX + archW - 56, archY + 29);
+  ctx.fillText(`${primaryScore}% LEADING`, rightX + archW - 56, archY + 29);
 
   // Line 1: Archetype Badge (e.g. ⚡ ARCHITECT)
   ctx.textAlign = "left";
@@ -719,23 +730,23 @@ export async function generateCadetCardPdf(
 
   // Mini score progress bar
   drawRoundedRect(rightX + 46, archY + 107, archW - 80, 6, 3, "rgba(255,255,255,0.08)");
-  drawRoundedRect(rightX + 46, archY + 107, (archW - 80) * (result.radarScores.system / 100), 6, 3, primaryMeta.color);
+  drawRoundedRect(rightX + 46, archY + 107, (archW - 80) * (primaryScore / 100), 6, 3, primaryMeta.color);
 
   // Secondary Support Archetype Card
-  drawRoundedRect(rightX + 32 + archW + 12, archY, archW, archH, 12, "rgba(170, 102, 255, 0.09)", secondaryMeta.color, 1.8);
+  drawRoundedRect(rightX + 32 + archW + 12, archY, archW, archH, 12, `${secondaryMeta.color}15`, secondaryMeta.color, 1.8);
   const secX = rightX + 32 + archW + 12;
 
-  drawRoundedRect(secX + 14, archY + 14, 175, 22, 5, "rgba(170, 102, 255, 0.2)", secondaryMeta.color, 1);
+  drawRoundedRect(secX + 14, archY + 14, 185, 22, 5, `${secondaryMeta.color}30`, secondaryMeta.color, 1);
   ctx.fillStyle = secondaryMeta.color;
   ctx.font = "bold 10px 'Segoe UI', Arial, sans-serif";
   ctx.letterSpacing = "1px";
   ctx.textAlign = "center";
-  ctx.fillText("⬢ CO-FACTOR SUPPORT", secX + 14 + 175 / 2, archY + 29);
+  ctx.fillText("⬢ CO-FACTOR SUPPORT", secX + 14 + 185 / 2, archY + 29);
 
   drawRoundedRect(secX + archW - 110, archY + 14, 98, 22, 5, "rgba(255, 255, 255, 0.08)");
   ctx.fillStyle = "#ffffff";
   ctx.font = "bold 11px 'Segoe UI', Arial, sans-serif";
-  ctx.fillText(`${result.radarScores.aiLogic}% CO-FACTOR`, secX + archW - 61, archY + 29);
+  ctx.fillText(`${secondaryScore}% CO-FACTOR`, secX + archW - 61, archY + 29);
 
   // Line 1: Archetype Badge (e.g. 🧠 LOGIC PIONEER)
   ctx.textAlign = "left";
@@ -755,7 +766,7 @@ export async function generateCadetCardPdf(
   ctx.fillText(secondaryMeta.tagline, secX + 14, archY + 93);
 
   drawRoundedRect(secX + 14, archY + 107, archW - 80, 6, 3, "rgba(255,255,255,0.08)");
-  drawRoundedRect(secX + 14, archY + 107, (archW - 80) * (result.radarScores.aiLogic / 100), 6, 3, secondaryMeta.color);
+  drawRoundedRect(secX + 14, archY + 107, (archW - 80) * (secondaryScore / 100), 6, 3, secondaryMeta.color);
 
   // 3. Recommended Academic Track Banner (SOCS BINUS Bekasi)
   const recBannerY = archY + archH + 16;
@@ -1171,13 +1182,13 @@ function renderSlide2(
   ctx.fillText(profile.signatureTagline, leftX + 28, mainY + 80);
 
   // Synergy Badges
-  drawRoundedRect(leftX + 28, mainY + 92, 208, 28, 6, "rgba(255, 143, 201, 0.16)", "#ff8fc9", 1);
-  ctx.fillStyle = "#ff8fc9";
+  drawRoundedRect(leftX + 28, mainY + 92, 208, 28, 6, `${primaryMeta.color}25`, primaryMeta.color, 1);
+  ctx.fillStyle = primaryMeta.color;
   ctx.font = "bold 10.5px 'Segoe UI', Arial, sans-serif";
   ctx.fillText(`★ ${primaryMeta.badge}`, leftX + 38, mainY + 110);
 
-  drawRoundedRect(leftX + 246, mainY + 92, 210, 28, 6, "rgba(170, 102, 255, 0.16)", "#aa66ff", 1);
-  ctx.fillStyle = "#aa66ff";
+  drawRoundedRect(leftX + 246, mainY + 92, 210, 28, 6, `${secondaryMeta.color}25`, secondaryMeta.color, 1);
+  ctx.fillStyle = secondaryMeta.color;
   ctx.font = "bold 10.5px 'Segoe UI', Arial, sans-serif";
   ctx.fillText(`● ${secondaryMeta.badge}`, leftX + 256, mainY + 110);
 
@@ -1260,7 +1271,7 @@ function renderSlide2(
   ctx.fillStyle = "#9dbad6";
   ctx.font = "10.5px 'Segoe UI', Arial, sans-serif";
   drawWrappedText(
-    "Pertahankan fokus analitis saat menghadapi tantangan multi-variabel dan terus asah kolaborasi arsitektural di ekosistem SOCS BINUS.",
+    profile.adaptiveRecommendation,
     leftX + 42,
     bY + 158,
     leftW - 74,
