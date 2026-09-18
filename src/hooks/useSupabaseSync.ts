@@ -18,7 +18,7 @@ import {
 } from "../services/deviceAccountService";
 
 export function useSupabaseSync(): void {
-  const hasRegistered = useRef(false);
+  const lastRegisteredName = useRef<string>("");
 
   // Auto-sync existing local accounts to Supabase on mount (recovery for offline/failed syncs)
   useEffect(() => {
@@ -39,11 +39,12 @@ export function useSupabaseSync(): void {
 
   useEffect(() => {
     if (!isSupabaseEnabled()) return;
-    if (!playerData.name?.trim()) return;
-    if (hasRegistered.current && getLocalPlayerId()) return;
+    const cleanName = playerData.name?.trim();
+    if (!cleanName) return;
+    if (lastRegisteredName.current.toLowerCase() === cleanName.toLowerCase() && getLocalPlayerId()) return;
 
     registerPlayer({
-      name: playerData.name.trim(),
+      name: cleanName,
       phone: playerData.phone,
       school: playerData.school,
       major: playerData.major,
@@ -52,9 +53,11 @@ export function useSupabaseSync(): void {
       spaceman_hat: spacemanHat,
       spaceman_pet: spacemanPet,
       specialization_result: specializationResult,
-    }).then(() => {
-      hasRegistered.current = true;
-      snapshotCurrentStoreAccount();
+    }).then((id) => {
+      if (id) {
+        lastRegisteredName.current = cleanName;
+        snapshotCurrentStoreAccount();
+      }
     });
   }, [
     playerData.name,

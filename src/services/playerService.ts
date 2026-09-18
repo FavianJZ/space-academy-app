@@ -35,42 +35,11 @@ export async function registerPlayer(
   const cleanName = data.name.trim();
   const cleanPhone = (data.phone || "").trim();
 
-const localId = getLocalPlayerId();
-  if (localId) {
-    const { data: existingLocal } = await supabase!
-      .from("players")
-      .select("id")
-      .eq("id", localId)
-      .maybeSingle();
-
-    if (existingLocal?.id) {
-      console.log("[playerService] Profil perangkat ditemukan. Mengupdate data:", existingLocal.id);
-      await updatePlayer(existingLocal.id, data);
-      return existingLocal.id;
-    }
-  }
-
-if (cleanPhone && cleanPhone !== "EMPTY" && cleanPhone !== "-") {
-    const { data: existingByPhone } = await supabase!
-      .from("players")
-      .select("id")
-      .eq("phone", cleanPhone)
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
-
-    if (existingByPhone?.id) {
-      console.log("[playerService] Pemain ditemukan via Nomor HP. Re-login/update:", existingByPhone.id);
-      setLocalPlayerId(existingByPhone.id);
-      await updatePlayer(existingByPhone.id, data);
-      return existingByPhone.id;
-    }
-  }
-
-if (cleanName) {
+  // 1. Check if a player with this EXACT NAME already exists in Supabase
+  if (cleanName) {
     const { data: existingByName } = await supabase!
       .from("players")
-      .select("id")
+      .select("id, name")
       .ilike("name", cleanName)
       .order("created_at", { ascending: false })
       .limit(1)
@@ -84,6 +53,23 @@ if (cleanName) {
     }
   }
 
+  // 2. Check local player ID ONLY if the name matches (never overwrite different cadet)
+  const localId = getLocalPlayerId();
+  if (localId) {
+    const { data: existingLocal } = await supabase!
+      .from("players")
+      .select("id, name")
+      .eq("id", localId)
+      .maybeSingle();
+
+    if (existingLocal?.id && existingLocal.name.toLowerCase() === cleanName.toLowerCase()) {
+      console.log("[playerService] Profil perangkat ditemukan dengan nama sama. Mengupdate data:", existingLocal.id);
+      await updatePlayer(existingLocal.id, data);
+      return existingLocal.id;
+    }
+  }
+
+  // 3. New Cadet Registration — insert a new row in Supabase (NEVER overwrite existing cadet)
   const insertPayload: Record<string, unknown> = {
     name: cleanName,
     phone: cleanPhone,

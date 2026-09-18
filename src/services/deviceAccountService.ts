@@ -116,23 +116,26 @@ export function snapshotCurrentStoreAccount(): SavedDeviceAccount | null {
   };
 
   const existing = getLocalSavedAccounts();
+  // IMPORTANT: Match strictly by cadet NAME to prevent overwriting other slots
   const existingIndex = existing.findIndex(
-    (a) => a.id === currentLocalId || a.name.toLowerCase() === name.toLowerCase()
+    (a) => a.name.toLowerCase() === name.toLowerCase()
   );
 
   let updatedList: SavedDeviceAccount[];
   if (existingIndex >= 0) {
+    const target = existing[existingIndex];
     updatedList = [...existing];
     updatedList[existingIndex] = {
-      ...updatedList[existingIndex],
+      ...target,
       ...account,
-      createdAt: updatedList[existingIndex].createdAt || account.createdAt,
+      id: currentLocalId.startsWith("local_") ? target.id || currentLocalId : currentLocalId,
+      createdAt: target.createdAt || account.createdAt,
       updatedAt: Date.now(),
     };
   } else if (existing.length < MAX_ACCOUNTS_PER_DEVICE) {
     updatedList = [...existing, account];
   } else {
-    // If device is already at max 2, update the first one or leave as is
+    // If device is already at max 2, do not overwrite other slots
     updatedList = existing;
   }
 
@@ -388,6 +391,18 @@ export function prepareNewCadetSlot(chosenCharacter: Character = "pink"): void {
   store.resetGame();
   useGameStore.setState({
     character: chosenCharacter,
+    spacemanColor: "original",
+    spacemanHat: "none",
+    spacemanPet: "none",
+    playerData: { name: "", phone: "", school: "", major: "IPA" },
+    p2Name: "",
+    p2Phone: "",
+    planetScores: new Map(),
+    visitedPlanets: new Set(),
+    isGameCompleted: false,
+    introCompleted: false,
+    specializationResult: null,
+    playerId: null,
   });
   // Clear active player ID so new registration creates fresh UUID
   localStorage.removeItem("space-academy-player-id");

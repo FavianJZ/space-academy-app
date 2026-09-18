@@ -21,6 +21,7 @@ import type { Character } from "../../types/game.types";
 import { DeviceAccountModal } from "../../components/character-selection/DeviceAccountModal";
 import {
   fetchDeviceAccounts,
+  prepareNewCadetSlot,
   type SavedDeviceAccount,
 } from "../../services/deviceAccountService";
 import { getTranslation } from "../../i18n/translations";
@@ -421,6 +422,9 @@ const CharacterSelection = () => {
       setShowDeviceModal(true);
       return;
     }
+
+    // Reset active store & local player ID so new cadet starts clean without inheriting previous slot
+    prepareNewCadetSlot(selected);
 
     const confirmation = playSfx("uiConfirm");
     setIsCommitting(true);
