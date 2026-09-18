@@ -1202,8 +1202,12 @@ const MainHub: React.FC = () => {
                   selectedPlanet,
                   selectedPlanet
                 );
+                const hasCompletedThisPlanet = Boolean(
+                  visitedPlanets.has(selectedPlanet) && playerPlanetScore > 0
+                );
                 const showPlayerRow =
-                  !playerInTop10 && (playerEntry || playerPlanetScore > 0);
+                  !playerInTop10 &&
+                  (playerEntry ? playerEntry.score > 0 : hasCompletedThisPlanet);
 
                 return (
                   <div

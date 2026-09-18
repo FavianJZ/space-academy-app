@@ -87,10 +87,10 @@ export function setLocalSavedAccounts(accounts: SavedDeviceAccount[]): void {
  */
 export function snapshotCurrentStoreAccount(): SavedDeviceAccount | null {
   const store = useGameStore.getState();
-  const name = store.playerData.name?.trim() || store.p2Name?.trim();
+  const name = store.playerData.name?.trim();
   if (!name) return null;
 
-  const currentLocalId = getLocalPlayerId() || `local_${name.toLowerCase()}`;
+  const currentLocalId = store.playerId || getLocalPlayerId() || `local_${name.toLowerCase()}`;
   const totalScore = store.getTotalScore();
   const visitedArray = Array.from(store.visitedPlanets);
   const planetScoresArray = Array.from(store.planetScores.entries());
@@ -174,7 +174,7 @@ export async function fetchDeviceAccounts(): Promise<{
         .select("*, leaderboard(total_score)")
         .eq("device_id", deviceId)
         .order("created_at", { ascending: true })
-        .limit(MAX_ACCOUNTS_PER_DEVICE);
+        .limit(20); // Query higher limit to avoid duplicates hiding other cadets
 
       if (!error && data) {
         remoteRows = data;
@@ -194,7 +194,18 @@ export async function fetchDeviceAccounts(): Promise<{
         for (const row of remoteRows) {
           const key = row.name.toLowerCase();
           const existing = mergedMap.get(key);
-          const remoteTotalScore = row.leaderboard?.total_score ?? existing?.totalScore ?? 0;
+
+          // Support both single-object and array relation from Supabase for leaderboard
+          const lbData = row.leaderboard;
+          const lbScore = Array.isArray(lbData)
+            ? lbData[0]?.total_score
+            : lbData?.total_score;
+          const remoteTotalScore = lbScore ?? existing?.totalScore ?? 0;
+
+          // If entry exists, only replace if this row has actual score or higher score
+          if (existing && existing.totalScore > 0 && remoteTotalScore === 0) {
+            continue;
+          }
 
           mergedMap.set(key, {
             id: row.id,
@@ -279,8 +290,8 @@ export async function syncAccountToSupabase(account: SavedDeviceAccount): Promis
       });
     }
 
-    // 4. Sync planet scores
-    if (account.planetScores && account.planetScores.length > 0) {
+    // 4. Sync planet scores (ONLY if account has legitimately recorded scores)
+    if (account.totalScore > 0 && account.planetScores && account.planetScores.length > 0) {
       for (const [, scoreData] of account.planetScores) {
         if (scoreData && scoreData.score > 0) {
           await submitScore(
@@ -357,6 +368,7 @@ export function activateDeviceAccount(account: SavedDeviceAccount): void {
   );
 
   useGameStore.setState({
+    playerId: account.id,
     character: account.character,
     spacemanColor: account.spacemanColor,
     spacemanHat: account.spacemanHat,
@@ -371,6 +383,8 @@ export function activateDeviceAccount(account: SavedDeviceAccount): void {
     p2Phone: account.phone || "",
     visitedPlanets: visitedSet,
     planetScores: planetScoreMap,
+    planetLeaderboards: [],
+    remotePlanetLeaderboards: {},
     isGameCompleted: account.isGameCompleted,
     introCompleted: true,
     specializationResult: account.specializationResult || null,
@@ -399,6 +413,8 @@ export function prepareNewCadetSlot(chosenCharacter: Character = "pink"): void {
     p2Phone: "",
     planetScores: new Map(),
     visitedPlanets: new Set(),
+    planetLeaderboards: [],
+    remotePlanetLeaderboards: {},
     isGameCompleted: false,
     introCompleted: false,
     specializationResult: null,

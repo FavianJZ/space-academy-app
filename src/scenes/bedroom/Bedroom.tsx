@@ -1206,6 +1206,17 @@ const Bedroom: React.FC = () => {
 
     cancelSpeechNarration();
 
+    // Guarantee that this newly registered cadet starts with a 100% clean progress sheet
+    useGameStore.setState({
+      planetScores: new Map(),
+      visitedPlanets: new Set(),
+      planetLeaderboards: [],
+      remotePlanetLeaderboards: {},
+      isGameCompleted: false,
+      p2Name: formData.name.trim(),
+      p2Phone: formData.phone.trim(),
+    });
+
     setPlayerData({
       name: formData.name.trim(),
       phone: formData.phone.trim(),

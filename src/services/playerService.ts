@@ -22,6 +22,8 @@ interface RegisterData {
   device_id?: string;
 }
 
+const inFlightRegistrations = new Map<string, Promise<string | null>>();
+
 export async function registerPlayer(
   data: RegisterData
 ): Promise<string | null> {
@@ -33,83 +35,101 @@ export async function registerPlayer(
   }
 
   const cleanName = data.name.trim();
-  const cleanPhone = (data.phone || "").trim();
+  if (!cleanName) return null;
+  const lockKey = cleanName.toLowerCase();
 
-  // 1. Check if a player with this EXACT NAME already exists in Supabase
-  if (cleanName) {
-    const { data: existingByName } = await supabase!
-      .from("players")
-      .select("id, name")
-      .ilike("name", cleanName)
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
+  // Concurrency Guard: If a registration for this cadet name is already in progress,
+  // return the same Promise to prevent parallel duplicate inserts in Supabase.
+  const existingPromise = inFlightRegistrations.get(lockKey);
+  if (existingPromise) {
+    console.log(`[playerService] Registrasi untuk "${cleanName}" sedang berjalan, menggunakan in-flight promise.`);
+    return existingPromise;
+  }
 
-    if (existingByName?.id) {
-      console.log("[playerService] Pemain ditemukan via Nama. Re-login/update:", existingByName.id);
-      setLocalPlayerId(existingByName.id);
-      await updatePlayer(existingByName.id, data);
-      return existingByName.id;
+  const registrationPromise = (async () => {
+    try {
+      const cleanPhone = (data.phone || "").trim();
+
+      // 1. Check if a player with this EXACT NAME already exists in Supabase
+      const { data: existingByName } = await supabase!
+        .from("players")
+        .select("id, name")
+        .ilike("name", cleanName)
+        .order("created_at", { ascending: true })
+        .limit(1)
+        .maybeSingle();
+
+      if (existingByName?.id) {
+        console.log("[playerService] Pemain ditemukan via Nama. Re-login/update:", existingByName.id);
+        setLocalPlayerId(existingByName.id);
+        await updatePlayer(existingByName.id, data);
+        return existingByName.id;
+      }
+
+      // 2. Check local player ID ONLY if the name matches (never overwrite different cadet)
+      const localId = getLocalPlayerId();
+      if (localId) {
+        const { data: existingLocal } = await supabase!
+          .from("players")
+          .select("id, name")
+          .eq("id", localId)
+          .maybeSingle();
+
+        if (existingLocal?.id && existingLocal.name.toLowerCase() === cleanName.toLowerCase()) {
+          console.log("[playerService] Profil perangkat ditemukan dengan nama sama. Mengupdate data:", existingLocal.id);
+          await updatePlayer(existingLocal.id, data);
+          return existingLocal.id;
+        }
+      }
+
+      // 3. New Cadet Registration — insert a new row in Supabase (NEVER overwrite existing cadet)
+      const insertPayload: Record<string, unknown> = {
+        name: cleanName,
+        phone: cleanPhone,
+        school: data.school || "",
+        major: data.major || "",
+        character_type: data.character_type || "pink",
+        spaceman_color: data.spaceman_color || "original",
+        spaceman_hat: data.spaceman_hat || "none",
+        spaceman_pet: data.spaceman_pet || "none",
+        device_id: data.device_id || getLocalDeviceId(),
+      };
+
+      let { data: row, error } = await supabase!
+        .from("players")
+        .insert(insertPayload)
+        .select("id")
+        .single();
+
+      // If column device_id does not exist in Supabase schema, retry without device_id
+      if (error && (error.code === "PGRST204" || error.message?.includes("device_id"))) {
+        console.warn("[playerService] Supabase schema does not have 'device_id' column. Retrying insert without device_id...");
+        delete insertPayload.device_id;
+        const retry = await supabase!
+          .from("players")
+          .insert(insertPayload)
+          .select("id")
+          .single();
+        row = retry.data;
+        error = retry.error;
+      }
+
+      if (error) {
+        console.error("[playerService] Register player gagal di Supabase:", error.message);
+        return null;
+      }
+
+      const id = (row as { id: string }).id;
+      setLocalPlayerId(id);
+      console.log("[playerService] Berhasil mendaftarkan player baru di Supabase! ID:", id);
+      return id;
+    } finally {
+      inFlightRegistrations.delete(lockKey);
     }
-  }
+  })();
 
-  // 2. Check local player ID ONLY if the name matches (never overwrite different cadet)
-  const localId = getLocalPlayerId();
-  if (localId) {
-    const { data: existingLocal } = await supabase!
-      .from("players")
-      .select("id, name")
-      .eq("id", localId)
-      .maybeSingle();
-
-    if (existingLocal?.id && existingLocal.name.toLowerCase() === cleanName.toLowerCase()) {
-      console.log("[playerService] Profil perangkat ditemukan dengan nama sama. Mengupdate data:", existingLocal.id);
-      await updatePlayer(existingLocal.id, data);
-      return existingLocal.id;
-    }
-  }
-
-  // 3. New Cadet Registration — insert a new row in Supabase (NEVER overwrite existing cadet)
-  const insertPayload: Record<string, unknown> = {
-    name: cleanName,
-    phone: cleanPhone,
-    school: data.school || "",
-    major: data.major || "",
-    character_type: data.character_type || "pink",
-    spaceman_color: data.spaceman_color || "original",
-    spaceman_hat: data.spaceman_hat || "none",
-    spaceman_pet: data.spaceman_pet || "none",
-    device_id: data.device_id || getLocalDeviceId(),
-  };
-
-  let { data: row, error } = await supabase!
-    .from("players")
-    .insert(insertPayload)
-    .select("id")
-    .single();
-
-  // If column device_id does not exist in Supabase schema, retry without device_id
-  if (error && (error.code === "PGRST204" || error.message?.includes("device_id"))) {
-    console.warn("[playerService] Supabase schema does not have 'device_id' column. Retrying insert without device_id...");
-    delete insertPayload.device_id;
-    const retry = await supabase!
-      .from("players")
-      .insert(insertPayload)
-      .select("id")
-      .single();
-    row = retry.data;
-    error = retry.error;
-  }
-
-  if (error) {
-    console.error("[playerService] Register player gagal di Supabase:", error.message);
-    return null;
-  }
-
-  const id = (row as { id: string }).id;
-  setLocalPlayerId(id);
-  console.log("[playerService] Berhasil mendaftarkan player baru di Supabase! ID:", id);
-  return id;
+  inFlightRegistrations.set(lockKey, registrationPromise);
+  return registrationPromise;
 }
 
 export async function updatePlayer(

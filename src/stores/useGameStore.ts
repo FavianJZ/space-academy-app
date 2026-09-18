@@ -382,11 +382,12 @@ export const useGameStore = create<GameState>()(
           }
         }
 
-        // 3. Ensure current player's latest score from planetScores is represented
+        // 3. Ensure current player's latest score from planetScores is represented (only if player has visited/completed)
         const currentPlayerData = get().playerData;
-        const currentName = currentPlayerData.name?.trim() || "CADET";
+        const currentName = currentPlayerData.name?.trim();
         const playerPlanetScore = get().getPlanetScore(planetId, planetId);
-        if (playerPlanetScore > 0) {
+        const hasVisited = get().visitedPlanets.has(planetId);
+        if (currentName && playerPlanetScore > 0 && hasVisited) {
           const existing = merged.get(currentName);
           if (!existing || playerPlanetScore > existing.score) {
             merged.set(currentName, {

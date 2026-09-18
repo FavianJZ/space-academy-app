@@ -41,6 +41,8 @@ export function useSupabaseSync(): void {
     if (!isSupabaseEnabled()) return;
     const cleanName = playerData.name?.trim();
     if (!cleanName) return;
+    // Bedroom has its own explicit registration flow (registerOrLoginPlayer); skip to avoid duplicate calls
+    if (window.location.pathname.includes("/bedroom")) return;
     if (lastRegisteredName.current.toLowerCase() === cleanName.toLowerCase() && getLocalPlayerId()) return;
 
     registerPlayer({
@@ -56,6 +58,7 @@ export function useSupabaseSync(): void {
     }).then((id) => {
       if (id) {
         lastRegisteredName.current = cleanName;
+        useGameStore.setState({ playerId: id });
         snapshotCurrentStoreAccount();
       }
     });
@@ -73,7 +76,7 @@ export function useSupabaseSync(): void {
   useEffect(() => {
     snapshotCurrentStoreAccount();
     if (!isSupabaseEnabled()) return;
-    const playerId = getLocalPlayerId();
+    const playerId = useGameStore.getState().playerId || getLocalPlayerId();
     if (!playerId) return;
 
     updateCustomization(playerId, {
@@ -86,7 +89,7 @@ export function useSupabaseSync(): void {
 
   useEffect(() => {
     if (!isSupabaseEnabled() || !introCompleted) return;
-    const playerId = getLocalPlayerId();
+    const playerId = useGameStore.getState().playerId || getLocalPlayerId();
     if (!playerId) return;
 
     markIntroCompleted(playerId);
@@ -95,7 +98,7 @@ export function useSupabaseSync(): void {
   useEffect(() => {
     snapshotCurrentStoreAccount();
     if (!isSupabaseEnabled() || !isGameCompleted) return;
-    const playerId = getLocalPlayerId();
+    const playerId = useGameStore.getState().playerId || getLocalPlayerId();
     if (!playerId) return;
 
     markGameCompleted(playerId);
@@ -103,7 +106,7 @@ export function useSupabaseSync(): void {
 
   useEffect(() => {
     if (!isSupabaseEnabled() || !specializationResult) return;
-    const playerId = getLocalPlayerId();
+    const playerId = useGameStore.getState().playerId || getLocalPlayerId();
     if (!playerId) return;
 
     updatePlayer(playerId, {
@@ -121,9 +124,9 @@ export async function syncScoreToSupabase(
   if (!isSupabaseEnabled()) return;
 
   try {
-    let playerId = getLocalPlayerId();
+    const state = useGameStore.getState();
+    let playerId = state.playerId || getLocalPlayerId();
     if (!playerId) {
-      const state = useGameStore.getState();
       const cleanName = state.playerData.name?.trim() || "Cadet Pilot";
       playerId = await registerPlayer({
         name: cleanName,
@@ -136,9 +139,14 @@ export async function syncScoreToSupabase(
         spaceman_pet: state.spacemanPet,
         specialization_result: state.specializationResult,
       });
+      if (playerId) {
+        useGameStore.setState({ playerId });
+      }
     }
 
-    await submitScore(planetId, stageId, score, completionTime);
+    if (playerId) {
+      await submitScore(planetId, stageId, score, completionTime, playerId);
+    }
   } catch (err) {
     console.error("[sync] score push failed:", err);
   }
@@ -152,9 +160,9 @@ export async function syncLeaderboardToSupabase(
   if (!isSupabaseEnabled()) return;
 
   try {
-    let playerId = getLocalPlayerId();
+    const state = useGameStore.getState();
+    let playerId = state.playerId || getLocalPlayerId();
     if (!playerId) {
-      const state = useGameStore.getState();
       const cleanName = state.playerData.name?.trim() || playerName || "Cadet Pilot";
       playerId = await registerPlayer({
         name: cleanName,
@@ -167,9 +175,14 @@ export async function syncLeaderboardToSupabase(
         spaceman_pet: state.spacemanPet,
         specialization_result: state.specializationResult,
       });
+      if (playerId) {
+        useGameStore.setState({ playerId });
+      }
     }
 
-    await submitLeaderboardEntry(playerName, totalScore, major);
+    if (playerId) {
+      await submitLeaderboardEntry(playerName, totalScore, major, playerId);
+    }
   } catch (err) {
     console.error("[sync] leaderboard push failed:", err);
   }
