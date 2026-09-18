@@ -29,6 +29,7 @@ import {
 import { getTranslation } from "../../i18n/translations";
 
 import { containsProfanity, validateAppropriateText } from "../../utils/profanityFilter";
+import { INITIAL_TELEMETRY_SIGNALS } from "../../utils/specializationCalculator";
 
 import "./Bedroom.css";
 
@@ -1215,6 +1216,8 @@ const Bedroom: React.FC = () => {
       isGameCompleted: false,
       p2Name: formData.name.trim(),
       p2Phone: formData.phone.trim(),
+      specializationResult: null,
+      telemetrySignals: INITIAL_TELEMETRY_SIGNALS,
     });
 
     setPlayerData({

@@ -30,6 +30,44 @@ export interface CadetLoadout {
   petId: SpacemanPetId;
 }
 
+function safeRoundRect(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  r: number,
+  fill?: string | CanvasGradient | CanvasPattern,
+  stroke?: string | CanvasGradient | CanvasPattern,
+  strokeWidth = 1
+) {
+  ctx.beginPath();
+  if (typeof ctx.roundRect === "function") {
+    ctx.roundRect(x, y, w, h, r);
+  } else {
+    const radius = Math.min(r, Math.abs(w) / 2, Math.abs(h) / 2);
+    ctx.moveTo(x + radius, y);
+    ctx.lineTo(x + w - radius, y);
+    ctx.arcTo(x + w, y, x + w, y + radius, radius);
+    ctx.lineTo(x + w, y + h - radius);
+    ctx.arcTo(x + w, y + h, x + w - radius, y + h, radius);
+    ctx.lineTo(x + radius, y + h);
+    ctx.arcTo(x, y + h, x, y + h - radius, radius);
+    ctx.lineTo(x, y + radius);
+    ctx.arcTo(x, y, x + radius, y, radius);
+    ctx.closePath();
+  }
+  if (fill) {
+    ctx.fillStyle = fill;
+    ctx.fill();
+  }
+  if (stroke) {
+    ctx.strokeStyle = stroke;
+    ctx.lineWidth = strokeWidth;
+    ctx.stroke();
+  }
+}
+
 export async function generateCadetCardPdf(
   cadet: CadetIdentity,
   result: SpecializationResult,
@@ -48,8 +86,15 @@ export async function generateCadetCardPdf(
     throw new Error("Unable to initialize canvas 2D context");
   }
 
-  const primaryMeta = ARCHETYPE_METAS[result.primaryArchetype];
-  const secondaryMeta = ARCHETYPE_METAS[result.secondaryArchetype];
+  const primaryKey = (result?.primaryArchetype && ARCHETYPE_METAS[result.primaryArchetype])
+    ? result.primaryArchetype
+    : "SYSTEM_ARCHITECT";
+  const secondaryKey = (result?.secondaryArchetype && ARCHETYPE_METAS[result.secondaryArchetype])
+    ? result.secondaryArchetype
+    : "AI_LOGIC_PIONEER";
+
+  const primaryMeta = ARCHETYPE_METAS[primaryKey];
+  const secondaryMeta = ARCHETYPE_METAS[secondaryKey];
 
   const colorOpt = loadout ? getSpacemanColorOption(loadout.colorId) : null;
   const hatOpt = loadout ? getSpacemanHatOption(loadout.hatId) : null;
@@ -69,17 +114,7 @@ export async function generateCadetCardPdf(
     stroke?: string | CanvasGradient | CanvasPattern,
     strokeWidth = 1
   ) => {
-    ctx.beginPath();
-    ctx.roundRect(x, y, w, h, r);
-    if (fill) {
-      ctx.fillStyle = fill;
-      ctx.fill();
-    }
-    if (stroke) {
-      ctx.strokeStyle = stroke;
-      ctx.lineWidth = strokeWidth;
-      ctx.stroke();
-    }
+    safeRoundRect(ctx, x, y, w, h, r, fill, stroke, strokeWidth);
   };
 
   // Helper radial glow
@@ -899,7 +934,20 @@ export async function generateCadetCardPdf(
   const cleanName = (cadet.name || "Cadet").replace(/[^a-zA-Z0-9_-]/g, "_");
   const fileName = `SpaceAcademy_CadetCard_${cleanName}.pdf`;
 
-  pdf.save(fileName);
+  try {
+    pdf.save(fileName);
+  } catch (saveErr) {
+    console.warn("[cadetCardPdfService] Direct pdf.save fallback triggered:", saveErr);
+    const blob = pdf.output("blob");
+    const blobUrl = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = blobUrl;
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
+  }
 }
 
 /**
@@ -919,8 +967,15 @@ function renderSlide2(
   if (!ctx) return;
 
   const profile = generateCadetPersonalityProfile(cadet, result, signals);
-  const primaryMeta = ARCHETYPE_METAS[result.primaryArchetype];
-  const secondaryMeta = ARCHETYPE_METAS[result.secondaryArchetype];
+  const primaryKey = (result?.primaryArchetype && ARCHETYPE_METAS[result.primaryArchetype])
+    ? result.primaryArchetype
+    : "SYSTEM_ARCHITECT";
+  const secondaryKey = (result?.secondaryArchetype && ARCHETYPE_METAS[result.secondaryArchetype])
+    ? result.secondaryArchetype
+    : "AI_LOGIC_PIONEER";
+
+  const primaryMeta = ARCHETYPE_METAS[primaryKey];
+  const secondaryMeta = ARCHETYPE_METAS[secondaryKey];
 
   const drawRoundedRect = (
     x: number,
@@ -932,17 +987,7 @@ function renderSlide2(
     stroke?: string | CanvasGradient | CanvasPattern,
     strokeWidth = 1
   ) => {
-    ctx.beginPath();
-    ctx.roundRect(x, y, w, h, r);
-    if (fill) {
-      ctx.fillStyle = fill;
-      ctx.fill();
-    }
-    if (stroke) {
-      ctx.strokeStyle = stroke;
-      ctx.lineWidth = strokeWidth;
-      ctx.stroke();
-    }
+    safeRoundRect(ctx, x, y, w, h, r, fill, stroke, strokeWidth);
   };
 
   const drawGlow = (cx: number, cy: number, r: number, color: string) => {

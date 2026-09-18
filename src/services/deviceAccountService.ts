@@ -5,6 +5,8 @@ import type {
   SpacemanHatId,
   SpacemanPetId,
 } from "../types/customization.types";
+import type { TelemetrySignals } from "../types/specialization.types";
+import { INITIAL_TELEMETRY_SIGNALS } from "../utils/specializationCalculator";
 import { useGameStore } from "../stores/useGameStore";
 import {
   getLocalPlayerId,
@@ -33,6 +35,7 @@ export interface SavedDeviceAccount {
   totalScore: number;
   isGameCompleted: boolean;
   specializationResult?: any;
+  telemetrySignals?: TelemetrySignals;
   createdAt: number;
   updatedAt: number;
 }
@@ -111,6 +114,7 @@ export function snapshotCurrentStoreAccount(): SavedDeviceAccount | null {
     totalScore,
     isGameCompleted: store.isGameCompleted || visitedArray.length >= 6,
     specializationResult: store.specializationResult,
+    telemetrySignals: store.telemetrySignals,
     createdAt: Date.now(),
     updatedAt: Date.now(),
   };
@@ -223,6 +227,7 @@ export async function fetchDeviceAccounts(): Promise<{
             totalScore: Math.max(remoteTotalScore, existing?.totalScore ?? 0),
             isGameCompleted: Boolean(row.game_completed || existing?.isGameCompleted),
             specializationResult: existing?.specializationResult,
+            telemetrySignals: existing?.telemetrySignals,
             createdAt: row.created_at ? new Date(row.created_at).getTime() : existing?.createdAt ?? Date.now(),
             updatedAt: row.updated_at ? new Date(row.updated_at).getTime() : Date.now(),
           });
@@ -388,7 +393,11 @@ export function activateDeviceAccount(account: SavedDeviceAccount): void {
     isGameCompleted: account.isGameCompleted,
     introCompleted: true,
     specializationResult: account.specializationResult || null,
+    telemetrySignals: account.telemetrySignals || INITIAL_TELEMETRY_SIGNALS,
   });
+
+  // Re-calculate specialization profile strictly for this newly activated account
+  useGameStore.getState().refreshSpecializationProfile();
 
   // Re-snapshot to update last active timestamp
   snapshotCurrentStoreAccount();
@@ -418,6 +427,7 @@ export function prepareNewCadetSlot(chosenCharacter: Character = "pink"): void {
     isGameCompleted: false,
     introCompleted: false,
     specializationResult: null,
+    telemetrySignals: INITIAL_TELEMETRY_SIGNALS,
     playerId: null,
   });
   // Clear active player ID so new registration creates fresh UUID

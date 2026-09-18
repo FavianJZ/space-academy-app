@@ -294,6 +294,8 @@ export const useGameStore = create<GameState>()(
           remoteLeaderboard: [],
           remotePlanetLeaderboards: {},
           remoteBossStatus: null,
+          specializationResult: null,
+          telemetrySignals: INITIAL_TELEMETRY_SIGNALS,
         });
       },
 
@@ -631,27 +633,44 @@ export const useGameStore = create<GameState>()(
         ).length;
 
         const currentSignals = state.telemetrySignals || INITIAL_TELEMETRY_SIGNALS;
-        const mergedStageRecords = { ...(currentSignals.stageRecords || {}) };
+        
+        // Strictly sanitize stageRecords: ONLY include stages actually completed by THIS cadet
+        const cleanedStageRecords: Record<number, import("../types/specialization.types").StageTelemetryRecord> = {};
 
+        // 1. Synchronize from current cadet's planetScores
         for (const [, planetScore] of state.planetScores.entries()) {
           if (planetScore.completed && planetScore.stageId) {
             const sid = Number(planetScore.stageId);
-            if (!mergedStageRecords[sid]) {
-              mergedStageRecords[sid] = {
-                stageId: sid,
-                score: planetScore.score || 100,
-                completed: true,
-                timeSpentSeconds: 60,
-                attemptsCount: 1,
-                completedAt: new Date().toISOString(),
-              };
-            }
+            const existingRec = currentSignals.stageRecords?.[sid];
+            cleanedStageRecords[sid] = {
+              ...(existingRec || {}),
+              stageId: sid,
+              score: planetScore.score ?? existingRec?.score ?? 100,
+              completed: true,
+              timeSpentSeconds: existingRec?.timeSpentSeconds ?? 60,
+              attemptsCount: existingRec?.attemptsCount ?? 1,
+              completedAt: existingRec?.completedAt ?? new Date().toISOString(),
+            };
           }
+        }
+
+        // 2. If Novaris (planet 1) was visited/completed in visitedPlanets
+        if (state.visitedPlanets.has(1) && !cleanedStageRecords[1]) {
+          const existingRec1 = currentSignals.stageRecords?.[1];
+          cleanedStageRecords[1] = {
+            ...(existingRec1 || {}),
+            stageId: 1,
+            score: existingRec1?.score ?? 500,
+            completed: true,
+            timeSpentSeconds: existingRec1?.timeSpentSeconds ?? 60,
+            attemptsCount: existingRec1?.attemptsCount ?? 1,
+            completedAt: existingRec1?.completedAt ?? new Date().toISOString(),
+          };
         }
 
         const updatedSignals = {
           ...currentSignals,
-          stageRecords: mergedStageRecords,
+          stageRecords: cleanedStageRecords,
         };
 
         const profile = calculateSpecializationProfile(

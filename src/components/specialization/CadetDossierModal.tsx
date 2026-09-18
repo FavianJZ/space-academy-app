@@ -73,7 +73,10 @@ export const CadetDossierModal: React.FC<CadetDossierModalProps> = ({
   onClose,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const primaryMeta = ARCHETYPE_METAS[result.primaryArchetype];
+  const primaryKey = (result?.primaryArchetype && ARCHETYPE_METAS[result.primaryArchetype])
+    ? result.primaryArchetype
+    : "SYSTEM_ARCHITECT";
+  const primaryMeta = ARCHETYPE_METAS[primaryKey];
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   const [downloadFeedback, setDownloadFeedback] = useState<string | null>(null);
 
