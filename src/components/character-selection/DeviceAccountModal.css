@@ -336,16 +336,19 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
+  min-width: 0;
 }
 
 .dam-pilot-name {
   margin: 0;
   font-family: 'Orbitron', sans-serif;
-  font-size: clamp(1.1rem, 2vw, 1.4rem);
-  font-weight: 900;
+  font-size: clamp(0.95rem, 1.4vw, 1.2rem);
+  font-weight: 800;
   color: #ffffff;
-  letter-spacing: 1.5px;
-  text-shadow: 0 0 10px rgba(0, 255, 204, 0.6);
+  letter-spacing: 1px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .dam-pilot-meta {
@@ -399,24 +402,31 @@
 
 .dam-slot-actions {
   display: flex;
-  gap: 8px;
+  flex-direction: column;
+  gap: 6px;
   width: 100%;
+  margin-top: 4px;
 }
 
 .dam-action-btn {
   font-family: 'Orbitron', sans-serif;
   font-weight: 800;
-  font-size: 0.78rem;
-  padding: 8px 14px;
+  font-size: 0.76rem;
+  padding: 8px 12px;
   border-radius: 8px;
   cursor: pointer;
-  letter-spacing: 1px;
+  letter-spacing: 0.8px;
   transition: all 0.25s ease;
   width: 100%;
+  box-sizing: border-box;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
 }
 
 .dam-action-btn.load {
-  flex: 1;
   background: linear-gradient(135deg, rgba(0, 255, 204, 0.35) 0%, rgba(0, 180, 255, 0.35) 100%);
   border: 1px solid #00ffcc;
   color: #00ffcc;
@@ -427,24 +437,24 @@
   background: linear-gradient(135deg, #00ffcc 0%, #00ccff 100%);
   color: #051418;
   box-shadow: 0 0 25px rgba(0, 255, 204, 0.7);
-  transform: translateY(-2px);
+  transform: translateY(-1px);
 }
 
 .dam-action-btn.unlink {
-  flex: 0 0 auto;
-  min-width: 90px;
-  background: rgba(255, 60, 100, 0.12);
-  border: 1px solid rgba(255, 60, 100, 0.4);
-  color: #ff7799;
-  font-size: 0.7rem;
-  padding: 8px 10px;
+  background: rgba(255, 60, 100, 0.1);
+  border: 1px solid rgba(255, 60, 100, 0.35);
+  color: #ff88a4;
+  font-size: 0.68rem;
+  padding: 6px 10px;
+  letter-spacing: 0.5px;
 }
 
 .dam-action-btn.unlink:hover {
-  background: rgba(255, 60, 100, 0.3);
+  background: rgba(255, 60, 100, 0.25);
   color: #ffffff;
-  box-shadow: 0 0 15px rgba(255, 60, 100, 0.5);
-  transform: translateY(-2px);
+  border-color: #ff4466;
+  box-shadow: 0 0 12px rgba(255, 60, 100, 0.4);
+  transform: translateY(-1px);
 }
 
 .dam-action-btn.create {

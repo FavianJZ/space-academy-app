@@ -358,7 +358,7 @@ export const DeviceAccountModal: React.FC<DeviceAccountModalProps> = ({
                           onClick={() => handleRemoveAccount(0)}
                           title={language === "en" ? "Remove from this device" : "Hapus dari perangkat"}
                         >
-                          🗑️ {language === "en" ? "Remove" : "Hapus"}
+                          {t.removePilot}
                         </button>
                       </div>
                     </div>
@@ -448,7 +448,7 @@ export const DeviceAccountModal: React.FC<DeviceAccountModalProps> = ({
                           onClick={() => handleRemoveAccount(1)}
                           title={language === "en" ? "Remove from this device" : "Hapus dari perangkat"}
                         >
-                          🗑️ {language === "en" ? "Remove" : "Hapus"}
+                          {t.removePilot}
                         </button>
                       </div>
                     </div>
