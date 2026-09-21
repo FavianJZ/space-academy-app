@@ -2086,7 +2086,7 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
         </div>
       </div>
 
-      {isBossMode && (
+      {isBossMode && isLocalCoop && (
         <div className="boss-hp-hud">
           <span className="boss-hp-icon">UFO</span>
 
@@ -2103,7 +2103,7 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
         </div>
       )}
 
-      {isBossMode && tickerMessages.length > 0 && (
+      {isBossMode && isLocalCoop && tickerMessages.length > 0 && (
         <div className="boss-ticker">
           {tickerMessages.slice(-3).map((message) => (
             <div key={message.id} className="ticker-msg">
@@ -2271,69 +2271,106 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
           </div>
         </div>
       ) : isBossMode ? (
-        <div className="online-raid-arena">
-          <div className="online-raid-ufo-stage">
-            <AdaptiveCanvas
-              camera={{ position: [0, 3.2, 13], fov: 36 }}
-              dpr={[1, 1.2]}
-              quality="low"
-              gl={{ alpha: true, antialias: true }}
-            >
-              <ambientLight intensity={0.9} />
-              <directionalLight
-                position={[3, 6, 8]}
-                intensity={1.8}
-                color="#ffffff"
-              />
-              <pointLight
-                position={[0, 10, 5]}
-                intensity={35}
-                color="#00ffcc"
-              />
-              <BossUFO
-                hp={bossGlobalHP}
-                maxHP={bossMaxHP}
-                hitFlash={ufoHitFlash}
-                position={[0, 0.7, 0]}
-                scale={1.15}
-              />
-              <Stars
-                radius={100}
-                depth={20}
-                count={90}
-                factor={3}
-                saturation={0}
-                fade
-                speed={1}
-              />
-            </AdaptiveCanvas>
-
-            {damageNumbers.map((damageNumber) => (
-              <div
-                key={damageNumber.id}
-                className="damage-number"
-                style={{
-                  left: `${damageNumber.x}%`,
-                  top: `${damageNumber.y}%`,
-                }}
-              >
-                −{damageNumber.value}
-              </div>
-            ))}
-
-            {laserActive && <div className="laser-beam" />}
-            {isOnlineCoop && lastLaserEvent && Date.now() - lastLaserEvent.timestamp < 400 && (
-              <div className="cross-screen-laser" />
-            )}
-          </div>
-
-          {isOnlineCoop && remoteCoPilot && (
-            <CoPilotTelemetryHUD coPilot={remoteCoPilot} />
-          )}
-
-          <div className="online-raid-grid-wrapper">
+        <div className="online-raid-cockpit">
+          <div className="online-raid-main-grid">
             {renderGameGrid("P1")}
           </div>
+
+          <aside className="online-raid-command-deck">
+            <div className="online-raid-ufo-stage">
+              <AdaptiveCanvas
+                camera={{ position: [0, 3.2, 13], fov: 36 }}
+                dpr={[1, 1.2]}
+                quality="low"
+                gl={{ alpha: true, antialias: true }}
+              >
+                <ambientLight intensity={0.9} />
+                <directionalLight
+                  position={[3, 6, 8]}
+                  intensity={1.8}
+                  color="#ffffff"
+                />
+                <pointLight
+                  position={[0, 10, 5]}
+                  intensity={35}
+                  color="#00ffcc"
+                />
+                <BossUFO
+                  hp={bossGlobalHP}
+                  maxHP={bossMaxHP}
+                  hitFlash={ufoHitFlash}
+                  position={[0, 0.7, 0]}
+                  scale={1.15}
+                />
+                <Stars
+                  radius={100}
+                  depth={20}
+                  count={90}
+                  factor={3}
+                  saturation={0}
+                  fade
+                  speed={1}
+                />
+              </AdaptiveCanvas>
+
+              {damageNumbers.map((damageNumber) => (
+                <div
+                  key={damageNumber.id}
+                  className="damage-number"
+                  style={{
+                    left: `${damageNumber.x}%`,
+                    top: `${damageNumber.y}%`,
+                  }}
+                >
+                  −{damageNumber.value}
+                </div>
+              ))}
+
+              {laserActive && <div className="laser-beam" />}
+              {isOnlineCoop && lastLaserEvent && Date.now() - lastLaserEvent.timestamp < 400 && (
+                <div className="cross-screen-laser" />
+              )}
+            </div>
+
+            <div className="deck-boss-hp-card">
+              <div className="deck-boss-header">
+                <span className="deck-boss-title">🛸 ULTIMARA // BOSS HP</span>
+                <span className="deck-boss-val">
+                  {bossGlobalHP.toLocaleString()} / {bossMaxHP.toLocaleString()}
+                </span>
+              </div>
+              <div className="boss-hp-bar-track">
+                <div
+                  className="boss-hp-bar-fill"
+                  style={{ width: `${bossHPPercent}%` }}
+                />
+              </div>
+            </div>
+
+            {isOnlineCoop && remoteCoPilot && (
+              <div className="deck-copilot-section">
+                <CoPilotTelemetryHUD
+                  coPilot={remoteCoPilot}
+                  lastLaserTime={lastLaserEvent?.timestamp}
+                />
+              </div>
+            )}
+
+            {tickerMessages.length > 0 && (
+              <div className="deck-ticker">
+                <div className="deck-ticker-header">
+                  <span>⚡ COMBAT FEED</span>
+                </div>
+                <div className="deck-ticker-body">
+                  {tickerMessages.slice(-3).map((message) => (
+                    <div key={message.id} className="deck-ticker-msg">
+                      {message.text}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </aside>
         </div>
       ) : (
         <div className="bughunt-grid-wrapper">{renderGameGrid()}</div>

@@ -13,6 +13,9 @@ import {
   activateDeviceAccount,
   prepareNewCadetSlot,
   syncAllLocalAccountsToSupabase,
+  removeDeviceAccount,
+  clearAllDeviceAccounts,
+  getLocalDeviceId,
   type SavedDeviceAccount,
   MAX_ACCOUNTS_PER_DEVICE,
 } from "../../services/deviceAccountService";
@@ -172,6 +175,34 @@ export const DeviceAccountModal: React.FC<DeviceAccountModalProps> = ({
     navigate("/mainhub");
   };
 
+  const handleRemoveAccount = (index: number) => {
+    const acc = accounts[index];
+    const confirmMsg =
+      language === "en"
+        ? `Remove account "${acc?.name}" from this device?`
+        : `Hapus akun "${acc?.name}" dari perangkat ini?`;
+    if (!window.confirm(confirmMsg)) return;
+
+    playSfx("uiConfirm");
+    const updated = removeDeviceAccount(index);
+    setAccounts([...updated]);
+    setIsFull(updated.length >= MAX_ACCOUNTS_PER_DEVICE);
+  };
+
+  const handleClearAll = () => {
+    const confirmMsg =
+      language === "en"
+        ? "Reset all account data from this device memory and start fresh?"
+        : "Reset semua data akun dari memori perangkat ini dan mulai baru?";
+    if (!window.confirm(confirmMsg)) return;
+
+    playSfx("uiConfirm");
+    clearAllDeviceAccounts();
+    setAccounts([]);
+    setIsFull(false);
+    setDeviceId(getLocalDeviceId());
+  };
+
   const handleCreateNew = () => {
     if (isFull) {
       playSfx("feedbackIncorrect");
@@ -199,6 +230,14 @@ export const DeviceAccountModal: React.FC<DeviceAccountModalProps> = ({
           </div>
 
           <div className="dam-header-right">
+            <button
+              type="button"
+              className="dam-reset-btn"
+              onClick={handleClearAll}
+              title={language === "en" ? "Reset device memory" : "Reset perangkat"}
+            >
+              🧹 {language === "en" ? "Reset Device" : "Reset Perangkat"}
+            </button>
             <button
               type="button"
               className="dam-refresh-btn"
@@ -305,13 +344,23 @@ export const DeviceAccountModal: React.FC<DeviceAccountModalProps> = ({
                         )}
                       </div>
 
-                      <button
-                        type="button"
-                        className="dam-action-btn load"
-                        onClick={() => handleSelectAccount(accounts[0])}
-                      >
-                        {t.loadPilot}
-                      </button>
+                      <div className="dam-slot-actions">
+                        <button
+                          type="button"
+                          className="dam-action-btn load"
+                          onClick={() => handleSelectAccount(accounts[0])}
+                        >
+                          {t.loadPilot}
+                        </button>
+                        <button
+                          type="button"
+                          className="dam-action-btn unlink"
+                          onClick={() => handleRemoveAccount(0)}
+                          title={language === "en" ? "Remove from this device" : "Hapus dari perangkat"}
+                        >
+                          🗑️ {language === "en" ? "Remove" : "Hapus"}
+                        </button>
+                      </div>
                     </div>
                   </div>
                 ) : (
@@ -385,13 +434,23 @@ export const DeviceAccountModal: React.FC<DeviceAccountModalProps> = ({
                         )}
                       </div>
 
-                      <button
-                        type="button"
-                        className="dam-action-btn load"
-                        onClick={() => handleSelectAccount(accounts[1])}
-                      >
-                        {t.loadPilot}
-                      </button>
+                      <div className="dam-slot-actions">
+                        <button
+                          type="button"
+                          className="dam-action-btn load"
+                          onClick={() => handleSelectAccount(accounts[1])}
+                        >
+                          {t.loadPilot}
+                        </button>
+                        <button
+                          type="button"
+                          className="dam-action-btn unlink"
+                          onClick={() => handleRemoveAccount(1)}
+                          title={language === "en" ? "Remove from this device" : "Hapus dari perangkat"}
+                        >
+                          🗑️ {language === "en" ? "Remove" : "Hapus"}
+                        </button>
+                      </div>
                     </div>
                   </div>
                 ) : (

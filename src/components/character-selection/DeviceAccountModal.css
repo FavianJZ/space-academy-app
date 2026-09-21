@@ -84,6 +84,25 @@
   gap: 10px;
 }
 
+.dam-reset-btn {
+  background: rgba(255, 100, 50, 0.12);
+  border: 1px solid rgba(255, 100, 50, 0.4);
+  color: #ffaa77;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.dam-reset-btn:hover {
+  background: rgba(255, 100, 50, 0.3);
+  color: #ffffff;
+  box-shadow: 0 0 14px rgba(255, 100, 50, 0.5);
+}
+
 .dam-refresh-btn {
   background: rgba(0, 255, 204, 0.12);
   border: 1px solid rgba(0, 255, 204, 0.4);
@@ -378,6 +397,12 @@
   border: 1px solid rgba(0, 255, 204, 0.2);
 }
 
+.dam-slot-actions {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+}
+
 .dam-action-btn {
   font-family: 'Orbitron', sans-serif;
   font-weight: 800;
@@ -391,6 +416,7 @@
 }
 
 .dam-action-btn.load {
+  flex: 1;
   background: linear-gradient(135deg, rgba(0, 255, 204, 0.35) 0%, rgba(0, 180, 255, 0.35) 100%);
   border: 1px solid #00ffcc;
   color: #00ffcc;
@@ -401,6 +427,23 @@
   background: linear-gradient(135deg, #00ffcc 0%, #00ccff 100%);
   color: #051418;
   box-shadow: 0 0 25px rgba(0, 255, 204, 0.7);
+  transform: translateY(-2px);
+}
+
+.dam-action-btn.unlink {
+  flex: 0 0 auto;
+  min-width: 90px;
+  background: rgba(255, 60, 100, 0.12);
+  border: 1px solid rgba(255, 60, 100, 0.4);
+  color: #ff7799;
+  font-size: 0.7rem;
+  padding: 8px 10px;
+}
+
+.dam-action-btn.unlink:hover {
+  background: rgba(255, 60, 100, 0.3);
+  color: #ffffff;
+  box-shadow: 0 0 15px rgba(255, 60, 100, 0.5);
   transform: translateY(-2px);
 }
 

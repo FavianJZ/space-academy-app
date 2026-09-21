@@ -1,14 +1,13 @@
 .copilot-hud-card {
-  position: absolute;
-  top: 76px;
-  right: 24px;
+  position: relative;
+  width: 100%;
   background: rgba(6, 16, 36, 0.85);
   border: 1px solid rgba(0, 255, 204, 0.35);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5), inset 0 0 15px rgba(0, 255, 204, 0.08);
   border-radius: 12px;
-  padding: 10px 16px;
-  min-width: 170px;
-  z-index: 100;
+  padding: 10px 14px;
+  box-sizing: border-box;
+  z-index: 10;
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);

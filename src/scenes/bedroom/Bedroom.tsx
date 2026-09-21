@@ -1214,8 +1214,8 @@ const Bedroom: React.FC = () => {
       planetLeaderboards: [],
       remotePlanetLeaderboards: {},
       isGameCompleted: false,
-      p2Name: formData.name.trim(),
-      p2Phone: formData.phone.trim(),
+      p2Name: "",
+      p2Phone: "",
       specializationResult: null,
       telemetrySignals: INITIAL_TELEMETRY_SIGNALS,
     });

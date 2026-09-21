@@ -160,13 +160,15 @@ export async function fetchDeviceAccounts(): Promise<{
   }
 
 
-  if (isSupabaseEnabled() && supabase) {
+  if (isSupabaseEnabled() && supabase && deviceId && deviceId.trim().length > 5) {
     try {
       let remoteRows: any[] | null = null;
       const { data, error } = await supabase
         .from("players")
         .select("*, leaderboard(total_score)")
         .eq("device_id", deviceId)
+        .neq("device_id", "")
+        .not("device_id", "is", null)
         .order("created_at", { ascending: true })
         .limit(20);
 
@@ -368,8 +370,8 @@ export function activateDeviceAccount(account: SavedDeviceAccount): void {
       school: account.school || "",
       major: (account.major as any) || "",
     },
-    p2Name: account.name,
-    p2Phone: account.phone || "",
+    p2Name: "",
+    p2Phone: "",
     visitedPlanets: visitedSet,
     planetScores: planetScoreMap,
     planetLeaderboards: [],
@@ -415,3 +417,35 @@ export function prepareNewCadetSlot(chosenCharacter: Character = "pink"): void {
 
   localStorage.removeItem("space-academy-player-id");
 }
+
+export function removeDeviceAccount(accountIndex: number): SavedDeviceAccount[] {
+  const accounts = getLocalSavedAccounts();
+  if (accountIndex >= 0 && accountIndex < accounts.length) {
+    const removed = accounts.splice(accountIndex, 1);
+    setLocalSavedAccounts(accounts);
+
+    const store = useGameStore.getState();
+    if (
+      (removed[0] && store.playerData.name?.toLowerCase() === removed[0].name.toLowerCase()) ||
+      (removed[0] && store.playerId === removed[0].id)
+    ) {
+      prepareNewCadetSlot(store.character || "pink");
+    }
+  }
+  return accounts;
+}
+
+export function clearAllDeviceAccounts(): void {
+  try {
+    localStorage.removeItem(DEVICE_ACCOUNTS_KEY);
+    localStorage.removeItem("space-academy-player-id");
+    const randomHex = Math.random().toString(36).substring(2, 8).toUpperCase();
+    const timeHex = Date.now().toString(36).toUpperCase();
+    const freshId = `DEV-${randomHex}-${timeHex}`;
+    localStorage.setItem(DEVICE_ID_KEY, freshId);
+  } catch (err) {
+    console.warn("[deviceAccountService] Error clearing device accounts:", err);
+  }
+  prepareNewCadetSlot("pink");
+}
+
