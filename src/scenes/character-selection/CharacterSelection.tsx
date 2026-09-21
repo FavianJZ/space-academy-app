@@ -344,7 +344,7 @@ const CharacterSelection = () => {
   const [interfaceReady, setInterfaceReady] = useState(false);
   const pointerStartX = useRef<number | null>(null);
 
-  // Device memory & 2-account limit state
+
   const [deviceAccounts, setDeviceAccounts] = useState<SavedDeviceAccount[]>([]);
   const [showDeviceModal, setShowDeviceModal] = useState(false);
   const [deviceIsFull, setDeviceIsFull] = useState(false);
@@ -416,14 +416,14 @@ const CharacterSelection = () => {
   const confirmCandidate = useCallback(() => {
     if (isCommitting) return;
 
-    // Check device limit: 1 device max 2 accounts
+
     if (deviceIsFull && deviceAccounts.length >= 2) {
       playSfx("feedbackIncorrect");
       setShowDeviceModal(true);
       return;
     }
 
-    // Reset active store & local player ID so new cadet starts clean without inheriting previous slot
+
     prepareNewCadetSlot(selected);
 
     const confirmation = playSfx("uiConfirm");
@@ -499,7 +499,7 @@ const CharacterSelection = () => {
           </div>
 
           <div className="cs-topbar-actions">
-            {/* Language Switcher Feature */}
+
             <div className="cs-lang-switcher" role="group" aria-label="Language selection">
               <button
                 type="button"
@@ -526,7 +526,7 @@ const CharacterSelection = () => {
               </button>
             </div>
 
-            {/* Device Profile Checker / Save Slot Button */}
+
             <div className="cs-device-slot-action">
               <button
                 type="button"

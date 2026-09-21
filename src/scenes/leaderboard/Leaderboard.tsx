@@ -83,10 +83,10 @@ const Leaderboard: React.FC = () => {
   useEffect(() => {
     loadLeaderboard();
 
-    // Polling fallback every 6 seconds
+
     const interval = setInterval(loadLeaderboard, 6000);
 
-    // Supabase Realtime Channel
+
     let channel: any = null;
     if (isSupabaseEnabled() && supabase) {
       channel = supabase
@@ -175,7 +175,7 @@ const Leaderboard: React.FC = () => {
           </p>
         </div>
 
-        {/* User Rank Indicator Banner */}
+
         {userRank !== null && userEntry ? (
           <div className="user-rank-banner">
             <div className="user-rank-banner-left">
@@ -266,7 +266,7 @@ const Leaderboard: React.FC = () => {
                     );
                   })}
 
-                  {/* Show player's row pinned at the bottom if outside Top 50 */}
+
                   {userRankIndex >= 50 && userEntry && (
                     <>
                       <tr className="separator-row">

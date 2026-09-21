@@ -24,6 +24,8 @@ import { CadetDossierModal } from "../../components/specialization/CadetDossierM
 import { MainHubAvatarBeacon } from "./MainHubAvatarBeacon";
 import { containsProfanity } from "../../utils/profanityFilter";
 import { supabase, isSupabaseEnabled } from "../../lib/supabase";
+import { RaidModeSelectModal } from "../../components/stages/stage6/RaidModeSelectModal";
+import { OnlinePartyLobbyModal } from "../../components/stages/stage6/OnlinePartyLobbyModal";
 
 import {
   Planet1,
@@ -531,11 +533,17 @@ const MainHub: React.FC = () => {
   const [p2FormPhone, setP2FormPhone] = useState(p2Phone || "");
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [showDossier, setShowDossier] = useState(false);
+  const [showRaidModeModal, setShowRaidModeModal] = useState(false);
+  const [showOnlineLobbyModal, setShowOnlineLobbyModal] = useState(false);
+  const setRaidMode = useGameStore((state) => state.setRaidMode);
+  const setOnlinePartyCode = useGameStore((state) => state.setOnlinePartyCode);
+  const setIsPartyHost = useGameStore((state) => state.setIsPartyHost);
   const specializationResult = useGameStore((state) => state.specializationResult);
   const refreshSpecializationProfile = useGameStore((state) => state.refreshSpecializationProfile);
 
   useEffect(() => {
     refreshSpecializationProfile();
+    useGameStore.getState().resetMultiplayerSession();
   }, [refreshSpecializationProfile]);
 
   useEffect(() => {
@@ -563,19 +571,19 @@ const MainHub: React.FC = () => {
     }
   }, [planetLeaderboards, playerData.name, p2Name]);
 
-  // Realtime Supabase Leaderboard Sync across devices
+
   useEffect(() => {
     if (!selectedPlanet || selectedPlanet === 1 || !showLeaderboard) return;
 
-    // 1. Initial remote fetch from Supabase
+
     fetchPlanetLeaderboardRemote(selectedPlanet);
 
-    // 2. Poll every 5s while leaderboard is open so other devices see updates live
+
     const interval = setInterval(() => {
       fetchPlanetLeaderboardRemote(selectedPlanet);
     }, 5000);
 
-    // 3. Setup Supabase Realtime channel for instant push updates
+
     let channel: any = null;
     if (isSupabaseEnabled() && supabase) {
       channel = supabase
@@ -1379,10 +1387,8 @@ const MainHub: React.FC = () => {
                   }30`,
                 }}
                 onClick={() => {
-                  if (selectedPlanet === 6 && bossMode) {
-                    setP2FormName(p2Name || "");
-                    setP2FormPhone(p2Phone || "");
-                    setShowP2Modal(true);
+                  if (selectedPlanet === 6) {
+                    setShowRaidModeModal(true);
                   } else {
                     handleDepart();
                   }
@@ -1528,6 +1534,7 @@ const MainHub: React.FC = () => {
                     return;
                   }
                   if (p2FormName.trim()) {
+                    setRaidMode("local_coop");
                     setP2Name(p2FormName.trim());
                     setP2Phone(p2FormPhone.trim());
                     setShowP2Modal(false);
@@ -1541,6 +1548,7 @@ const MainHub: React.FC = () => {
               <button
                 className="p2-skip-btn"
                 onClick={() => {
+                  setRaidMode("solo");
                   setBossMode(false);
                   setShowP2Modal(false);
                   handleDepart();
@@ -1551,6 +1559,40 @@ const MainHub: React.FC = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {showRaidModeModal && (
+        <RaidModeSelectModal
+          onSelectMode={(mode) => {
+            setRaidMode(mode);
+            setShowRaidModeModal(false);
+            if (mode === "solo") {
+              handleDepart();
+            } else if (mode === "local_coop") {
+              setP2FormName(p2Name || "");
+              setP2FormPhone(p2Phone || "");
+              setShowP2Modal(true);
+            }
+          }}
+          onOpenOnlineLobby={() => {
+            setShowRaidModeModal(false);
+            setShowOnlineLobbyModal(true);
+          }}
+          onClose={() => setShowRaidModeModal(false)}
+        />
+      )}
+
+      {showOnlineLobbyModal && (
+        <OnlinePartyLobbyModal
+          onStartOnlineRaid={(partyCode, isHost) => {
+            setRaidMode("online_coop");
+            setOnlinePartyCode(partyCode);
+            setIsPartyHost(isHost);
+            setShowOnlineLobbyModal(false);
+            handleDepart();
+          }}
+          onClose={() => setShowOnlineLobbyModal(false)}
+        />
       )}
 
       {showDossier && specializationResult && (

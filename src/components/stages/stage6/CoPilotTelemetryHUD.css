@@ -1,0 +1,106 @@
+.copilot-hud-card {
+  position: absolute;
+  top: 76px;
+  right: 24px;
+  background: rgba(6, 16, 36, 0.85);
+  border: 1px solid rgba(0, 255, 204, 0.35);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5), inset 0 0 15px rgba(0, 255, 204, 0.08);
+  border-radius: 12px;
+  padding: 10px 16px;
+  min-width: 170px;
+  z-index: 100;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.copilot-hud-card.is-firing {
+  border-color: #00ffcc;
+  box-shadow: 0 0 30px rgba(0, 255, 204, 0.6), inset 0 0 20px rgba(0, 255, 204, 0.2);
+  transform: scale(1.03);
+}
+
+.copilot-hud-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.copilot-hud-avatar {
+  font-size: 20px;
+}
+
+.copilot-hud-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.copilot-label {
+  font-family: "Consolas", monospace;
+  font-size: 8.5px;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  color: #00ffcc;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.live-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #00ffcc;
+  box-shadow: 0 0 6px #00ffcc;
+  animation: pulseDot 1.2s infinite alternate;
+}
+
+@keyframes pulseDot {
+  from {
+    opacity: 0.4;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.copilot-name {
+  font-size: 13px;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: 0.5px;
+}
+
+.copilot-hud-stats {
+  display: flex;
+  gap: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding-top: 6px;
+}
+
+.copilot-stat {
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-label {
+  font-family: "Consolas", monospace;
+  font-size: 8.5px;
+  color: #7997b5;
+  font-weight: 700;
+}
+
+.stat-val {
+  font-family: "Consolas", monospace;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.dmg-val {
+  color: #ffd700;
+}
+
+.combo-val {
+  color: #00ffcc;
+}

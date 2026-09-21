@@ -1,4 +1,4 @@
-/* Device Account Modal - Sci-Fi RPG Hero Selector */
+
 
 .dam-overlay {
   position: fixed;
@@ -33,7 +33,7 @@
   max-height: 90dvh;
 }
 
-/* Header */
+
 .dam-header {
   display: flex;
   align-items: center;
@@ -129,7 +129,7 @@
   box-shadow: 0 0 15px rgba(255, 60, 100, 0.5);
 }
 
-/* Device Bar */
+
 .dam-device-bar {
   display: flex;
   align-items: center;
@@ -194,7 +194,7 @@
   box-shadow: 0 0 10px rgba(255, 170, 0, 0.3);
 }
 
-/* Slot Containers */
+
 .dam-slots-container {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
@@ -225,7 +225,7 @@
   animation: damSpin 1s linear infinite;
 }
 
-/* Slot Card */
+
 .dam-slot-card {
   background: rgba(10, 30, 46, 0.7);
   border-radius: 12px;
@@ -291,7 +291,7 @@
   color: #72ccff;
 }
 
-/* Slot Body */
+
 .dam-slot-body {
   display: flex;
   flex-direction: row;
@@ -425,7 +425,7 @@
   color: #8899aa;
 }
 
-/* Empty Slot State */
+
 .dam-empty-slot {
   display: flex;
   flex-direction: column;
@@ -458,7 +458,7 @@
   max-width: 240px;
 }
 
-/* Footer Notice */
+
 .dam-footer-notice {
   padding: 12px 24px;
   border-top: 1px solid rgba(0, 255, 204, 0.15);

@@ -114,7 +114,7 @@ export async function fetchPlanetLeaderboard(
     };
   });
 
-  // Deduplicate by playerName (keep highest score, fastest time)
+
   const uniqueByPlayer = new Map<
     string,
     import("../types/game.types").PlanetLeaderboardEntry

@@ -87,10 +87,7 @@ const STAGE_CONFIGS: Record<
   },
 };
 
-/**
- * Generates an individualized forensic personality & diagnostic evaluation
- * based on the cadet's actual gameplay telemetry across all 6 stages.
- */
+
 export function generateCadetPersonalityProfile(
   cadet: CadetIdentity,
   result: SpecializationResult,
@@ -107,7 +104,7 @@ export function generateCadetPersonalityProfile(
   const primaryMeta = ARCHETYPE_METAS[primaryKey];
   const secondaryMeta = ARCHETYPE_METAS[secondaryKey];
 
-  // 1. Determine Dynamic Compound Signature Title & Tagline (12 Archetype Pairings)
+
   const SIGNATURE_MATRIX: Record<string, { title: string; tagline: string }> = {
     "SYSTEM_ARCHITECT+AI_LOGIC_PIONEER": {
       title: "Enterprise AI & Scalable Systems Architect",
@@ -173,7 +170,7 @@ export function generateCadetPersonalityProfile(
     }
   }
 
-  // 2. Behavioral Style & Decision-Making Traits
+
   let decisionMakingTrait = "Sistematis & Terencana (Analytical Deliberation)";
   let behavioralStyle = "Fokus pada struktur baku dan konsistensi pipeline.";
 
@@ -203,7 +200,7 @@ export function generateCadetPersonalityProfile(
     behavioralStyle += " Menerapkan kalkulasi efisiensi tinggi dalam setiap pergerakan.";
   }
 
-  // Efficiency Rating
+
   let efficiencyRating = "Steadily Calibrating Foundations (Proses Adaptasi Terarah)";
   const completedStages = Object.values(records).filter((r) => r.completed);
   const totalScore = completedStages.reduce((sum, r) => sum + (r.score || 0), 0);
@@ -225,7 +222,7 @@ export function generateCadetPersonalityProfile(
     }
   }
 
-  // 3. Narrative Synthesis
+
   const displayName = cadet.callsign || cadet.name || "Kadet Antariksa";
   const cognitiveProfileSummary =
     `Berdasarkan data telemetri simulasi antariksa, Kadet ${displayName} (${cadet.school} — ${cadet.major}) ` +
@@ -234,7 +231,7 @@ export function generateCadetPersonalityProfile(
     `Kemampuan Anda dalam memproses informasi komputasi bersifat ${behavioralStyle.toLowerCase()} ` +
     `Pola penyelesaian masalah Anda terbukti sangat efektif dalam menguraikan tantangan kompleks menjadi sub-komponen yang dapat dieksekusi secara teratur.`;
 
-  // 4. Pillar Diagnostics
+
   const getLevel = (
     val: number
   ): "Master" | "Advanced" | "Proficient" | "Developing" => {
@@ -303,7 +300,7 @@ export function generateCadetPersonalityProfile(
     },
   ];
 
-  // 5. Stage-by-Stage Forensic Breakdown (1 to 6)
+
   const stageEvaluations: StagePerformanceDetail[] = [1, 2, 3, 4, 5, 6].map(
     (stageId) => {
       const cfg = STAGE_CONFIGS[stageId];
@@ -319,7 +316,7 @@ export function generateCadetPersonalityProfile(
 
       if (isDone) {
         switch (stageId) {
-          case 1: { // Novaris (Par 500, Par Time 60s)
+          case 1: {
             if (timeSec <= 40) {
               grade = "S";
               evalText = `Manuver orientasi penerbangan luar biasa kilat (${timeSec}s). Berhasil menguasai kokpit orbital dengan refleks adaptasi sempurna.`;
@@ -339,7 +336,7 @@ export function generateCadetPersonalityProfile(
             }
             break;
           }
-          case 2: { // Quizara (Algorithmic Multiple Choice)
+          case 2: {
             if (sc >= 550) {
               grade = "S";
               evalText = `Skor gemilang ${sc} poin membuktikan penguasaan konsep komputasi dasar dan logika sains yang sangat prima tanpa celah.`;
@@ -359,7 +356,7 @@ export function generateCadetPersonalityProfile(
             }
             break;
           }
-          case 3: { // Puzzlon (SDLC Pipeline Sequencer)
+          case 3: {
             if (sc >= 450) {
               grade = "S";
               evalText = `Merangkai seluruh sekuens arsitektur SDLC dan pipeline data secara presisi (${sc} pts)! Memiliki visi alur rekayasa software enterprise.`;
@@ -379,7 +376,7 @@ export function generateCadetPersonalityProfile(
             }
             break;
           }
-          case 4: { // Flowra (Flowchart Process Branching)
+          case 4: {
             if (sc >= 500) {
               grade = "S";
               evalText = `Perbaikan percabangan logika Flowra tuntas sempurna (${sc} pts) tanpa redundansi! Pemahaman alur branching dan UI flow kelas atas.`;
@@ -399,7 +396,7 @@ export function generateCadetPersonalityProfile(
             }
             break;
           }
-          case 5: { // Logitron (Logic Array & Cloud Infrastructure)
+          case 5: {
             if (sc >= 250 || (sc >= 200 && timeSec < 40)) {
               grade = "S";
               evalText = `Sirkuit logika gerbang dan pipeline cloud Logitron (${sc} pts, ${timeSec}s) disintesis kilat dengan logika biner tajam.`;
@@ -419,7 +416,7 @@ export function generateCadetPersonalityProfile(
             }
             break;
           }
-          case 6: { // Ultimara (Cyber Bug Quarantine & QA Defense)
+          case 6: {
             if (sc >= 2800) {
               grade = "S";
               evalText = `Karantina bug Ultimara tuntas sempurna (${sc} pts)! Daya observasi tajam dan refleks defensif setara Cyber Security Auditor profesional.`;
@@ -456,7 +453,7 @@ export function generateCadetPersonalityProfile(
     }
   );
 
-  // 6. SOCS BINUS Bekasi Alignment
+
   const socsAcademicAlignment = {
     recommendedProgram: primaryMeta.socsTrack,
     curriculumFocus:
@@ -477,7 +474,7 @@ export function generateCadetPersonalityProfile(
         : "Tingkat serapan industri 98.4% dengan peluang karir internasional di sektor Cloud Enterprise, DevOps, dan Software Engineering.",
   };
 
-  // 7. Dynamic Adaptive Recommendation
+
   const adaptiveRecommendation =
     primaryKey === "CYBER_DEBUGGER"
       ? `Tingkatkan mitigasi arsitektur pertahanan sistem dan otomasi pengujian mendalam; kombinasikan ketelitian observasi Anda dengan pilar ${secondaryMeta.title} di ekosistem SOCS BINUS Bekasi.`

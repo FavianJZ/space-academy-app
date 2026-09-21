@@ -14,7 +14,7 @@ import {
   MAX_LEADERBOARD_ENTRIES,
   STORAGE_KEY,
 } from "../constants/game.constants";
-import type { GameState } from "../types/game.types";
+import type { GameState, RaidMode } from "../types/game.types";
 import { registerPlayer, updatePlayer } from "../services/playerService";
 import {
   fetchGlobalLeaderboard as fetchGlobalLeaderboardFromSupabase,
@@ -77,7 +77,7 @@ function scheduleProfileSync(get: () => GameState) {
 }
 
 function scheduleSettingsSync(_get: () => GameState) {
-  
+
 }
 
 export const useGameStore = create<GameState>()(
@@ -362,12 +362,12 @@ export const useGameStore = create<GameState>()(
 
         const merged = new Map<string, import("../types/game.types").PlanetLeaderboardEntry>();
 
-        // 1. Add local entries (seeded bots + local plays)
+
         for (const entry of localEntries) {
           merged.set(entry.playerName, entry);
         }
 
-        // 2. Add remote entries from Supabase (real players across devices!)
+
         for (const entry of remoteEntries) {
           const compTime = entry.completionTime ?? 25;
           const existing = merged.get(entry.playerName);
@@ -384,7 +384,7 @@ export const useGameStore = create<GameState>()(
           }
         }
 
-        // 3. Ensure current player's latest score from planetScores is represented (only if player has visited/completed)
+
         const currentPlayerData = get().playerData;
         const currentName = currentPlayerData.name?.trim();
         const playerPlanetScore = get().getPlanetScore(planetId, planetId);
@@ -419,7 +419,7 @@ export const useGameStore = create<GameState>()(
       bossMaxHP: BOSS_MAX_HP,
 
       dealBossDamage: (damage, playerName) => {
-        
+
         const currentHP = get().bossGlobalHP;
         const newHP = Math.max(0, currentHP - damage);
 
@@ -462,6 +462,41 @@ export const useGameStore = create<GameState>()(
       setP2Phone: (phone) => {
         set({ p2Phone: phone });
         scheduleProfileSync(get);
+      },
+
+      raidMode: "solo",
+      setRaidMode: (mode) => {
+        set({ raidMode: mode, bossMode: mode !== "solo" });
+      },
+
+      onlinePartyCode: "",
+      setOnlinePartyCode: (code) => {
+        set({ onlinePartyCode: code.toUpperCase().trim() });
+      },
+
+      isPartyHost: false,
+      setIsPartyHost: (isHost) => {
+        set({ isPartyHost: isHost });
+      },
+
+      remoteCoPilot: null,
+      setRemoteCoPilot: (coPilot) => {
+        set({ remoteCoPilot: coPilot });
+      },
+
+      updateRemoteCoPilot: (partial) => {
+        set((state) => ({
+          remoteCoPilot: state.remoteCoPilot ? { ...state.remoteCoPilot, ...partial } : null,
+        }));
+      },
+
+      resetMultiplayerSession: () => {
+        set({
+          remoteCoPilot: null,
+          onlinePartyCode: "",
+          isPartyHost: false,
+          raidMode: "solo",
+        });
       },
 
       playerId: null,
@@ -633,11 +668,11 @@ export const useGameStore = create<GameState>()(
         ).length;
 
         const currentSignals = state.telemetrySignals || INITIAL_TELEMETRY_SIGNALS;
-        
-        // Strictly sanitize stageRecords: ONLY include stages actually completed by THIS cadet
+
+
         const cleanedStageRecords: Record<number, import("../types/specialization.types").StageTelemetryRecord> = {};
 
-        // 1. Synchronize from current cadet's planetScores
+
         for (const [, planetScore] of state.planetScores.entries()) {
           if (planetScore.completed && planetScore.stageId) {
             const sid = Number(planetScore.stageId);
@@ -654,7 +689,7 @@ export const useGameStore = create<GameState>()(
           }
         }
 
-        // 2. If Novaris (planet 1) was visited/completed in visitedPlanets
+
         if (state.visitedPlanets.has(1) && !cleanedStageRecords[1]) {
           const existingRec1 = currentSignals.stageRecords?.[1];
           cleanedStageRecords[1] = {
@@ -688,7 +723,20 @@ export const useGameStore = create<GameState>()(
       name: STORAGE_KEY,
       storage,
       version: 8,
-      
+      partialize: (state) => {
+        const rest = { ...state };
+        delete (rest as Partial<GameState>).remoteCoPilot;
+        delete (rest as Partial<GameState>).onlinePartyCode;
+        delete (rest as Partial<GameState>).isPartyHost;
+        return {
+          ...rest,
+          remoteCoPilot: null,
+          onlinePartyCode: "",
+          isPartyHost: false,
+          raidMode: "solo" as RaidMode,
+        };
+      },
+
       migrate: (persistedState, version) => {
         const state = persistedState as GameState;
         const scoreMigratedState =
@@ -733,7 +781,7 @@ export const useGameStore = create<GameState>()(
           version < 7
             ? {
                 ...botLeaderboardCleanedState,
-                planetLeaderboards: [], // Clear old 840 bots and reseed fresh calibrated bots
+                planetLeaderboards: [],
                 remotePlanetLeaderboards: {},
               }
             : botLeaderboardCleanedState;

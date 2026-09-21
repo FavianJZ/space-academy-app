@@ -16,6 +16,24 @@ export type Major = "IPA" | "IPS" | "";
 
 export type Language = "id" | "en";
 
+export type RaidMode = "solo" | "local_coop" | "online_coop";
+
+export interface RemoteCoPilot {
+  name: string;
+  character: Character;
+  colorId: SpacemanColorId;
+  petId: SpacemanPetId;
+  hatId: SpacemanHatId;
+  hits: number;
+  damage: number;
+  combo: number;
+  lastActionTime: number;
+  isOnline: boolean;
+  platform?: "PC" | "MOBILE";
+  totalScore?: number;
+  isReady?: boolean;
+}
+
 export interface PlayerData {
   name: string;
   phone: string;
@@ -117,6 +135,17 @@ export interface GameState {
   setP2Name: (name: string) => void;
   p2Phone: string;
   setP2Phone: (phone: string) => void;
+
+  raidMode: RaidMode;
+  setRaidMode: (mode: RaidMode) => void;
+  onlinePartyCode: string;
+  setOnlinePartyCode: (code: string) => void;
+  isPartyHost: boolean;
+  setIsPartyHost: (isHost: boolean) => void;
+  remoteCoPilot: RemoteCoPilot | null;
+  setRemoteCoPilot: (coPilot: RemoteCoPilot | null) => void;
+  updateRemoteCoPilot: (partial: Partial<RemoteCoPilot>) => void;
+  resetMultiplayerSession: () => void;
 
 playerId: string | null;
   authToken: string | null;

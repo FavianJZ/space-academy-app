@@ -44,7 +44,7 @@ async function fetchEnvelope<T>(
   try {
     response = await fetch(`${API_BASE}${path}`, { ...options, headers });
   } catch {
-    
+
     throw new ApiError("Could not reach the server", 0);
   }
 
@@ -53,8 +53,8 @@ async function fetchEnvelope<T>(
   try {
     body = await response.json();
   } catch {
-    // Non-JSON response (e.g. a proxy error page) - fall through with
-    // no body, status check below still throws with a sane message.
+
+
   }
 
   if (!response.ok || !body?.success) {

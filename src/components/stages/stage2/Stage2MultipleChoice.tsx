@@ -45,10 +45,10 @@ function randomizeQuestions(questions: Question[]): Question[] {
     const labels = ['a', 'b', 'c', 'd'];
     const shuffled = shuffleArray(questions);
     return shuffled.map((q, idx) => {
-        
+
         const correctOption = q.options.find(o => o.label === q.correctAnswer);
         const shuffledOptions = shuffleArray(q.options);
-        
+
         const newCorrectLabel = labels[shuffledOptions.findIndex(o => o.text === correctOption?.text)];
         return {
             ...q,
@@ -59,7 +59,7 @@ function randomizeQuestions(questions: Question[]): Question[] {
     });
 }
 
-const STAGE_TIME_LIMIT = 60; 
+const STAGE_TIME_LIMIT = 60;
 
 const QUIZ_QUESTION_COUNT = 3;
 
@@ -131,7 +131,7 @@ const Stage2MultipleChoice: React.FC<Stage2MultipleChoiceProps> = ({ planetId })
     const calculateSpeedScore = (): number => {
         const answerTime = (getStageTimestamp() - questionStartTimeRef.current) / 1000;
         const speedScore = Math.max(20, Math.round(100 * (3 / Math.max(answerTime, 0.5))));
-        return Math.min(speedScore, 300); 
+        return Math.min(speedScore, 300);
     };
 
     const handleAnswerSelect = (label: string) => {
@@ -150,7 +150,7 @@ const Stage2MultipleChoice: React.FC<Stage2MultipleChoiceProps> = ({ planetId })
                 setScreenEffect('screen-flash-green');
                 setFeedbackStatus('success');
                 setTimeout(() => { setScreenEffect(''); setRobotReaction('idle'); }, reaction.motionMs);
-                // Automatically transition smoothly to next question or completion
+
                 if (autoAdvanceTimerRef.current) clearTimeout(autoAdvanceTimerRef.current);
                 autoAdvanceTimerRef.current = setTimeout(() => {
                     handleNext();
@@ -298,11 +298,11 @@ useEffect(() => {
             <FloatingParticles />
 
             <div className="quiz-content hud-content-layer">
-                <div 
+                <div
                   className="quiz-card hud-3d-card"
                   onMouseMove={handleMouseMove}
                   onMouseLeave={handleMouseLeave}
-                  style={{ 
+                  style={{
                       transform: `perspective(1200px) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)`,
                       transition: tilt.x === 0 && tilt.y === 0 ? 'transform 0.5s cubic-bezier(0.25, 1, 0.5, 1)' : 'transform 0.1s linear',
                   }}

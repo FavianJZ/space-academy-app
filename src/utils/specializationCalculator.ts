@@ -87,14 +87,13 @@ export function calculateSpecializationProfile(
 ): SpecializationResult {
   const records = signals.stageRecords || {};
 
-  // Baseline exploratory score for inactive/unexplored competencies
+
   let system = 25;
   let aiLogic = 25;
   let debugging = 25;
   let creative = 25;
 
-  // 1. SYSTEM ARCHITECT (Puzzlon SDLC + Flowra Process Pipeline)
-  // Stage 3 (Puzzlon) Par: 420, Stage 4 (Flowra) Par: 450
+
   const hasStage3 = !!records[3]?.completed;
   const hasStage4 = !!records[4]?.completed;
   if (hasStage3 || hasStage4) {
@@ -113,7 +112,7 @@ export function calculateSpecializationProfile(
     const routeBonus = signals.routeSelected && !signals.routeSelected.includes("2") ? 4 : 0;
 
     if (hasStage3 && hasStage4) {
-      // Both completed: blend 55% Stage 3 and 45% Stage 4
+
       const blendedRatio = 0.55 * r3 + 0.45 * r4;
       system = 25 + 50 * blendedRatio + attemptsBonus + routeBonus;
     } else if (hasStage3) {
@@ -125,8 +124,7 @@ export function calculateSpecializationProfile(
     system += 6;
   }
 
-  // 2. AI & LOGIC PIONEER (Quizara Theory + Logitron Boolean Logic)
-  // Stage 2 (Quizara) Par: 450, Stage 5 (Logitron) Par: 220
+
   const hasStage2 = !!records[2]?.completed;
   const hasStage5 = !!records[5]?.completed;
   if (hasStage2 || hasStage5) {
@@ -156,8 +154,7 @@ export function calculateSpecializationProfile(
     aiLogic += 8;
   }
 
-  // 3. CYBER INSPECTOR & QA (Ultimara Bug Quarantine + Zero-Defect Accuracy)
-  // Stage 6 (Ultimara) Par: 2200
+
   const hasStage6 = !!records[6]?.completed;
   if (hasStage6) {
     const sc6 = records[6].score || 1500;
@@ -167,13 +164,12 @@ export function calculateSpecializationProfile(
       (records[2]?.completed && (records[2].score || 0) >= 400 ? 3 : 0);
     debugging = 25 + 52 * r6 + cleanBonus;
   } else {
-    // Stage 6 not played yet: slight signal from precision in stage 2 and 3
+
     if (records[2]?.completed && (records[2].score || 0) >= 400) debugging += 6;
     if (records[3]?.completed && (records[3].attemptsCount || 1) <= 1) debugging += 5;
   }
 
-  // 4. CREATIVE TECH & INTERACTIVE 3D (Novaris Flight + Flowra Visual + Customization)
-  // Stage 1 (Novaris) Par Time: 55s
+
   const hasStage1 = !!records[1]?.completed;
   let r1 = 0.8;
   if (hasStage1) {
@@ -204,7 +200,7 @@ export function calculateSpecializationProfile(
     creative: clamp(creative),
   };
 
-  // Dynamic confidence level & milestones
+
   let confidenceLevel = 20;
   let milestone = "Onboarding Cadet Profile";
 
@@ -225,7 +221,7 @@ export function calculateSpecializationProfile(
     milestone = "Atmospheric Entry Phase";
   }
 
-  // Sort score entries to find true primary and secondary archetypes
+
   const scoreEntries: Array<{ key: SpecializationArchetypeKey; score: number }> = [
     { key: "SYSTEM_ARCHITECT", score: radarScores.system },
     { key: "AI_LOGIC_PIONEER", score: radarScores.aiLogic },

@@ -20,7 +20,7 @@ import {
 export function useSupabaseSync(): void {
   const lastRegisteredName = useRef<string>("");
 
-  // Auto-sync existing local accounts to Supabase on mount (recovery for offline/failed syncs)
+
   useEffect(() => {
     if (!isSupabaseEnabled()) return;
     syncAllLocalAccountsToSupabase().catch((err) =>
@@ -41,7 +41,7 @@ export function useSupabaseSync(): void {
     if (!isSupabaseEnabled()) return;
     const cleanName = playerData.name?.trim();
     if (!cleanName) return;
-    // Bedroom has its own explicit registration flow (registerOrLoginPlayer); skip to avoid duplicate calls
+
     if (window.location.pathname.includes("/bedroom")) return;
     if (lastRegisteredName.current.toLowerCase() === cleanName.toLowerCase() && getLocalPlayerId()) return;
 

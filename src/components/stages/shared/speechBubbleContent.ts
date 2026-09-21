@@ -24,7 +24,7 @@ export const getSpacemanMessages = (lang: Language): Record<EmoteType, string[]>
   };
 };
 
-// Backwards-compatible defaults (Indonesian by default if not specified)
+
 export const robotMessages = getRobotMessages("id");
 export const spacemanMessages = getSpacemanMessages("id");
 

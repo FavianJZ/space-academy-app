@@ -12,7 +12,7 @@ export type CandidateTranslation = {
 
 export const TRANSLATIONS = {
   id: {
-    // 1. CHARACTER SELECTION
+
     characterSelection: {
       cadetInduction: "INDUKSI KADET",
       spaceAcademy: "SPACE ACADEMY",
@@ -67,7 +67,7 @@ export const TRANSLATIONS = {
       } satisfies Record<Character, CandidateTranslation>,
     },
 
-    // 2. DEVICE MODAL
+
     deviceModal: {
       title: "MEMORI PERANGKAT & PROFIL PILOT",
       subtitle:
@@ -89,7 +89,7 @@ export const TRANSLATIONS = {
       refreshTitle: "Segarkan Data",
     },
 
-    // 3. SETTINGS
+
     settings: {
       eyebrow: "KONFIGURASI SISTEM",
       title: "Pengaturan Sistem & Audio",
@@ -130,7 +130,7 @@ export const TRANSLATIONS = {
       applyAndClose: "SIMPAN & TUTUP",
     },
 
-    // 4. PLANETS & DESCRIPTIONS
+
     planets: {
       1: {
         name: "Novaris",
@@ -182,7 +182,7 @@ export const TRANSLATIONS = {
       },
     },
 
-    // 5. MAIN HUB
+
     mainhub: {
       spaceNav: "NAVIGASI LUAR ANGKASA",
       welcome: "SELAMAT DATANG,",
@@ -222,7 +222,7 @@ export const TRANSLATIONS = {
       departBtn: "LUNCURKAN",
       backBtn: "KEMBALI",
 
-      // P2 Co-op modal
+
       p2ModalTitle: "HUBUNGKAN PILOT KEDUA",
       p2ModalSubtitle: "Atur stasiun numpad sebelum memasuki raid bos Ultimara.",
       p2PrimaryInput: "INPUT UTAMA",
@@ -240,7 +240,7 @@ export const TRANSLATIONS = {
       p2ProfanityAlert: "🚫 Nama Tanda Panggilan mengandung kata yang tidak sopan!",
     },
 
-    // 6. CHARACTER CUSTOMIZER
+
     customizer: {
       colorTab: "Warna",
       hatTab: "Topi",
@@ -262,7 +262,7 @@ export const TRANSLATIONS = {
       equippedAnnouncement: (label: string) => `${label} berhasil dipasang.`,
     },
 
-    // 7. INTRO & FLIGHT CUTSCENE
+
     intro: {
       systemInit: {
         missionChannel: "SALURAN MISI // 01",
@@ -424,7 +424,7 @@ export const TRANSLATIONS = {
       },
     },
 
-    // 8. BEDROOM / REGISTRATION
+
     bedroom: {
       dialogues: {
         phase0: {
@@ -533,7 +533,7 @@ export const TRANSLATIONS = {
       sendData: "▸ KIRIM DATA",
     },
 
-    // 9. STAGES GENERAL & MINIGAMES
+
     stages: {
       common: {
         exitModule: "KELUAR MODUL",
@@ -756,7 +756,7 @@ export const TRANSLATIONS = {
       },
     },
 
-    // 10. LEADERBOARD
+
     leaderboard: {
       title: "🏆 PAPAN PERINGKAT SPACE ACADEMY 🏆",
       subtitle: "Peringkat Global - 50 Kadet Teratas",
@@ -776,7 +776,7 @@ export const TRANSLATIONS = {
       backToHubBtn: "KEMBALI KE HUB",
     },
 
-    // 11. CADET DOSSIER MODAL
+
     dossier: {
       primaryArchetype: "⬡ Arketipe Utama",
       secondaryArchetype: "⬢ Arketipe Sekunder",
@@ -794,7 +794,7 @@ export const TRANSLATIONS = {
   },
 
   en: {
-    // 1. CHARACTER SELECTION
+
     characterSelection: {
       cadetInduction: "CADET INDUCTION",
       spaceAcademy: "SPACE ACADEMY",
@@ -849,7 +849,7 @@ export const TRANSLATIONS = {
       } satisfies Record<Character, CandidateTranslation>,
     },
 
-    // 2. DEVICE MODAL
+
     deviceModal: {
       title: "DEVICE MEMORY & PILOT PROFILES",
       subtitle:
@@ -871,7 +871,7 @@ export const TRANSLATIONS = {
       refreshTitle: "Refresh Data",
     },
 
-    // 3. SETTINGS
+
     settings: {
       eyebrow: "SYSTEM CONFIGURATION",
       title: "System & Audio Calibration",
@@ -912,7 +912,7 @@ export const TRANSLATIONS = {
       applyAndClose: "APPLY & CLOSE",
     },
 
-    // 4. PLANETS & DESCRIPTIONS
+
     planets: {
       1: {
         name: "Novaris",
@@ -964,7 +964,7 @@ export const TRANSLATIONS = {
       },
     },
 
-    // 5. MAIN HUB
+
     mainhub: {
       spaceNav: "SPACE NAVIGATION",
       welcome: "WELCOME,",
@@ -1004,7 +1004,7 @@ export const TRANSLATIONS = {
       departBtn: "DEPART",
       backBtn: "BACK",
 
-      // P2 Co-op modal
+
       p2ModalTitle: "LINK SECOND PILOT",
       p2ModalSubtitle: "Assign the numpad station before entering the Ultimara raid.",
       p2PrimaryInput: "PRIMARY INPUT",
@@ -1022,7 +1022,7 @@ export const TRANSLATIONS = {
       p2ProfanityAlert: "🚫 Callsign name contains inappropriate language!",
     },
 
-    // 6. CHARACTER CUSTOMIZER
+
     customizer: {
       colorTab: "Color",
       hatTab: "Hat",
@@ -1044,7 +1044,7 @@ export const TRANSLATIONS = {
       equippedAnnouncement: (label: string) => `${label} equipped.`,
     },
 
-    // 7. INTRO & FLIGHT CUTSCENE
+
     intro: {
       systemInit: {
         missionChannel: "MISSION CHANNEL // 01",
@@ -1206,7 +1206,7 @@ export const TRANSLATIONS = {
       },
     },
 
-    // 8. BEDROOM / REGISTRATION
+
     bedroom: {
       dialogues: {
         phase0: {
@@ -1315,7 +1315,7 @@ export const TRANSLATIONS = {
       sendData: "▸ SUBMIT DATA",
     },
 
-    // 9. STAGES GENERAL & MINIGAMES
+
     stages: {
       common: {
         exitModule: "EXIT MODULE",
@@ -1538,7 +1538,7 @@ export const TRANSLATIONS = {
       },
     },
 
-    // 10. LEADERBOARD
+
     leaderboard: {
       title: "🏆 SPACE ACADEMY LEADERBOARD 🏆",
       subtitle: "Global Rankings - Top 50 Cadets",
@@ -1558,7 +1558,7 @@ export const TRANSLATIONS = {
       backToHubBtn: "BACK TO HUB",
     },
 
-    // 11. CADET DOSSIER MODAL
+
     dossier: {
       primaryArchetype: "⬡ Primary Archetype",
       secondaryArchetype: "⬢ Secondary Archetype",

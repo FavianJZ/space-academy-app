@@ -33,7 +33,7 @@ interface Stage3PuzzleGameProps {
   planetId: number;
 }
 
-// Shuffle helper ensuring the result is NOT accidentally solved initially
+
 function shuffleSteps(steps: PipelineStep[]): PipelineStep[] {
   let result = [...steps];
   let isSorted = true;
@@ -45,7 +45,7 @@ function shuffleSteps(steps: PipelineStep[]): PipelineStep[] {
     isSorted = result.every((step, idx) => step.correctStep === idx + 1);
     if (!isSorted) break;
   }
-  // Guarantee not sorted
+
   if (isSorted && result.length >= 2) {
     [result[0], result[1]] = [result[1], result[0]];
   }
@@ -152,7 +152,7 @@ const Stage3PuzzleGame: React.FC<Stage3PuzzleGameProps> = ({ planetId }) => {
     }
   }, [challengeIdx, handleComplete, language]);
 
-  // Timer logic
+
   useEffect(() => {
     stageStartRef.current = getStageTimestamp();
     timerRef.current = setInterval(() => {
@@ -172,20 +172,20 @@ const Stage3PuzzleGame: React.FC<Stage3PuzzleGameProps> = ({ planetId }) => {
     };
   }, [handleComplete, playSfx]);
 
-  // Handle tile tap & swap
+
   const handleStepClick = (clickedIdx: number) => {
     if (isChallengeComplete) return;
 
     if (selectedIdx === null) {
-      // First select
+
       setSelectedIdx(clickedIdx);
       playSfx("puzzlePickup");
     } else if (selectedIdx === clickedIdx) {
-      // Deselect
+
       setSelectedIdx(null);
       playSfx("uiSelect");
     } else {
-      // Swap elements
+
       playSfx("puzzlePlace");
       setMoves((m) => m + 1);
 
@@ -197,7 +197,7 @@ const Stage3PuzzleGame: React.FC<Stage3PuzzleGameProps> = ({ planetId }) => {
       setCurrentSteps(updated);
       setSelectedIdx(null);
 
-      // Verify if sorted correctly (1, 2, 3, 4)
+
       const isSorted = updated.every(
         (step, idx) => step.correctStep === idx + 1
       );
@@ -294,7 +294,7 @@ const Stage3PuzzleGame: React.FC<Stage3PuzzleGameProps> = ({ planetId }) => {
 
   return (
     <div className={`stage-puzzle ${screenEffect}`}>
-      {/* Top Left Reset Button */}
+
       <div
         className="top-left-floating-btn hud-sweep-btn-wrapper"
         style={{
@@ -319,7 +319,7 @@ const Stage3PuzzleGame: React.FC<Stage3PuzzleGameProps> = ({ planetId }) => {
         </button>
       </div>
 
-      {/* 3D Scene Background */}
+
       <div className="canvas-container">
         <AdaptiveCanvas
           camera={{ position: [0, 1, 5], fov: 50 }}
@@ -357,7 +357,7 @@ const Stage3PuzzleGame: React.FC<Stage3PuzzleGameProps> = ({ planetId }) => {
 
       <FloatingParticles />
 
-      {/* Main Interactive Card */}
+
       <div className="puzzle-content hud-content-layer">
         <div
           className="puzzle-card hud-3d-card"
@@ -375,7 +375,7 @@ const Stage3PuzzleGame: React.FC<Stage3PuzzleGameProps> = ({ planetId }) => {
         >
           <div className="card-scanline" />
 
-          {/* Header */}
+
           <div className="puzzle-header" style={{ marginBottom: "14px" }}>
             <div
               style={{
@@ -404,7 +404,7 @@ const Stage3PuzzleGame: React.FC<Stage3PuzzleGameProps> = ({ planetId }) => {
             </p>
           </div>
 
-          {/* Stats Bar */}
+
           <div
             className="puzzle-stats-bar"
             style={{
@@ -474,9 +474,9 @@ const Stage3PuzzleGame: React.FC<Stage3PuzzleGameProps> = ({ planetId }) => {
             </div>
           </div>
 
-          {/* Pipeline Blocks — Responsive Grid with CSS classes */}
+
           <div className="pipeline-grid">
-            {/* Animated Laser Data Flow Line */}
+
             <div
               className={`pipeline-laser-line ${
                 isChallengeComplete
@@ -516,7 +516,7 @@ const Stage3PuzzleGame: React.FC<Stage3PuzzleGameProps> = ({ planetId }) => {
                   }}
                   aria-label={`${step.title} - Slot ${idx + 1}`}
                 >
-                  {/* Slot + Tag row */}
+
                   <div
                     style={{
                       width: "100%",
@@ -539,18 +539,18 @@ const Stage3PuzzleGame: React.FC<Stage3PuzzleGameProps> = ({ planetId }) => {
                     </span>
                   </div>
 
-                  {/* Icon */}
+
                   <div className="pipeline-step-icon">{step.icon}</div>
 
-                  {/* Title */}
+
                   <div className="pipeline-step-title">{step.title}</div>
 
-                  {/* Subtitle */}
+
                   <div className="pipeline-step-subtitle">
                     {step.subtitle}
                   </div>
 
-                  {/* Order indicator */}
+
                   <div
                     className={`pipeline-order-indicator ${
                       isSelected
@@ -571,7 +571,7 @@ const Stage3PuzzleGame: React.FC<Stage3PuzzleGameProps> = ({ planetId }) => {
             })}
           </div>
 
-          {/* Verified Notification Banner with Interactive Next Button */}
+
           {isChallengeComplete && (
             <div
               className="pipeline-verified-banner"

@@ -27,7 +27,7 @@ interface DeviceAccountModalProps {
   onSelectCreateNew?: () => void;
 }
 
-// 3D Mini Hero Stage with front-facing RPG hero stance & gentle breathing sway
+
 const HeroStage = ({ account }: { account: SavedDeviceAccount }) => {
   const selectedColor = getSpacemanColorOption(account.spacemanColor);
   const selectedPet = getSpacemanPetOption(account.spacemanPet);
@@ -35,15 +35,13 @@ const HeroStage = ({ account }: { account: SavedDeviceAccount }) => {
   const suitColor = selectedColor.modelColor ?? undefined;
   const CharacterModel = account.character === "pink" ? SpacemanPink : SpacemanWhite;
 
-  // Exact RPG hero stage positioning & sizing:
-  // With pet: pilot slightly to the left, pet to the right, facing front with slight inwards angle
-  // Without pet: pilot centered
+
   const pilotX = hasPet ? -0.32 : 0;
   const petX = 0.50;
-  
-  // Pilot scale: calibrated so crown / tall hats don't hit the top border, feet don't clip bottom
-  const pilotScale = account.spacemanHat === "none" 
-    ? (hasPet ? 0.48 : 0.52) 
+
+
+  const pilotScale = account.spacemanHat === "none"
+    ? (hasPet ? 0.48 : 0.52)
     : (hasPet ? 0.42 : 0.46);
 
   const groupRef = useRef<THREE.Group>(null);
@@ -51,14 +49,14 @@ const HeroStage = ({ account }: { account: SavedDeviceAccount }) => {
   useFrame(({ clock }) => {
     if (!groupRef.current) return;
     const t = clock.getElapsedTime();
-    // Front-facing subtle breathing and gentle hero turn (always facing user, ±7 degrees)
+
     groupRef.current.rotation.y = Math.sin(t * 0.9) * 0.12;
     groupRef.current.position.y = Math.sin(t * 1.8) * 0.02;
   });
 
   return (
     <group ref={groupRef}>
-      {/* Pilot Model */}
+
       <group position={[pilotX, -1.08, 0]} rotation={[0, hasPet ? 0.10 : 0, 0]}>
         <CharacterModel
           scale={pilotScale}
@@ -67,18 +65,18 @@ const HeroStage = ({ account }: { account: SavedDeviceAccount }) => {
           suitColor={suitColor}
           hatId={account.spacemanHat}
         />
-        {/* Glowing holographic pedestal beneath pilot feet */}
+
         <mesh position={[0, -0.01, 0]} rotation={[-Math.PI / 2, 0, 0]}>
           <ringGeometry args={[0.30, 0.36, 32]} />
           <meshBasicMaterial color="#00ffcc" transparent opacity={0.4} />
         </mesh>
       </group>
 
-      {/* Pet Companion */}
+
       {hasPet && (
         <group position={[petX, -0.92, 0.15]} rotation={[0, -0.18, 0]} scale={0.68}>
           <SpacemanPet petId={account.spacemanPet} />
-          {/* Companion holographic ring beneath pet */}
+
           <mesh position={[0, -0.01, 0]} rotation={[-Math.PI / 2, 0, 0]}>
             <ringGeometry args={[0.22, 0.28, 32]} />
             <meshBasicMaterial color={selectedPet.accent || "#00e5ff"} transparent opacity={0.35} />
@@ -89,7 +87,7 @@ const HeroStage = ({ account }: { account: SavedDeviceAccount }) => {
   );
 };
 
-// 3D Mini Hero Preview Canvas with balanced camera framing
+
 const SlotHeroCanvas = ({ account }: { account: SavedDeviceAccount }) => {
   const selectedPet = getSpacemanPetOption(account.spacemanPet);
   const hasPet = account.spacemanPet !== "none";
@@ -170,7 +168,7 @@ export const DeviceAccountModal: React.FC<DeviceAccountModalProps> = ({
     playSfx("uiConfirm");
     activateDeviceAccount(acc);
     onClose();
-    // Navigate straight to MainHub with this account
+
     navigate("/mainhub");
   };
 
@@ -190,7 +188,7 @@ export const DeviceAccountModal: React.FC<DeviceAccountModalProps> = ({
   return (
     <div className="dam-overlay" onClick={onClose}>
       <div className="dam-modal" onClick={(e) => e.stopPropagation()}>
-        {/* Top Header */}
+
         <div className="dam-header">
           <div className="dam-header-left">
             <div className="dam-icon-pulse">🎮</div>
@@ -221,7 +219,7 @@ export const DeviceAccountModal: React.FC<DeviceAccountModalProps> = ({
           </div>
         </div>
 
-        {/* Device Info Bar */}
+
         <div className="dam-device-bar">
           <div className="dam-device-id">
             <span className="dam-lbl">DEVICE ID:</span>
@@ -243,7 +241,7 @@ export const DeviceAccountModal: React.FC<DeviceAccountModalProps> = ({
           </div>
         </div>
 
-        {/* Hero Save Slots */}
+
         <div className="dam-slots-container">
           {loading ? (
             <div className="dam-loading">
@@ -252,7 +250,7 @@ export const DeviceAccountModal: React.FC<DeviceAccountModalProps> = ({
             </div>
           ) : (
             <>
-              {/* Slot 1 */}
+
               <div
                 className={`dam-slot-card ${
                   accounts[0] ? "occupied" : "empty"
@@ -332,7 +330,7 @@ export const DeviceAccountModal: React.FC<DeviceAccountModalProps> = ({
                 )}
               </div>
 
-              {/* Slot 2 */}
+
               <div
                 className={`dam-slot-card ${
                   accounts[1] ? "occupied" : "empty"
@@ -420,7 +418,7 @@ export const DeviceAccountModal: React.FC<DeviceAccountModalProps> = ({
           )}
         </div>
 
-        {/* Quota & Policy Notice */}
+
         <div className="dam-footer-notice">
           {isFull ? (
             <div className="dam-alert-full">

@@ -52,10 +52,10 @@ export const RadarChart: React.FC<RadarChartProps> = ({ scores }) => {
           </linearGradient>
         </defs>
 
-        {/* Lingkaran Background Glow */}
+
         <circle cx={center.x} cy={center.y} r={radius} fill="url(#radar-glow)" />
 
-        {/* Poligon Grid Web (25%, 50%, 75%, 100%) */}
+
         {gridLevels.map((lvl) => {
           const r = radius * lvl;
           const points = axes
@@ -77,7 +77,7 @@ export const RadarChart: React.FC<RadarChartProps> = ({ scores }) => {
           );
         })}
 
-        {/* Garis Sumbu (Spokes) */}
+
         {axes.map((axis) => {
           const x = center.x + radius * Math.cos(axis.angle);
           const y = center.y + radius * Math.sin(axis.angle);
@@ -94,7 +94,7 @@ export const RadarChart: React.FC<RadarChartProps> = ({ scores }) => {
           );
         })}
 
-        {/* Poligon Nilai Pemain */}
+
         <polygon
           points={polygonPoints}
           fill="url(#poly-gradient)"
@@ -106,7 +106,7 @@ export const RadarChart: React.FC<RadarChartProps> = ({ scores }) => {
           }}
         />
 
-        {/* Titik Vertex (Simpul Sumbu) */}
+
         {axes.map((axis) => {
           const value = scores[axis.key] || 40;
           const normalized = Math.max(0.15, Math.min(1.0, value / 100));
@@ -121,7 +121,7 @@ export const RadarChart: React.FC<RadarChartProps> = ({ scores }) => {
           );
         })}
 
-        {/* Label TOP: SYSTEM ARCHITECT */}
+
         <text
           x={center.x}
           y={center.y - radius - 24}
@@ -146,7 +146,7 @@ export const RadarChart: React.FC<RadarChartProps> = ({ scores }) => {
           {scores.system}%
         </text>
 
-        {/* Label RIGHT: AI & LOGIC */}
+
         <text
           x={center.x + radius + 14}
           y={center.y - 4}
@@ -171,7 +171,7 @@ export const RadarChart: React.FC<RadarChartProps> = ({ scores }) => {
           {scores.aiLogic}%
         </text>
 
-        {/* Label BOTTOM: QUALITY & CYBER */}
+
         <text
           x={center.x}
           y={center.y + radius + 22}
@@ -196,7 +196,7 @@ export const RadarChart: React.FC<RadarChartProps> = ({ scores }) => {
           {scores.debugging}%
         </text>
 
-        {/* Label LEFT: INTERACTIVE TECH */}
+
         <text
           x={center.x - radius - 14}
           y={center.y - 4}
@@ -222,7 +222,7 @@ export const RadarChart: React.FC<RadarChartProps> = ({ scores }) => {
         </text>
       </svg>
 
-      {/* Sleek Bottom Legend Bar */}
+
       <div className="radar-legend-bar">
         {axes.map((axis) => (
           <div key={axis.key} className="radar-legend-item">

@@ -134,14 +134,14 @@ export const NavFlightHUD: React.FC<NavFlightHUDProps> = ({
       className={`nav-flight-hud${visible ? " is-visible" : ""}`}
       aria-hidden="true"
     >
-      {/* On-screen target bracket */}
+
       {discrete.onScreen && (
         <div ref={reticleRef} className={`nav-flight-reticle${landingClass}`}>
           <span ref={reticleLabelRef} />
         </div>
       )}
 
-      {/* Off-screen direction arrow */}
+
       {!discrete.onScreen && (
         <div ref={edgeRef} className={`nav-flight-edge${landingClass}`}>
           <div className="nav-flight-edge-inner">

@@ -184,7 +184,7 @@
   margin-left: auto;
 }
 
-/* Language Switcher Button */
+
 .cs-lang-switcher {
   display: inline-flex;
   align-items: center;
@@ -244,7 +244,7 @@
   user-select: none;
 }
 
-/* Device Memory & Hero Slot Selector Button */
+
 .cs-device-slot-action {
   pointer-events: auto;
 }

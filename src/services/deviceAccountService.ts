@@ -44,9 +44,7 @@ const DEVICE_ID_KEY = "space-academy-device-uuid";
 const DEVICE_ACCOUNTS_KEY = "space-academy-device-accounts";
 export const MAX_ACCOUNTS_PER_DEVICE = 2;
 
-/**
- * Get or generate persistent unique device ID
- */
+
 export function getLocalDeviceId(): string {
   let id = localStorage.getItem(DEVICE_ID_KEY);
   if (!id) {
@@ -58,9 +56,7 @@ export function getLocalDeviceId(): string {
   return id;
 }
 
-/**
- * Read local cached device accounts
- */
+
 export function getLocalSavedAccounts(): SavedDeviceAccount[] {
   try {
     const raw = localStorage.getItem(DEVICE_ACCOUNTS_KEY);
@@ -73,9 +69,7 @@ export function getLocalSavedAccounts(): SavedDeviceAccount[] {
   }
 }
 
-/**
- * Save accounts array to localStorage (capped at 2)
- */
+
 export function setLocalSavedAccounts(accounts: SavedDeviceAccount[]): void {
   try {
     const capped = accounts.slice(0, MAX_ACCOUNTS_PER_DEVICE);
@@ -85,9 +79,7 @@ export function setLocalSavedAccounts(accounts: SavedDeviceAccount[]): void {
   }
 }
 
-/**
- * Sync and snapshot the currently active player in useGameStore into device accounts
- */
+
 export function snapshotCurrentStoreAccount(): SavedDeviceAccount | null {
   const store = useGameStore.getState();
   const name = store.playerData.name?.trim();
@@ -120,7 +112,7 @@ export function snapshotCurrentStoreAccount(): SavedDeviceAccount | null {
   };
 
   const existing = getLocalSavedAccounts();
-  // IMPORTANT: Match strictly by cadet NAME to prevent overwriting other slots
+
   const existingIndex = existing.findIndex(
     (a) => a.name.toLowerCase() === name.toLowerCase()
   );
@@ -139,7 +131,7 @@ export function snapshotCurrentStoreAccount(): SavedDeviceAccount | null {
   } else if (existing.length < MAX_ACCOUNTS_PER_DEVICE) {
     updatedList = [...existing, account];
   } else {
-    // If device is already at max 2, do not overwrite other slots
+
     updatedList = existing;
   }
 
@@ -147,9 +139,7 @@ export function snapshotCurrentStoreAccount(): SavedDeviceAccount | null {
   return account;
 }
 
-/**
- * Fetch all device accounts (merges LocalStorage & Supabase)
- */
+
 export async function fetchDeviceAccounts(): Promise<{
   deviceId: string;
   accounts: SavedDeviceAccount[];
@@ -158,18 +148,18 @@ export async function fetchDeviceAccounts(): Promise<{
 }> {
   const deviceId = getLocalDeviceId();
 
-  // First sync current active store if valid
+
   snapshotCurrentStoreAccount();
 
   const localAccounts = getLocalSavedAccounts();
   const mergedMap = new Map<string, SavedDeviceAccount>();
 
-  // Add local accounts
+
   for (const acc of localAccounts) {
     mergedMap.set(acc.name.toLowerCase(), acc);
   }
 
-  // Fetch remote players registered with this deviceId from Supabase
+
   if (isSupabaseEnabled() && supabase) {
     try {
       let remoteRows: any[] | null = null;
@@ -178,12 +168,12 @@ export async function fetchDeviceAccounts(): Promise<{
         .select("*, leaderboard(total_score)")
         .eq("device_id", deviceId)
         .order("created_at", { ascending: true })
-        .limit(20); // Query higher limit to avoid duplicates hiding other cadets
+        .limit(20);
 
       if (!error && data) {
         remoteRows = data;
       } else if (error && (error.code === "PGRST204" || error.message?.includes("device_id"))) {
-        // Fallback if device_id column doesn't exist yet in Supabase
+
         if (localAccounts.length > 0) {
           const names = localAccounts.map((a) => a.name);
           const { data: fallbackRows } = await supabase
@@ -199,14 +189,14 @@ export async function fetchDeviceAccounts(): Promise<{
           const key = row.name.toLowerCase();
           const existing = mergedMap.get(key);
 
-          // Support both single-object and array relation from Supabase for leaderboard
+
           const lbData = row.leaderboard;
           const lbScore = Array.isArray(lbData)
             ? lbData[0]?.total_score
             : lbData?.total_score;
           const remoteTotalScore = lbScore ?? existing?.totalScore ?? 0;
 
-          // If entry exists, only replace if this row has actual score or higher score
+
           if (existing && existing.totalScore > 0 && remoteTotalScore === 0) {
             continue;
           }
@@ -241,7 +231,7 @@ export async function fetchDeviceAccounts(): Promise<{
   const accounts = Array.from(mergedMap.values()).slice(0, MAX_ACCOUNTS_PER_DEVICE);
   setLocalSavedAccounts(accounts);
 
-  // Background recovery: sync all local accounts to Supabase
+
   if (isSupabaseEnabled()) {
     syncAllLocalAccountsToSupabase().catch((err) =>
       console.warn("[deviceAccountService] Background sync warning:", err)
@@ -256,15 +246,13 @@ export async function fetchDeviceAccounts(): Promise<{
   };
 }
 
-/**
- * Sync a local SavedDeviceAccount to Supabase database (Player, Scores, Leaderboard, Specialization)
- */
+
 export async function syncAccountToSupabase(account: SavedDeviceAccount): Promise<string | null> {
   if (!isSupabaseEnabled()) return null;
   if (!account.name?.trim()) return null;
 
   try {
-    // 1. Register or retrieve player in Supabase
+
     const playerId = await registerPlayer({
       name: account.name.trim(),
       phone: account.phone || "",
@@ -282,20 +270,20 @@ export async function syncAccountToSupabase(account: SavedDeviceAccount): Promis
       return null;
     }
 
-    // 2. Mark progress flags
+
     if (account.isGameCompleted || account.visitedPlanetsCount >= 6) {
       await markGameCompleted(playerId);
       await markIntroCompleted(playerId);
     }
 
-    // 3. Update specialization if exists
+
     if (account.specializationResult) {
       await updatePlayer(playerId, {
         specialization_result: account.specializationResult,
       });
     }
 
-    // 4. Sync planet scores (ONLY if account has legitimately recorded scores)
+
     if (account.totalScore > 0 && account.planetScores && account.planetScores.length > 0) {
       for (const [, scoreData] of account.planetScores) {
         if (scoreData && scoreData.score > 0) {
@@ -310,7 +298,7 @@ export async function syncAccountToSupabase(account: SavedDeviceAccount): Promis
       }
     }
 
-    // 5. Sync total score to leaderboard
+
     if (account.totalScore > 0) {
       await submitLeaderboardEntry(
         account.name,
@@ -320,7 +308,7 @@ export async function syncAccountToSupabase(account: SavedDeviceAccount): Promis
       );
     }
 
-    // 6. Update cached account id with real Supabase UUID if it was previously local
+
     if (account.id !== playerId) {
       account.id = playerId;
       const localList = getLocalSavedAccounts();
@@ -341,9 +329,7 @@ export async function syncAccountToSupabase(account: SavedDeviceAccount): Promis
   }
 }
 
-/**
- * Synchronize all locally saved device accounts to Supabase
- */
+
 export async function syncAllLocalAccountsToSupabase(): Promise<number> {
   if (!isSupabaseEnabled()) return 0;
   const accounts = getLocalSavedAccounts();
@@ -357,14 +343,12 @@ export async function syncAllLocalAccountsToSupabase(): Promise<number> {
   return successCount;
 }
 
-/**
- * Load a saved account into useGameStore as active hero
- */
+
 export function activateDeviceAccount(account: SavedDeviceAccount): void {
-  // Update local player ID
+
   setLocalPlayerId(account.id);
 
-  // Reconstitute state
+
   const visitedSet = new Set<import("../types/planet.types").PlanetId>(
     (account.visitedPlanets || []) as import("../types/planet.types").PlanetId[]
   );
@@ -396,19 +380,17 @@ export function activateDeviceAccount(account: SavedDeviceAccount): void {
     telemetrySignals: account.telemetrySignals || INITIAL_TELEMETRY_SIGNALS,
   });
 
-  // Re-calculate specialization profile strictly for this newly activated account
+
   useGameStore.getState().refreshSpecializationProfile();
 
-  // Re-snapshot to update last active timestamp
+
   snapshotCurrentStoreAccount();
 
-  // Trigger sync in background for this account
+
   syncAccountToSupabase(account).catch(console.warn);
 }
 
-/**
- * Prepare store for a new cadet account (fresh slot)
- */
+
 export function prepareNewCadetSlot(chosenCharacter: Character = "pink"): void {
   const store = useGameStore.getState();
   store.resetGame();
@@ -430,6 +412,6 @@ export function prepareNewCadetSlot(chosenCharacter: Character = "pink"): void {
     telemetrySignals: INITIAL_TELEMETRY_SIGNALS,
     playerId: null,
   });
-  // Clear active player ID so new registration creates fresh UUID
+
   localStorage.removeItem("space-academy-player-id");
 }

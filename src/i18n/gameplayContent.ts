@@ -44,7 +44,7 @@ export interface LogicLevel {
   explanation: string;
 }
 
-// 1. STAGE 2: MULTIPLE CHOICE QUESTIONS
+
 export const getQuizQuestions = (lang: Language): Question[] => {
   if (lang === "en") {
     return [
@@ -171,7 +171,7 @@ export const getQuizQuestions = (lang: Language): Question[] => {
     ];
   }
 
-  // Indonesian (default)
+
   return [
     {
       id: 1,
@@ -296,7 +296,7 @@ export const getQuizQuestions = (lang: Language): Question[] => {
   ];
 };
 
-// 2. STAGE 3: PIPELINE PUZZLE CHALLENGES
+
 export const getPipelineChallenges = (lang: Language): PipelineChallenge[] => {
   if (lang === "en") {
     return [
@@ -463,7 +463,7 @@ export const getPipelineChallenges = (lang: Language): PipelineChallenge[] => {
     ];
   }
 
-  // Indonesian
+
   return [
     {
       id: 1,
@@ -628,7 +628,7 @@ export const getPipelineChallenges = (lang: Language): PipelineChallenge[] => {
   ];
 };
 
-// 3. STAGE 4: FLOWCHART FIXER CHALLENGES
+
 export const getFlowchartChallenges = (lang: Language): FlowchartChallenge[] => {
   if (lang === "en") {
     return [
@@ -707,7 +707,7 @@ export const getFlowchartChallenges = (lang: Language): FlowchartChallenge[] => 
     ];
   }
 
-  // Indonesian
+
   return [
     {
       id: 1,
@@ -784,7 +784,7 @@ export const getFlowchartChallenges = (lang: Language): FlowchartChallenge[] => 
   ];
 };
 
-// 4. STAGE 5: LOGIC CIRCUIT LEVELS
+
 export const getLogicLevels = (lang: Language): LogicLevel[] => {
   if (lang === "en") {
     return [
@@ -855,7 +855,7 @@ export const getLogicLevels = (lang: Language): LogicLevel[] => {
     ];
   }
 
-  // Indonesian
+
   return [
     {
       id: 1,

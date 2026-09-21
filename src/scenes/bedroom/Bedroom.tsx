@@ -238,7 +238,7 @@ const CameraAnimator: React.FC<{
       lookAt = [4.72, -0.72, -1.22];
       energy = 0.18;
     } else if (phase === 1) {
-      
+
       position = [2.32, 0.06, 3.02];
       lookAt = [4.86, -0.98, -0.22];
       energy = 0.24;
@@ -323,18 +323,18 @@ const SPACEMAN_SIT_OFFSET = { x: 0.03, y: 0.08, z: 0.06 } as const;
 export const WAKE_DURATION = 4.8;
 
 const WAKE_BEATS = {
-  
+
   uprightFrom: 0.2,
   uprightTo: 0.62,
-  
+
   sitFrom: 0.24,
   sitTo: 0.56,
-  
+
   groggyFrom: 0.58,
   groggyTo: 0.66,
   groggyFadeFrom: 0.78,
   groggyFadeTo: 0.86,
-  
+
   standFrom: 0.76,
   standTo: 0.94,
 } as const;
@@ -515,7 +515,7 @@ const SpacemanAnimator: React.FC<{
       response
     );
   });
-  
+
   return null;
 };
 
@@ -529,7 +529,7 @@ const RobotAnimator: React.FC<{
     if (!robotRef.current) return;
 
     if (phase >= 1) {
-      
+
       gsap.to(robotRef.current.position, {
         x: 3.5,
         y: -0.95,
@@ -637,7 +637,7 @@ const CharacterGrounding: React.FC<{
 
   useFrame(({ clock }) => {
     const pulse = 0.5 + Math.sin(clock.getElapsedTime() * 2.2) * 0.12;
-    
+
     const planted = isWaking
       ? THREE.MathUtils.smootherstep(wakeProgressRef.current, 0.74, 0.96)
       : 1;
@@ -1207,7 +1207,7 @@ const Bedroom: React.FC = () => {
 
     cancelSpeechNarration();
 
-    // Guarantee that this newly registered cadet starts with a 100% clean progress sheet
+
     useGameStore.setState({
       planetScores: new Map(),
       visitedPlanets: new Set(),

@@ -104,7 +104,7 @@ export const CadetDossierModal: React.FC<CadetDossierModalProps> = ({
     try {
       setIsGeneratingPdf(true);
       setDownloadFeedback(t.generatingPdf);
-      // Wait for HD 3D frame to render to buffer
+
       await new Promise((resolve) => setTimeout(resolve, 400));
       await generateCadetCardPdf(
         cadet,
@@ -164,7 +164,7 @@ export const CadetDossierModal: React.FC<CadetDossierModalProps> = ({
       aria-label={t.title}
     >
       <div className="dossier-container" ref={containerRef}>
-        {/* ── Header ─────────────────────────────────── */}
+
         <header className="dossier-header">
           <div className="dossier-header-content">
             <p className="dossier-classification">
@@ -204,9 +204,9 @@ export const CadetDossierModal: React.FC<CadetDossierModalProps> = ({
           </button>
         </header>
 
-        {/* ── Body ───────────────────────────────────── */}
+
         <div className="dossier-body">
-          {/* Confidence Meter */}
+
           <section className="dossier-section dossier-confidence">
             <span className="dossier-section-label">
               {language === "en" ? "Assessment Confidence" : "Tingkat Keyakinan Asesmen"}
@@ -237,7 +237,7 @@ export const CadetDossierModal: React.FC<CadetDossierModalProps> = ({
             </div>
           </section>
 
-          {/* Radar Chart */}
+
           <section className="dossier-section">
             <span className="dossier-section-label">
               {language === "en" ? "Competency Radar — 4 Pillars" : "Radar Kompetensi — 4 Pilar"}
@@ -247,7 +247,7 @@ export const CadetDossierModal: React.FC<CadetDossierModalProps> = ({
             </div>
           </section>
 
-          {/* Archetype Badges */}
+
           <section className="dossier-section">
             <span className="dossier-section-label">
               {language === "en" ? "Specialization Archetypes" : "Arketipe Spesialisasi"}
@@ -264,7 +264,7 @@ export const CadetDossierModal: React.FC<CadetDossierModalProps> = ({
             </div>
           </section>
 
-          {/* Analysis Narrative */}
+
           <section className="dossier-section">
             <span className="dossier-section-label">
               {language === "en" ? "Personality Analysis" : "Analisis Karakter & Bakat"}
@@ -272,7 +272,7 @@ export const CadetDossierModal: React.FC<CadetDossierModalProps> = ({
             <p className="dossier-analysis-text">{result.analysisText}</p>
           </section>
 
-          {/* SOCS Recommendation */}
+
           <section className="dossier-section">
             <span className="dossier-section-label">
               {language === "en" ? "SOCS BINUS Bekasi — Recommendation" : "Rekomendasi SOCS BINUS Bekasi"}
@@ -291,7 +291,7 @@ export const CadetDossierModal: React.FC<CadetDossierModalProps> = ({
             </div>
           </section>
 
-          {/* Career Paths */}
+
           <section className="dossier-section">
             <span className="dossier-section-label">
               {language === "en" ? "Recommended Career Paths" : "Rekomendasi Jalur Karier"}
@@ -306,7 +306,7 @@ export const CadetDossierModal: React.FC<CadetDossierModalProps> = ({
           </section>
         </div>
 
-        {/* ── Footer ─────────────────────────────────── */}
+
         <footer className="dossier-footer">
           {downloadFeedback && (
             <div className="dossier-feedback-toast">
@@ -332,7 +332,7 @@ export const CadetDossierModal: React.FC<CadetDossierModalProps> = ({
         </footer>
       </div>
 
-      {/* Active on-screen HD Render Viewport (positioned behind backdrop, always active in WebGL loop) */}
+
       <div
         className="cadet-card-hd-canvas"
         style={{

@@ -383,7 +383,7 @@ export const AudioSettingsProvider = ({ children }: AudioSettingsProviderProps) 
                 </aside>
 
                 <div className="audio-settings-mixer">
-                  {/* Language Selection Channel */}
+
                   <div className="audio-settings-channel audio-settings-channel--lang">
                     <div className="audio-settings-channel-head">
                       <div className="audio-settings-channel-icon"><GlobeIcon /></div>

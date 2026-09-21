@@ -120,7 +120,10 @@ const GameStage: React.FC = () => {
         <button
           className="gs-return-control"
           type="button"
-          onClick={() => navigate("/mainhub")}
+          onClick={() => {
+            useGameStore.getState().resetMultiplayerSession();
+            navigate("/mainhub");
+          }}
         >
           <span>{t.stages.common.exitModule}</span>
           <strong>{t.stages.common.returnHub}</strong>

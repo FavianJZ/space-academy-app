@@ -104,7 +104,7 @@ export async function generateCadetCardPdf(
   const suitColorHex = colorOpt?.modelColor ?? (loadout?.character === "pink" ? "#f46bad" : "#77eaff");
   const petAccentHex = petOpt && loadout?.petId !== "none" ? petOpt.accent : "#7595a0";
 
-  // Helper rounded rect
+
   const drawRoundedRect = (
     x: number,
     y: number,
@@ -118,7 +118,7 @@ export async function generateCadetCardPdf(
     safeRoundRect(ctx, x, y, w, h, r, fill, stroke, strokeWidth);
   };
 
-  // Helper radial glow
+
   const drawGlow = (cx: number, cy: number, r: number, color: string) => {
     const rad = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
     rad.addColorStop(0, color);
@@ -129,7 +129,7 @@ export async function generateCadetCardPdf(
     ctx.fill();
   };
 
-  // 1. Card Shell Background (Deep Aerospace Obsidian Carbon Glass)
+
   const bgGrad = ctx.createLinearGradient(0, 0, cardWidth, cardHeight);
   bgGrad.addColorStop(0, "#030712");
   bgGrad.addColorStop(0.3, "#071329");
@@ -137,7 +137,7 @@ export async function generateCadetCardPdf(
   bgGrad.addColorStop(1, "#02050f");
   drawRoundedRect(0, 0, cardWidth, cardHeight, 26, bgGrad);
 
-  // Precision Sci-Fi Coordinate Grid
+
   ctx.strokeStyle = "rgba(0, 255, 204, 0.035)";
   ctx.lineWidth = 1;
   const gridSize = 32;
@@ -154,13 +154,13 @@ export async function generateCadetCardPdf(
     ctx.stroke();
   }
 
-  // Ambient Glowing Hologram Nebulae
+
   drawGlow(294, 450, 480, "rgba(0, 255, 204, 0.12)");
   drawGlow(1250, 320, 500, "rgba(170, 102, 255, 0.11)");
   drawGlow(cardWidth / 2, cardHeight - 120, 450, "rgba(0, 204, 255, 0.08)");
   drawGlow(750, 220, 300, "rgba(255, 143, 201, 0.06)");
 
-  // 2. Dual Glowing Cyber Outer Borders with Chamfered Tech Accents
+
   ctx.strokeStyle = "rgba(126, 249, 255, 0.25)";
   ctx.lineWidth = 2;
   ctx.strokeRect(20, 20, cardWidth - 40, cardHeight - 40);
@@ -169,7 +169,7 @@ export async function generateCadetCardPdf(
   ctx.lineWidth = 1.5;
   ctx.strokeRect(30, 30, cardWidth - 60, cardHeight - 60);
 
-  // Sci-Fi Corner Brackets
+
   const cornerLength = 42;
   const drawCornerBracket = (x: number, y: number, dx: number, dy: number) => {
     ctx.strokeStyle = "#00ffcc";
@@ -180,7 +180,7 @@ export async function generateCadetCardPdf(
     ctx.lineTo(x + dx * cornerLength, y);
     ctx.stroke();
 
-    // Minor decorative cyber ticks
+
     ctx.strokeStyle = "rgba(126, 249, 255, 0.6)";
     ctx.lineWidth = 2;
     ctx.beginPath();
@@ -195,7 +195,7 @@ export async function generateCadetCardPdf(
   drawCornerBracket(20, cardHeight - 20, 1, -1);
   drawCornerBracket(cardWidth - 20, cardHeight - 20, -1, -1);
 
-  // Iridescent Holographic Foil Header Strip (Laser sheen across top)
+
   const foilGrad = ctx.createLinearGradient(48, 0, cardWidth - 48, 0);
   foilGrad.addColorStop(0, "rgba(0, 255, 204, 0.8)");
   foilGrad.addColorStop(0.25, "rgba(0, 204, 255, 0.9)");
@@ -205,8 +205,7 @@ export async function generateCadetCardPdf(
   ctx.fillStyle = foilGrad;
   ctx.fillRect(48, 30, cardWidth - 96, 3);
 
-  // 3. Card Top Header Bar
-  // Smart Security Microchip Graphic (Golden cyber contact pads)
+
   const chipX = 52;
   const chipY = 46;
   const chipW = 56;
@@ -223,13 +222,13 @@ export async function generateCadetCardPdf(
   ctx.lineTo(chipX + (chipW * 2) / 3, chipY + chipH);
   ctx.stroke();
 
-  // Central micro contact circuit node
+
   ctx.fillStyle = "#ffd700";
   ctx.beginPath();
   ctx.arc(chipX + chipW / 2, chipY + chipH / 2, 4, 0, Math.PI * 2);
   ctx.fill();
 
-  // Header Title & Institution Metadata
+
   ctx.fillStyle = "#00ffcc";
   ctx.font = "bold 14px 'Segoe UI', Arial, sans-serif";
   ctx.textAlign = "left";
@@ -241,7 +240,7 @@ export async function generateCadetCardPdf(
   ctx.letterSpacing = "1.6px";
   ctx.fillText("SCHOOL OF COMPUTER SCIENCE (SOCS) • BINUS UNIVERSITY BEKASI", 124, 82);
 
-  // Status Badge (Top Right)
+
   const isCertified = result.confidenceLevel >= 100;
   const statusBg = isCertified ? "rgba(0, 255, 204, 0.14)" : "rgba(255, 170, 0, 0.14)";
   const statusStroke = isCertified ? "#00ffcc" : "#ffaa00";
@@ -257,7 +256,7 @@ export async function generateCadetCardPdf(
   ctx.letterSpacing = "1.2px";
   ctx.fillText(statusLabel, cardWidth - 202, 73);
 
-  // Divider Line with central accent
+
   ctx.strokeStyle = "rgba(126, 249, 255, 0.22)";
   ctx.lineWidth = 1.5;
   ctx.beginPath();
@@ -265,22 +264,18 @@ export async function generateCadetCardPdf(
   ctx.lineTo(cardWidth - 52, 106);
   ctx.stroke();
 
-  // 4. Main Two-Column Layout (H: 816)
-  // LEFT COLUMN: Avatar & Pet Hologram Chamber (X: 52, W: 484, Y: 120, H: 816)
-  // RIGHT COLUMN: Cadet Dossier, Archetypes & Telemetry (X: 562, W: 986, Y: 120, H: 816)
+
   const leftX = 52;
   const leftW = 484;
   const rightX = 560;
-  const rightW = cardWidth - rightX - 52; // 988
+  const rightW = cardWidth - rightX - 52;
   const mainY = 120;
   const mainH = 816;
 
-  // ─────────────────────────────────────────────────────────────
-  // LEFT: AVATAR & PET HOLOGRAM CHAMBER
-  // ─────────────────────────────────────────────────────────────
+
   drawRoundedRect(leftX, mainY, leftW, mainH, 18, "rgba(6, 14, 32, 0.78)", "rgba(0, 255, 204, 0.38)", 1.5);
 
-  // Chamber Header Bar
+
   drawRoundedRect(leftX + 16, mainY + 14, leftW - 32, 34, 7, "rgba(0, 255, 204, 0.12)", "rgba(0, 255, 204, 0.32)");
   ctx.fillStyle = "#00ffcc";
   ctx.font = "bold 12px 'Segoe UI', Arial, sans-serif";
@@ -288,11 +283,11 @@ export async function generateCadetCardPdf(
   ctx.letterSpacing = "2px";
   ctx.fillText("BIOMETRIC AVATAR & PET LINK", leftX + leftW / 2, mainY + 36);
 
-  // Hologram Chamber Viewport Glass
+
   const viewX = leftX + 16;
   const viewY = mainY + 56;
-  const viewW = leftW - 32; // 452
-  const viewH = 550; // Increased height for prominent avatar showcase!
+  const viewW = leftW - 32;
+  const viewH = 550;
 
   const chamberGlassGrad = ctx.createLinearGradient(viewX, viewY, viewX, viewY + viewH);
   chamberGlassGrad.addColorStop(0, "rgba(4, 10, 26, 0.95)");
@@ -300,11 +295,11 @@ export async function generateCadetCardPdf(
   chamberGlassGrad.addColorStop(1, "rgba(3, 8, 20, 0.98)");
   drawRoundedRect(viewX, viewY, viewW, viewH, 12, chamberGlassGrad, "rgba(126, 249, 255, 0.25)", 1.5);
 
-  // Pedestal platform surface elevation & center
+
   const pedCenterX = leftX + leftW / 2;
   const pedY = viewY + viewH - 42;
 
-  // Tactical Scanlines in chamber viewport
+
   ctx.strokeStyle = "rgba(0, 255, 204, 0.045)";
   ctx.lineWidth = 1;
   for (let y = viewY; y < viewY + viewH; y += 18) {
@@ -314,7 +309,7 @@ export async function generateCadetCardPdf(
     ctx.stroke();
   }
 
-  // Tactical HUD Corner Reticles on Viewport
+
   const drawReticle = (rx: number, ry: number, rdx: number, rdy: number) => {
     ctx.strokeStyle = "#00ffcc";
     ctx.lineWidth = 2;
@@ -329,7 +324,7 @@ export async function generateCadetCardPdf(
   drawReticle(viewX + 8, viewY + viewH - 8, 1, -1);
   drawReticle(viewX + viewW - 8, viewY + viewH - 8, -1, -1);
 
-  // HUD Info Overlay top of chamber
+
   ctx.fillStyle = "rgba(126, 249, 255, 0.75)";
   ctx.font = "bold 9px 'Consolas', monospace";
   ctx.textAlign = "left";
@@ -337,8 +332,7 @@ export async function generateCadetCardPdf(
   ctx.textAlign = "right";
   ctx.fillText("BEACON-01 LINKED", viewX + viewW - 16, viewY + 22);
 
-  // 3D Perspective Glowing Pedestal Rings (Drawn UNDER the avatar feet)
-  // Outer glowing ring
+
   ctx.beginPath();
   ctx.ellipse(pedCenterX, pedY, 185, 40, 0, 0, Math.PI * 2);
   ctx.fillStyle = "rgba(0, 255, 204, 0.12)";
@@ -347,14 +341,14 @@ export async function generateCadetCardPdf(
   ctx.lineWidth = 2.5;
   ctx.stroke();
 
-  // Middle ring
+
   ctx.beginPath();
   ctx.ellipse(pedCenterX, pedY, 135, 26, 0, 0, Math.PI * 2);
   ctx.strokeStyle = "rgba(170, 102, 255, 0.75)";
   ctx.lineWidth = 2;
   ctx.stroke();
 
-  // Inner core glow ellipse
+
   ctx.beginPath();
   ctx.ellipse(pedCenterX, pedY, 80, 16, 0, 0, Math.PI * 2);
   ctx.fillStyle = "rgba(0, 255, 204, 0.25)";
@@ -363,7 +357,7 @@ export async function generateCadetCardPdf(
   ctx.lineWidth = 1.5;
   ctx.stroke();
 
-  // Platform Degree Compass Markers
+
   ctx.fillStyle = "#7ef9ff";
   ctx.font = "bold 8px 'Consolas', monospace";
   ctx.textAlign = "center";
@@ -372,7 +366,7 @@ export async function generateCadetCardPdf(
   ctx.fillText("270°", pedCenterX - 170, pedY + 4);
   ctx.fillText("090°", pedCenterX + 170, pedY + 4);
 
-  // Try to capture HD 3D avatar canvas or standard canvas
+
   let hasDrawnAvatar = false;
   try {
     const hdCanvas = document.querySelector(
@@ -385,7 +379,7 @@ export async function generateCadetCardPdf(
     const avatarCanvas = (hdCanvas && hdCanvas.width > 0) ? hdCanvas : beaconCanvas;
 
     if (avatarCanvas && avatarCanvas.width > 0 && avatarCanvas.height > 0) {
-      // Find exact non-transparent bounding box of 3D characters
+
       let cropMinX = avatarCanvas.width;
       let cropMaxX = 0;
       let cropMinY = avatarCanvas.height;
@@ -441,7 +435,7 @@ export async function generateCadetCardPdf(
         scanForPixels();
       }
 
-      // If scan found valid character region, pad it cleanly
+
       let sX: number;
       let sY: number;
       let sW: number;
@@ -452,7 +446,7 @@ export async function generateCadetCardPdf(
         const h = cropMaxY - cropMinY;
         const padX = w * 0.06;
         const padYTop = h * 0.06;
-        const padYBottom = 18; // Generous margin so pet claws, paws, and feet are never clipped
+        const padYBottom = 18;
 
         sX = Math.max(0, cropMinX - padX);
         sY = Math.max(0, cropMinY - padYTop);
@@ -466,27 +460,27 @@ export async function generateCadetCardPdf(
         sH = isHd ? avatarCanvas.height * 0.90 : avatarCanvas.height * 0.75;
       }
 
-      // Proportional scale: target height 320px for high-impact presence in chamber
+
       const targetHeight = 320;
       let destH = targetHeight;
       let destW = (sW / sH) * destH;
 
-      // Ensure width fits comfortably inside viewport with padding
+
       if (destW > viewW - 36) {
         destW = viewW - 36;
         destH = (sH / sW) * destW;
       }
 
       const destX = pedCenterX - destW / 2;
-      // Anchor characters naturally on top of the pedestal surface
+
       const footLevelY = pedY - 14;
       const destY = footLevelY - destH;
 
-      // Enable high-quality image smoothing for crystal-clear HD output
+
       ctx.imageSmoothingEnabled = true;
       ctx.imageSmoothingQuality = "high";
 
-      // Render the zoomed & cropped 3D astronaut + pet
+
       ctx.drawImage(avatarCanvas, sX, sY, sW, sH, destX, destY, destW, destH);
       hasDrawnAvatar = true;
     }
@@ -494,46 +488,46 @@ export async function generateCadetCardPdf(
     console.warn("Could not capture 3D avatar canvas:", e);
   }
 
-  // High-Tech Stylized Vector Spaceman + Pet Illustration (Fallback at 2.5x Scale)
+
   if (!hasDrawnAvatar) {
     const avX = pedCenterX - (loadout?.petId !== "none" ? 54 : 0);
     const avY = pedY - 370;
 
-    // Outer cyber shield / glow
+
     drawGlow(avX, avY + 160, 160, "rgba(0, 255, 204, 0.15)");
 
-    // Astronaut Legs & Boots
+
     drawRoundedRect(avX - 42, avY + 260, 36, 95, 12, "#1b283d", "#00ffcc", 2);
     drawRoundedRect(avX + 6, avY + 260, 36, 95, 12, "#1b283d", "#00ffcc", 2);
-    // Heavy Boots
+
     drawRoundedRect(avX - 48, avY + 335, 44, 26, 8, suitColorHex, "#ffffff", 2);
     drawRoundedRect(avX + 4, avY + 335, 44, 26, 8, suitColorHex, "#ffffff", 2);
 
-    // Torso Armor & Flight Suit
+
     drawRoundedRect(avX - 62, avY + 130, 124, 140, 26, suitColorHex, "#ffffff", 2.5);
-    // Chest Arc Reactor Core
+
     drawRoundedRect(avX - 28, avY + 155, 56, 32, 8, "rgba(0, 255, 204, 0.25)", "#00ffcc", 1.8);
     ctx.fillStyle = "#ffffff";
     ctx.font = "bold 11px 'Segoe UI', Arial, sans-serif";
     ctx.textAlign = "center";
     ctx.fillText("CADET", avX, avY + 175);
 
-    // Helmet & Panoramic Visor
+
     drawRoundedRect(avX - 74, avY + 15, 148, 125, 48, suitColorHex, "#ffffff", 3);
-    // Visor Glass with Cyber Gradient
+
     const visorGrad = ctx.createLinearGradient(avX - 58, avY + 40, avX + 58, avY + 115);
     visorGrad.addColorStop(0, "#00ffcc");
     visorGrad.addColorStop(0.4, "#7ef9ff");
     visorGrad.addColorStop(1, "#006699");
     drawRoundedRect(avX - 58, avY + 38, 116, 78, 28, visorGrad, "#ffffff", 2);
 
-    // Visor Specular Reflection Sheen
+
     ctx.fillStyle = "rgba(255, 255, 255, 0.55)";
     ctx.beginPath();
     ctx.ellipse(avX - 22, avY + 58, 24, 10, -Math.PI / 4, 0, Math.PI * 2);
     ctx.fill();
 
-    // If hat equipped, render golden crown / tactical headwear
+
     if (hatOpt && hatOpt.id !== "none") {
       drawRoundedRect(avX - 58, avY - 24, 116, 34, 8, "rgba(255, 215, 0, 0.3)", "#ffd700", 2);
       ctx.fillStyle = "#ffd700";
@@ -541,12 +535,12 @@ export async function generateCadetCardPdf(
       ctx.fillText(`👑 ${hatOpt.shortLabel}`, avX, avY);
     }
 
-    // Companion Pet (Enlarged alongside pilot)
+
     if (petOpt && loadout?.petId !== "none") {
       const pX = pedCenterX + 115;
       const pY = pedY - 140;
 
-      // Pet glowing elemental aura
+
       drawGlow(pX, pY, 70, petAccentHex + "55");
       ctx.beginPath();
       ctx.arc(pX, pY, 56, 0, Math.PI * 2);
@@ -554,9 +548,9 @@ export async function generateCadetCardPdf(
       ctx.lineWidth = 2.5;
       ctx.stroke();
 
-      // Pet main body
+
       drawRoundedRect(pX - 38, pY - 38, 76, 76, 20, petAccentHex, "#ffffff", 2);
-      // Pet expressive eyes
+
       ctx.fillStyle = "#ffffff";
       ctx.beginPath();
       ctx.arc(pX - 14, pY - 10, 8, 0, Math.PI * 2);
@@ -568,7 +562,7 @@ export async function generateCadetCardPdf(
       ctx.arc(pX + 14, pY - 10, 4, 0, Math.PI * 2);
       ctx.fill();
 
-      // Pet classification badge
+
       drawRoundedRect(pX - 55, pY + 48, 110, 24, 6, "rgba(0,0,0,0.7)", petAccentHex, 1.2);
       ctx.fillStyle = "#ffffff";
       ctx.font = "bold 11px 'Segoe UI', Arial, sans-serif";
@@ -576,12 +570,12 @@ export async function generateCadetCardPdf(
     }
   }
 
-  // Loadout Matrix Specifications Box (Bottom of Left Column)
+
   const loadoutBoxY = viewY + viewH + 12;
   const loadoutBoxH = mainH - (loadoutBoxY - mainY) - 14;
   drawRoundedRect(viewX, loadoutBoxY, viewW, loadoutBoxH, 10, "rgba(0, 255, 204, 0.05)", "rgba(126, 249, 255, 0.22)", 1.2);
 
-  // 4 Modular Spec Cells in 2x2 Grid for Clean Futuristic Layout
+
   const cellW = (viewW - 18) / 2;
   const cellH = (loadoutBoxH - 18) / 2;
 
@@ -624,26 +618,24 @@ export async function generateCadetCardPdf(
   drawSpecCell(viewX + 6, loadoutBoxY + 6 + cellH + 6, "[LOADOUT-03]", "COMPANION PET", petName, petAccentHex);
   drawSpecCell(viewX + 6 + cellW + 6, loadoutBoxY + 6 + cellH + 6, "[LOADOUT-04]", "FLIGHT SYSTEM", flightFrame, "#00ffcc");
 
-  // ─────────────────────────────────────────────────────────────
-  // RIGHT: CADET INTELLIGENCE & TELEMETRY
-  // ─────────────────────────────────────────────────────────────
+
   drawRoundedRect(rightX, mainY, rightW, mainH, 18, "rgba(6, 14, 32, 0.78)", "rgba(126, 249, 255, 0.25)", 1.5);
 
-  // 1. Cadet Identity Header
+
   ctx.textAlign = "left";
   ctx.fillStyle = "#00ffcc";
   ctx.font = "bold 12px 'Segoe UI', Arial, sans-serif";
   ctx.letterSpacing = "2px";
   ctx.fillText("CADET CLASSIFICATION & TELEMETRY RECORD", rightX + 32, mainY + 36);
 
-  // Cadet Full Name (Prominent & High Contrast)
+
   ctx.fillStyle = "#ffffff";
   ctx.font = "900 38px 'Segoe UI', Arial, sans-serif";
   ctx.letterSpacing = "1px";
   const nameDisplay = (cadet.name || "UNKNOWN CADET").toUpperCase();
   ctx.fillText(nameDisplay, rightX + 32, mainY + 76);
 
-  // Identity Badges (School, Major, Cadet ID)
+
   const schoolStr = cadet.school ? `SCHOOL: ${cadet.school.toUpperCase()}` : "SCHOOL: SPACE ACADEMY";
   const majorStr = cadet.major ? `MAJOR: ${cadet.major.toUpperCase()}` : "MAJOR: SCIENCE & TECH";
   const cadetIdStr = `CADET ID: #SA-2026-${Math.floor(1000 + Math.random() * 9000)}`;
@@ -660,7 +652,7 @@ export async function generateCadetCardPdf(
   drawBadgePill(rightX + 215, mainY + 92, 145, majorStr);
   drawBadgePill(rightX + 368, mainY + 92, 170, cadetIdStr);
 
-  // Assessment Confidence Meter Bar
+
   const confTrackW = rightW - 64;
   const confY = mainY + 128;
   drawRoundedRect(rightX + 32, confY, confTrackW, 10, 5, "rgba(255,255,255,0.08)", "rgba(126,249,255,0.15)");
@@ -680,12 +672,12 @@ export async function generateCadetCardPdf(
     confY + 28
   );
 
-  // 2. Dual Archetypes Display (Side-by-side Cyber Cards)
+
   const archY = mainY + 174;
-  const archW = (rightW - 76) / 2; // ~456
+  const archW = (rightW - 76) / 2;
   const archH = 132;
 
-  // Map each archetype key to its exact radar score
+
   const archetypeScoreMap: Record<SpecializationArchetypeKey, number> = {
     SYSTEM_ARCHITECT: result.radarScores.system,
     AI_LOGIC_PIONEER: result.radarScores.aiLogic,
@@ -695,9 +687,9 @@ export async function generateCadetCardPdf(
   const primaryScore = archetypeScoreMap[primaryKey] ?? result.radarScores.system;
   const secondaryScore = archetypeScoreMap[secondaryKey] ?? result.radarScores.aiLogic;
 
-  // Primary Archetype Card
+
   drawRoundedRect(rightX + 32, archY, archW, archH, 12, `${primaryMeta.color}15`, primaryMeta.color, 1.8);
-  // Header tag
+
   drawRoundedRect(rightX + 46, archY + 14, 185, 22, 5, `${primaryMeta.color}30`, primaryMeta.color, 1);
   ctx.fillStyle = primaryMeta.color;
   ctx.font = "bold 10px 'Segoe UI', Arial, sans-serif";
@@ -705,34 +697,34 @@ export async function generateCadetCardPdf(
   ctx.textAlign = "center";
   ctx.fillText("⬡ PRIMARY SPECIALIZATION", rightX + 46 + 185 / 2, archY + 29);
 
-  // Score Badge
+
   drawRoundedRect(rightX + archW - 100, archY + 14, 88, 22, 5, "rgba(255, 255, 255, 0.08)");
   ctx.fillStyle = "#ffffff";
   ctx.font = "bold 11px 'Segoe UI', Arial, sans-serif";
   ctx.fillText(`${primaryScore}% LEADING`, rightX + archW - 56, archY + 29);
 
-  // Line 1: Archetype Badge (e.g. ⚡ ARCHITECT)
+
   ctx.textAlign = "left";
   ctx.fillStyle = primaryMeta.color;
   ctx.font = "900 17px 'Segoe UI', Arial, sans-serif";
   ctx.letterSpacing = "0.5px";
   ctx.fillText(primaryMeta.badge, rightX + 46, archY + 56);
 
-  // Line 2: Role Title (e.g. System & Cloud Architect)
+
   ctx.fillStyle = "#ffffff";
   ctx.font = "bold 13.5px 'Segoe UI', Arial, sans-serif";
   ctx.fillText(primaryMeta.title, rightX + 46, archY + 75);
 
-  // Line 3: Tagline
+
   ctx.fillStyle = "#b4d3f5";
   ctx.font = "italic 11px 'Segoe UI', Arial, sans-serif";
   ctx.fillText(primaryMeta.tagline, rightX + 46, archY + 93);
 
-  // Mini score progress bar
+
   drawRoundedRect(rightX + 46, archY + 107, archW - 80, 6, 3, "rgba(255,255,255,0.08)");
   drawRoundedRect(rightX + 46, archY + 107, (archW - 80) * (primaryScore / 100), 6, 3, primaryMeta.color);
 
-  // Secondary Support Archetype Card
+
   drawRoundedRect(rightX + 32 + archW + 12, archY, archW, archH, 12, `${secondaryMeta.color}15`, secondaryMeta.color, 1.8);
   const secX = rightX + 32 + archW + 12;
 
@@ -748,19 +740,19 @@ export async function generateCadetCardPdf(
   ctx.font = "bold 11px 'Segoe UI', Arial, sans-serif";
   ctx.fillText(`${secondaryScore}% CO-FACTOR`, secX + archW - 61, archY + 29);
 
-  // Line 1: Archetype Badge (e.g. 🧠 LOGIC PIONEER)
+
   ctx.textAlign = "left";
   ctx.fillStyle = secondaryMeta.color;
   ctx.font = "900 17px 'Segoe UI', Arial, sans-serif";
   ctx.letterSpacing = "0.5px";
   ctx.fillText(secondaryMeta.badge, secX + 14, archY + 56);
 
-  // Line 2: Role Title (e.g. AI & Algorithmic Pioneer)
+
   ctx.fillStyle = "#ffffff";
   ctx.font = "bold 13.5px 'Segoe UI', Arial, sans-serif";
   ctx.fillText(secondaryMeta.title, secX + 14, archY + 75);
 
-  // Line 3: Tagline
+
   ctx.fillStyle = "#b4d3f5";
   ctx.font = "italic 11px 'Segoe UI', Arial, sans-serif";
   ctx.fillText(secondaryMeta.tagline, secX + 14, archY + 93);
@@ -768,7 +760,7 @@ export async function generateCadetCardPdf(
   drawRoundedRect(secX + 14, archY + 107, archW - 80, 6, 3, "rgba(255,255,255,0.08)");
   drawRoundedRect(secX + 14, archY + 107, (archW - 80) * (secondaryScore / 100), 6, 3, secondaryMeta.color);
 
-  // 3. Recommended Academic Track Banner (SOCS BINUS Bekasi)
+
   const recBannerY = archY + archH + 16;
   const recBannerH = 92;
   const recBannerGrad = ctx.createLinearGradient(rightX + 32, 0, rightX + rightW - 32, 0);
@@ -791,7 +783,7 @@ export async function generateCadetCardPdf(
   ctx.font = "600 12px 'Segoe UI', Arial, sans-serif";
   ctx.fillText("Official Undergraduate Degree Program • School of Computer Science BINUS Bekasi", rightX + 48, recBannerY + 80);
 
-  // Right-side badge stamp on track banner
+
   drawRoundedRect(rightX + rightW - 210, recBannerY + 20, 160, 52, 8, "rgba(0, 255, 204, 0.15)", "#00ffcc", 1);
   ctx.textAlign = "center";
   ctx.fillStyle = "#00ffcc";
@@ -801,7 +793,7 @@ export async function generateCadetCardPdf(
   ctx.font = "900 12px 'Segoe UI', Arial, sans-serif";
   ctx.fillText("SOCS ACCREDITED", rightX + rightW - 130, recBannerY + 58);
 
-  // 4. Competency 4-Pillar Telemetry Grid
+
   const teleY = recBannerY + recBannerH + 16;
   ctx.textAlign = "left";
   ctx.fillStyle = "#00ffcc";
@@ -827,7 +819,7 @@ export async function generateCadetCardPdf(
 
     drawRoundedRect(px, py, barW, barH, 8, "rgba(255, 255, 255, 0.035)", "rgba(126, 249, 255, 0.15)", 1);
 
-    // Label & Track
+
     ctx.textAlign = "left";
     ctx.fillStyle = "#ffffff";
     ctx.font = "bold 13px 'Segoe UI', Arial, sans-serif";
@@ -837,20 +829,20 @@ export async function generateCadetCardPdf(
     ctx.font = "10.5px 'Segoe UI', Arial, sans-serif";
     ctx.fillText(p.track, px + 16, py + 39);
 
-    // Score Value
+
     ctx.textAlign = "right";
     ctx.fillStyle = p.color;
     ctx.font = "900 20px 'Segoe UI', Arial, sans-serif";
     ctx.fillText(`${p.score}%`, px + barW - 16, py + 28);
 
-    // Glowing Progress Track
+
     const miniTrackW = barW - 32;
     drawRoundedRect(px + 16, py + 46, miniTrackW, 6, 3, "rgba(255,255,255,0.07)");
     const miniFillW = Math.max(8, miniTrackW * (p.score / 100));
     drawRoundedRect(px + 16, py + 46, miniFillW, 6, 3, p.color);
   });
 
-  // 5. Recommended Career Pathways Pills
+
   const careerY = teleY + 184;
   ctx.textAlign = "left";
   ctx.fillStyle = "#00ffcc";
@@ -871,11 +863,11 @@ export async function generateCadetCardPdf(
     ctx.fillText(shortCareer, cx + pillW / 2, cy + 25);
   });
 
-  // 6. Security Authentication Bar & Hologram Seal
+
   const authY = careerY + 78;
   drawRoundedRect(rightX + 32, authY, rightW - 64, 52, 9, "rgba(255, 215, 0, 0.06)", "rgba(255, 215, 0, 0.35)", 1.2);
 
-  // Golden Commission Star Emblem
+
   ctx.fillStyle = "#ffd700";
   ctx.font = "bold 24px 'Segoe UI', Arial, sans-serif";
   ctx.textAlign = "center";
@@ -891,7 +883,7 @@ export async function generateCadetCardPdf(
   ctx.font = "10.5px 'Segoe UI', Arial, sans-serif";
   ctx.fillText("Official Gamified Specialization Dossier • School of Computer Science BINUS University Bekasi", rightX + 94, authY + 41);
 
-  // 5. Card Bottom Security Strip
+
   ctx.strokeStyle = "rgba(126, 249, 255, 0.2)";
   ctx.lineWidth = 1;
   ctx.beginPath();
@@ -899,7 +891,7 @@ export async function generateCadetCardPdf(
   ctx.lineTo(cardWidth - 52, cardHeight - 50);
   ctx.stroke();
 
-  // Futuristic high-density barcode lines (bottom left)
+
   const barStartX = 52;
   const barY = cardHeight - 42;
   const barcodeH = 22;
@@ -909,7 +901,7 @@ export async function generateCadetCardPdf(
     ctx.fillRect(barStartX + i * 5, barY, w, barcodeH);
   }
 
-  // Verification Hash & Signatures (bottom right)
+
   const now = new Date();
   const dateFormatted = now.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
   ctx.textAlign = "right";
@@ -922,7 +914,7 @@ export async function generateCadetCardPdf(
     cardHeight - 27
   );
 
-  // 6. Convert Slide 1 Canvas & Render Slide 2 Canvas
+
   const slide1ImgData = canvas.toDataURL("image/png", 0.95);
 
   const canvas2 = document.createElement("canvas");
@@ -935,10 +927,10 @@ export async function generateCadetCardPdf(
     format: [cardWidth, cardHeight],
   });
 
-  // Slide 1: Cadet Specialization Pass (Holographic Card)
+
   pdf.addImage(slide1ImgData, "PNG", 0, 0, cardWidth, cardHeight, undefined, "FAST");
 
-  // Slide 2: Deep Personality & Stage Diagnostic Telemetry Report
+
   pdf.addPage([cardWidth, cardHeight], "landscape");
   pdf.addImage(slide2ImgData, "PNG", 0, 0, cardWidth, cardHeight, undefined, "FAST");
 
@@ -961,9 +953,7 @@ export async function generateCadetCardPdf(
   }
 }
 
-/**
- * Renders Slide 2: Deep Personality Analysis & Stage-by-Stage Diagnostic Evaluation
- */
+
 function renderSlide2(
   canvas2: HTMLCanvasElement,
   cadet: CadetIdentity,
@@ -1056,7 +1046,7 @@ function renderSlide2(
     return currentY;
   };
 
-  // 1. Background
+
   const bgGrad = ctx.createLinearGradient(0, 0, cardWidth, cardHeight);
   bgGrad.addColorStop(0, "#030712");
   bgGrad.addColorStop(0.35, "#071329");
@@ -1064,7 +1054,7 @@ function renderSlide2(
   bgGrad.addColorStop(1, "#02050f");
   drawRoundedRect(0, 0, cardWidth, cardHeight, 26, bgGrad);
 
-  // Coordinate Grid
+
   ctx.strokeStyle = "rgba(0, 255, 204, 0.035)";
   ctx.lineWidth = 1;
   const gridSize = 32;
@@ -1081,12 +1071,12 @@ function renderSlide2(
     ctx.stroke();
   }
 
-  // Ambient Nebulae
+
   drawGlow(300, 300, 450, "rgba(170, 102, 255, 0.09)");
   drawGlow(1200, 450, 500, "rgba(0, 255, 204, 0.09)");
   drawGlow(800, 800, 400, "rgba(0, 204, 255, 0.07)");
 
-  // Dual Outer Cyber Borders
+
   ctx.strokeStyle = "rgba(126, 249, 255, 0.25)";
   ctx.lineWidth = 2;
   ctx.strokeRect(20, 20, cardWidth - 40, cardHeight - 40);
@@ -1095,7 +1085,7 @@ function renderSlide2(
   ctx.lineWidth = 1.5;
   ctx.strokeRect(30, 30, cardWidth - 60, cardHeight - 60);
 
-  // Chamfer Brackets
+
   const cornerLength = 42;
   const drawBracket = (x: number, y: number, dx: number, dy: number) => {
     ctx.strokeStyle = "#00ffcc";
@@ -1111,7 +1101,7 @@ function renderSlide2(
   drawBracket(20, cardHeight - 20, 1, -1);
   drawBracket(cardWidth - 20, cardHeight - 20, -1, -1);
 
-  // Holographic Header Foil Strip
+
   const foilGrad = ctx.createLinearGradient(48, 0, cardWidth - 48, 0);
   foilGrad.addColorStop(0, "rgba(170, 102, 255, 0.8)");
   foilGrad.addColorStop(0.3, "rgba(0, 255, 204, 0.9)");
@@ -1120,7 +1110,7 @@ function renderSlide2(
   ctx.fillStyle = foilGrad;
   ctx.fillRect(48, 38, cardWidth - 96, 3);
 
-  // Header Title
+
   ctx.textAlign = "left";
   ctx.fillStyle = "#ffffff";
   ctx.font = "bold 22px 'Segoe UI', Arial, sans-serif";
@@ -1132,7 +1122,7 @@ function renderSlide2(
   ctx.letterSpacing = "1.5px";
   ctx.fillText("SCHOOL OF COMPUTER SCIENCE (SOCS) • BINUS UNIVERSITY BEKASI   •   PAGE 02 OF 02", 52, 86);
 
-  // Cadet Identity Pill (Top Right)
+
   const cadetPillX = cardWidth - 530;
   drawRoundedRect(cadetPillX, 48, 478, 42, 8, "rgba(6, 16, 38, 0.85)", "rgba(0, 255, 204, 0.4)", 1.2);
   ctx.fillStyle = "#7ef9ff";
@@ -1143,7 +1133,7 @@ function renderSlide2(
   ctx.font = "10px 'Segoe UI', Arial, sans-serif";
   ctx.fillText(`SCHOOL: ${cadet.school.toUpperCase()}  |  MAJOR: ${cadet.major.toUpperCase()}  |  CONFIDENCE: ${result.confidenceLevel}%`, cadetPillX + 16, 81);
 
-  // Divider Line
+
   ctx.strokeStyle = "rgba(126, 249, 255, 0.22)";
   ctx.lineWidth = 1.5;
   ctx.beginPath();
@@ -1151,20 +1141,18 @@ function renderSlide2(
   ctx.lineTo(cardWidth - 52, 106);
   ctx.stroke();
 
-  // TWO-COLUMN LAYOUT
+
   const leftX = 52;
   const leftW = 490;
   const rightX = 566;
-  const rightW = cardWidth - rightX - 52; // 982
+  const rightW = cardWidth - rightX - 52;
   const mainY = 120;
   const mainH = 816;
 
-  // ─────────────────────────────────────────────────────────────
-  // LEFT COLUMN: PSYCHOMETRIC & COGNITIVE SIGNATURE
-  // ─────────────────────────────────────────────────────────────
+
   drawRoundedRect(leftX, mainY, leftW, mainH, 16, "rgba(6, 14, 32, 0.78)", "rgba(170, 102, 255, 0.35)", 1.5);
 
-  // Card 1: Cognitive Signature Persona (H: 260)
+
   drawRoundedRect(leftX + 14, mainY + 14, leftW - 28, 250, 12, "rgba(12, 22, 48, 0.7)", "rgba(170, 102, 255, 0.4)", 1.2);
   ctx.fillStyle = "#aa66ff";
   ctx.font = "bold 10px 'Consolas', monospace";
@@ -1181,7 +1169,7 @@ function renderSlide2(
   ctx.font = "italic 11px 'Segoe UI', Arial, sans-serif";
   ctx.fillText(profile.signatureTagline, leftX + 28, mainY + 80);
 
-  // Synergy Badges
+
   drawRoundedRect(leftX + 28, mainY + 92, 208, 28, 6, `${primaryMeta.color}25`, primaryMeta.color, 1);
   ctx.fillStyle = primaryMeta.color;
   ctx.font = "bold 10.5px 'Segoe UI', Arial, sans-serif";
@@ -1192,12 +1180,12 @@ function renderSlide2(
   ctx.font = "bold 10.5px 'Segoe UI', Arial, sans-serif";
   ctx.fillText(`● ${secondaryMeta.badge}`, leftX + 256, mainY + 110);
 
-  // Profile Narrative Text
+
   ctx.fillStyle = "#b8d5ed";
   ctx.font = "11px 'Segoe UI', Arial, sans-serif";
   drawWrappedText(profile.cognitiveProfileSummary, leftX + 28, mainY + 142, leftW - 56, 17, 6);
 
-  // Card 2: 4-Pillar Mastery Breakdown (H: 300)
+
   const pY = mainY + 276;
   drawRoundedRect(leftX + 14, pY, leftW - 28, 300, 12, "rgba(12, 22, 48, 0.7)", "rgba(0, 255, 204, 0.35)", 1.2);
 
@@ -1225,24 +1213,24 @@ function renderSlide2(
     ctx.fillText(`${pillar.score}% [${pillar.level.toUpperCase()}]`, leftX + leftW - 32, rowY);
     ctx.textAlign = "left";
 
-    // Track
+
     const barW = leftW - 56;
     drawRoundedRect(leftX + 28, rowY + 6, barW, 9, 4, "rgba(20, 35, 60, 0.85)");
 
-    // Fill
+
     const fillW = Math.max(10, Math.round((barW * pillar.score) / 100));
     const pGrad = ctx.createLinearGradient(leftX + 28, 0, leftX + 28 + fillW, 0);
     pGrad.addColorStop(0, "rgba(0, 255, 204, 0.8)");
     pGrad.addColorStop(1, levelColors[pillar.level] || "#00ffcc");
     drawRoundedRect(leftX + 28, rowY + 6, fillW, 9, 4, pGrad);
 
-    // Descriptor
+
     ctx.fillStyle = "#8ea8c4";
     ctx.font = "9.5px 'Segoe UI', Arial, sans-serif";
     drawWrappedText(pillar.descriptor, leftX + 28, rowY + 28, barW, 13, 2);
   });
 
-  // Card 3: Behavioral & Decision Dynamics (H: 212)
+
   const bY = mainY + 588;
   drawRoundedRect(leftX + 14, bY, leftW - 28, 212, 12, "rgba(12, 22, 48, 0.7)", "rgba(0, 204, 255, 0.35)", 1.2);
 
@@ -1279,9 +1267,7 @@ function renderSlide2(
     3
   );
 
-  // ─────────────────────────────────────────────────────────────
-  // RIGHT COLUMN: STAGE-BY-STAGE FORENSIC TELEMETRY MATRIX
-  // ─────────────────────────────────────────────────────────────
+
   drawRoundedRect(rightX, mainY, rightW, mainH, 16, "rgba(6, 14, 32, 0.78)", "rgba(0, 255, 204, 0.38)", 1.5);
 
   ctx.fillStyle = "#00ffcc";
@@ -1293,7 +1279,7 @@ function renderSlide2(
   ctx.font = "italic 11px 'Segoe UI', Arial, sans-serif";
   ctx.fillText("Audit kemampuan terperinci berdasarkan performa langsung kadet pada setiap sektor misi planet:", rightX + 20, mainY + 48);
 
-  const colW = (rightW - 54) / 2; // ~464px
+  const colW = (rightW - 54) / 2;
   const cardH = 114;
   const gridStartY = mainY + 62;
 
@@ -1343,7 +1329,7 @@ function renderSlide2(
     ctx.fillText(`SCORE: ${stage.score} PTS   |   METRIC: ${stage.highlightMetric}`, sCardX + 22, sCardY + cardH - 11);
   });
 
-  // Section 5: SOCS Program Matrix
+
   const acadY = gridStartY + 3 * (cardH + 12) + 8;
   const acadH = 176;
   drawRoundedRect(rightX + 18, acadY, rightW - 36, acadH, 12, "rgba(8, 20, 44, 0.85)", "rgba(170, 102, 255, 0.4)", 1.2);
@@ -1385,7 +1371,7 @@ function renderSlide2(
   ctx.font = "italic 10px 'Segoe UI', Arial, sans-serif";
   ctx.fillText(profile.socsAcademicAlignment.industryOutlook, rightX + 32, acadY + 158);
 
-  // Section 6: Digital Seal & Academic Authority
+
   const sealY = acadY + acadH + 10;
   const sealH = 152;
   drawRoundedRect(rightX + 18, sealY, rightW - 36, sealH, 12, "rgba(10, 26, 56, 0.8)", "rgba(255, 215, 0, 0.35)", 1.2);
@@ -1417,7 +1403,7 @@ function renderSlide2(
     sealY + 95
   );
 
-  // Barcode strip
+
   ctx.fillStyle = "rgba(0, 255, 204, 0.45)";
   for (let i = 0; i < 90; i++) {
     const w = i % 3 === 0 ? 3 : i % 2 === 0 ? 2 : 1;

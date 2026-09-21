@@ -38,8 +38,7 @@ export async function registerPlayer(
   if (!cleanName) return null;
   const lockKey = cleanName.toLowerCase();
 
-  // Concurrency Guard: If a registration for this cadet name is already in progress,
-  // return the same Promise to prevent parallel duplicate inserts in Supabase.
+
   const existingPromise = inFlightRegistrations.get(lockKey);
   if (existingPromise) {
     console.log(`[playerService] Registrasi untuk "${cleanName}" sedang berjalan, menggunakan in-flight promise.`);
@@ -50,7 +49,7 @@ export async function registerPlayer(
     try {
       const cleanPhone = (data.phone || "").trim();
 
-      // 1. Check if a player with this EXACT NAME already exists in Supabase
+
       const { data: existingByName } = await supabase!
         .from("players")
         .select("id, name")
@@ -66,7 +65,7 @@ export async function registerPlayer(
         return existingByName.id;
       }
 
-      // 2. Check local player ID ONLY if the name matches (never overwrite different cadet)
+
       const localId = getLocalPlayerId();
       if (localId) {
         const { data: existingLocal } = await supabase!
@@ -82,7 +81,7 @@ export async function registerPlayer(
         }
       }
 
-      // 3. New Cadet Registration — insert a new row in Supabase (NEVER overwrite existing cadet)
+
       const insertPayload: Record<string, unknown> = {
         name: cleanName,
         phone: cleanPhone,
@@ -101,7 +100,7 @@ export async function registerPlayer(
         .select("id")
         .single();
 
-      // If column device_id does not exist in Supabase schema, retry without device_id
+
       if (error && (error.code === "PGRST204" || error.message?.includes("device_id"))) {
         console.warn("[playerService] Supabase schema does not have 'device_id' column. Retrying insert without device_id...");
         delete insertPayload.device_id;
@@ -151,20 +150,44 @@ export async function updatePlayer(
   if (data.spaceman_color !== undefined) payload.spaceman_color = data.spaceman_color;
   if (data.spaceman_hat !== undefined) payload.spaceman_hat = data.spaceman_hat;
   if (data.spaceman_pet !== undefined) payload.spaceman_pet = data.spaceman_pet;
-  if (data.specialization_result !== undefined) payload.specialization_result = data.specialization_result;
+  if (data.specialization_result !== undefined) {
+    payload.specialization_result = data.specialization_result;
+    if (data.specialization_result) {
+      const spec = data.specialization_result;
+      payload.recommended_track = spec.primaryArchetype || "";
+      payload.primary_archetype = spec.primaryArchetype || "";
+      payload.secondary_archetype = spec.secondaryArchetype || "";
+      payload.system_score = spec.radarScores?.system ?? 0;
+      payload.ai_score = spec.radarScores?.aiLogic ?? 0;
+      payload.cyber_score = spec.radarScores?.debugging ?? 0;
+      payload.creative_score = spec.radarScores?.creative ?? 0;
+      payload.confidence_level = spec.confidenceLevel ?? 0;
+    }
+  }
 
   let { error } = await supabase!
     .from("players")
     .update(payload)
     .eq("id", playerId);
 
-  // If update fails because device_id column does not exist, retry without device_id
-  if (error && (error.code === "PGRST204" || error.message?.includes("device_id"))) {
-    console.warn("[playerService] Supabase schema does not have 'device_id'. Retrying update without device_id...");
-    delete payload.device_id;
+
+  if (error && (error.code === "PGRST204" || error.message?.includes("column") || error.message?.includes("device_id"))) {
+    console.warn("[playerService] Retrying update with basic schema columns...", error.message);
+    const safePayload: Record<string, unknown> = {
+      updated_at: new Date().toISOString(),
+    };
+    if (data.name !== undefined) safePayload.name = data.name.trim();
+    if (data.phone !== undefined) safePayload.phone = data.phone.trim();
+    if (data.school !== undefined) safePayload.school = data.school.trim();
+    if (data.major !== undefined) safePayload.major = data.major;
+    if (data.character_type !== undefined) safePayload.character_type = data.character_type;
+    if (data.spaceman_color !== undefined) safePayload.spaceman_color = data.spaceman_color;
+    if (data.spaceman_hat !== undefined) safePayload.spaceman_hat = data.spaceman_hat;
+    if (data.spaceman_pet !== undefined) safePayload.spaceman_pet = data.spaceman_pet;
+
     const retry = await supabase!
       .from("players")
-      .update(payload)
+      .update(safePayload)
       .eq("id", playerId);
     error = retry.error;
   }

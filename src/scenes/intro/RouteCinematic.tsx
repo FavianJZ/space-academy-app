@@ -67,7 +67,7 @@ interface TimelineProps {
 
 interface CinematicCameraRigProps extends TimelineProps {
   storyBeat: IntroStoryBeat;
-  
+
   skipEntrySnap?: boolean;
 }
 
@@ -952,7 +952,7 @@ const RouteWorld: React.FC<
       <LandingPlatform
         route={route}
         timelineRef={timelineRef}
-        
+
         forceBeacon={manualStage === "flying" || manualStage === "landing"}
       />
       <TouchdownDust route={route} timelineRef={timelineRef} />
@@ -961,7 +961,7 @@ const RouteWorld: React.FC<
 
       {route === "Navigasi" && (
         <>
-          {/* The scripted gate set is replaced by the playable course. */}
+
           {!isManualRoute && (
             <NavigationWorldEffects timelineRef={timelineRef} />
           )}
@@ -1256,7 +1256,7 @@ const CinematicCameraRig: React.FC<CinematicCameraRigProps> = ({
   useFrame(({ clock }, delta) => {
     const time = readTimeline(clock, timelineRef);
     const fov = calculateFrame(time);
-    
+
     const safeDelta = THREE.MathUtils.clamp(delta, 0, 1 / 30);
     const positionSmoothing = 1 - Math.exp(-safeDelta * 3.8);
     const rotationSmoothing = 1 - Math.exp(-safeDelta * 3.25);
@@ -1314,7 +1314,7 @@ const RouteCinematic: React.FC<RouteCinematicProps> = ({
 
   useLayoutEffect(() => {
     if (manualActive) {
-      
+
       timelineRef.current.elapsed = Math.min(
         timelineRef.current.elapsed,
         MANUAL_TIMELINE_HOLD
@@ -1324,7 +1324,7 @@ const RouteCinematic: React.FC<RouteCinematicProps> = ({
     }
 
     if (manualEnabled && manualStage === "done") {
-      
+
       timelineRef.current.elapsed = Math.max(
         timelineRef.current.elapsed,
         LANDING_HANDOFF_TIME

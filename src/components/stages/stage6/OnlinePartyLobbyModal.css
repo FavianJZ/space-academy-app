@@ -1,0 +1,426 @@
+.party-lobby-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(2, 6, 18, 0.92);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  z-index: 1060;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: partyLobbyFadeIn 0.22s ease-out forwards;
+}
+
+@keyframes partyLobbyFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.party-lobby-modal {
+  width: 100%;
+  max-width: 680px;
+  background: linear-gradient(180deg, #071530 0%, #030a1c 100%);
+  border: 1.5px solid #00ffcc;
+  box-shadow: 0 0 50px rgba(0, 255, 204, 0.25), inset 0 0 30px rgba(0, 255, 204, 0.08);
+  border-radius: 16px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.party-lobby-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 20px;
+  background: rgba(0, 255, 204, 0.06);
+  border-bottom: 1px solid rgba(0, 255, 204, 0.2);
+}
+
+.party-lobby-top-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.party-lobby-badge {
+  font-family: "Consolas", monospace;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  color: #00ffcc;
+}
+
+.net-mode-pill {
+  font-family: "Consolas", monospace;
+  font-size: 9px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 20px;
+  letter-spacing: 1px;
+}
+
+.net-mode-pill.cloud {
+  background: rgba(0, 255, 136, 0.15);
+  border: 1px solid #00ff88;
+  color: #00ff88;
+}
+
+.net-mode-pill.local {
+  background: rgba(0, 204, 255, 0.15);
+  border: 1px solid #00ccff;
+  color: #00ccff;
+}
+
+.party-lobby-close {
+  background: transparent;
+  border: none;
+  color: #7b99b8;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.party-lobby-close:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.party-lobby-tabs {
+  display: flex;
+  background: rgba(4, 12, 28, 0.6);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.lobby-tab-btn {
+  flex: 1;
+  padding: 14px 16px;
+  background: transparent;
+  border: none;
+  font-family: "Consolas", monospace;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: #718da8;
+  cursor: pointer;
+  transition: all 0.2s;
+  border-bottom: 2px solid transparent;
+}
+
+.lobby-tab-btn.active {
+  color: #00ffcc;
+  background: rgba(0, 255, 204, 0.08);
+  border-bottom-color: #00ffcc;
+  text-shadow: 0 0 10px rgba(0, 255, 204, 0.4);
+}
+
+.party-lobby-body {
+  padding: 28px 32px;
+}
+
+.party-code-card {
+  background: rgba(10, 24, 52, 0.7);
+  border: 1px solid rgba(0, 255, 204, 0.3);
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.party-code-label {
+  display: block;
+  font-family: "Consolas", monospace;
+  font-size: 10.5px;
+  letter-spacing: 1.5px;
+  color: #8daac7;
+  margin-bottom: 10px;
+}
+
+.party-code-display {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.code-text {
+  font-family: "Consolas", monospace;
+  font-size: 42px;
+  font-weight: 900;
+  letter-spacing: 10px;
+  color: #00ffcc;
+  text-shadow: 0 0 24px rgba(0, 255, 204, 0.7);
+  background: rgba(0, 0, 0, 0.45);
+  padding: 8px 24px;
+  border-radius: 10px;
+  border: 1px solid rgba(0, 255, 204, 0.5);
+  user-select: all;
+}
+
+.copy-code-btn {
+  background: rgba(0, 255, 204, 0.15);
+  border: 1px solid #00ffcc;
+  color: #00ffcc;
+  font-family: "Consolas", monospace;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 10px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.copy-code-btn:hover {
+  background: #00ffcc;
+  color: #030d22;
+  box-shadow: 0 0 16px rgba(0, 255, 204, 0.5);
+}
+
+.code-instruction {
+  font-size: 12px;
+  color: #7b9bb9;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.partner-status-box {
+  background: rgba(6, 16, 36, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 18px 20px;
+  margin-bottom: 24px;
+}
+
+.partner-waiting-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.radar-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid rgba(0, 255, 204, 0.2);
+  border-top-color: #00ffcc;
+  border-radius: 50%;
+  animation: spinRadar 1s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes spinRadar {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.waiting-title {
+  font-family: "Consolas", monospace;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: #ffffff;
+  margin-bottom: 4px;
+}
+
+.waiting-sub {
+  font-size: 11.5px;
+  color: #7998b6;
+}
+
+.partner-connected-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.partner-status-dot.online {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #00ffcc;
+  box-shadow: 0 0 12px #00ffcc;
+  flex-shrink: 0;
+}
+
+.partner-avatar-placeholder {
+  font-size: 24px;
+}
+
+.partner-meta {
+  flex-grow: 1;
+}
+
+.partner-role {
+  font-family: "Consolas", monospace;
+  font-size: 9.5px;
+  letter-spacing: 1.5px;
+  color: #00ffcc;
+  font-weight: 800;
+}
+
+.partner-name {
+  font-size: 16px;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.partner-ready-tag {
+  font-family: "Consolas", monospace;
+  font-size: 10px;
+  font-weight: 800;
+  color: #00ffcc;
+  background: rgba(0, 255, 204, 0.15);
+  border: 1px solid rgba(0, 255, 204, 0.4);
+  padding: 4px 10px;
+  border-radius: 4px;
+}
+
+.join-enter-lobby-btn {
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #030d22;
+  background: #00ffcc;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  box-shadow: 0 0 16px rgba(0, 255, 204, 0.5);
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.join-enter-lobby-btn:hover {
+  background: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 0 25px rgba(0, 255, 204, 0.8);
+}
+
+.lobby-actions {
+  display: flex;
+  justify-content: center;
+}
+
+.launch-raid-btn {
+  width: 100%;
+  padding: 16px;
+  background: #00ffcc;
+  color: #030d22;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  cursor: pointer;
+  box-shadow: 0 0 26px rgba(0, 255, 204, 0.4);
+  transition: all 0.2s;
+}
+
+.launch-raid-btn:hover:not(:disabled) {
+  background: #3affdc;
+  box-shadow: 0 0 36px rgba(0, 255, 204, 0.7);
+  transform: translateY(-1px);
+}
+
+.launch-raid-btn:disabled {
+  background: rgba(255, 255, 255, 0.08);
+  color: #657e96;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+.join-form {
+  margin-bottom: 20px;
+}
+
+.join-label {
+  display: block;
+  font-family: "Consolas", monospace;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  color: #8daac7;
+  margin-bottom: 10px;
+}
+
+.join-input-wrap {
+  display: flex;
+  gap: 12px;
+}
+
+.join-input {
+  flex-grow: 1;
+  background: rgba(4, 12, 28, 0.85);
+  border: 1.5px solid rgba(0, 255, 204, 0.4);
+  border-radius: 8px;
+  padding: 14px 18px;
+  font-family: "Consolas", monospace;
+  font-size: 26px;
+  font-weight: 900;
+  letter-spacing: 8px;
+  text-align: center;
+  color: #00ffcc;
+  outline: none;
+  transition: all 0.2s;
+}
+
+.join-input:focus {
+  border-color: #00ffcc;
+  box-shadow: 0 0 20px rgba(0, 255, 204, 0.3);
+}
+
+.join-submit-btn {
+  padding: 0 24px;
+  background: #00ffcc;
+  color: #030d22;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.join-submit-btn:hover:not(:disabled) {
+  background: #3affdc;
+  box-shadow: 0 0 20px rgba(0, 255, 204, 0.5);
+}
+
+.join-submit-btn:disabled {
+  background: rgba(255, 255, 255, 0.08);
+  color: #5b758d;
+  cursor: not-allowed;
+}
+
+.local-mode-tip-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 16px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: rgba(0, 204, 255, 0.06);
+  border: 1px dashed rgba(0, 204, 255, 0.35);
+  color: #a0d4ff;
+  font-size: 11.5px;
+  line-height: 1.45;
+}
+
+.local-mode-tip-box .tip-icon {
+  font-size: 16px;
+  flex-shrink: 0;
+}

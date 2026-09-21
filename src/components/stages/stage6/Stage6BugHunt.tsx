@@ -25,11 +25,16 @@ import {
   getRandomMessage,
 } from "../shared/speechBubbleContent";
 import { BossUFO } from "../shared/BossUFO";
+import { useOnlineRaid, detectCurrentPlatform } from "../../../hooks/useOnlineRaid";
+import { CoPilotTelemetryHUD } from "./CoPilotTelemetryHUD";
+import { PilotShowcasePodium, type PilotData } from "./PilotShowcasePodium";
+import { MissionManualModal } from "./MissionManualModal";
 import { getTranslation } from "../../../i18n/translations";
 import type { Language } from "../../../types/game.types";
 
 import "../shared/StageStyle.css";
 import "../shared/AdvancedHUD.css";
+import "./Stage6Lobby.css";
 
 interface Stage6BugHuntProps {
   planetId: number;
@@ -225,7 +230,7 @@ const createDefaultCoopSnapshot = (): Record<
   },
 });
 
-const CoopLegend: React.FC<{
+export const CoopLegend: React.FC<{
   compact?: boolean;
   stats?: Record<CoopPlayerId, CoopPlayerSnapshot>;
   profiles?: Record<CoopPlayerId, CoopPlayerProfile>;
@@ -326,6 +331,14 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
   const playerData = useGameStore((state) => state.playerData);
 
   const isBossMode = useGameStore((state) => state.bossMode);
+  const raidMode = useGameStore((state) => state.raidMode);
+  const onlinePartyCode = useGameStore((state) => state.onlinePartyCode);
+  const isPartyHost = useGameStore((state) => state.isPartyHost);
+  const remoteCoPilot = useGameStore((state) => state.remoteCoPilot);
+
+  const isLocalCoop = isBossMode && raidMode === "local_coop";
+  const isOnlineCoop = isBossMode && raidMode === "online_coop";
+
   const bossGlobalHP = useGameStore((state) => state.bossGlobalHP);
   const bossMaxHP = useGameStore((state) => state.bossMaxHP);
   const dealBossDamage = useGameStore((state) => state.dealBossDamage);
@@ -341,6 +354,16 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
     (state) => state.refreshSpecializationProfile
   );
   const [showDossier, setShowDossier] = useState(false);
+
+  const character = useGameStore((state) => state.character);
+  const spacemanColor = useGameStore((state) => state.spacemanColor);
+  const spacemanHat = useGameStore((state) => state.spacemanHat);
+  const spacemanPet = useGameStore((state) => state.spacemanPet);
+
+  const [myReady, setMyReady] = useState(false);
+  const [partnerReady, setPartnerReady] = useState(false);
+  const [isManualOpen, setIsManualOpen] = useState(false);
+  const [copyFeedback, setCopyFeedback] = useState(false);
 
   const language = useGameStore((state) => state.language);
   const t = getTranslation(language);
@@ -455,15 +478,15 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
 
       if (key in NUMPAD_KEY_MAP) {
         const baseIdx = NUMPAD_KEY_MAP[key];
-        const finalIdx = isBossMode ? baseIdx + 9 : baseIdx;
+        const finalIdx = isLocalCoop ? baseIdx + 9 : baseIdx;
 
         return {
-          playerId: "P2" as CoopPlayerId,
+          playerId: (isLocalCoop ? "P2" : "P1") as CoopPlayerId,
           cellIdx: finalIdx,
         };
       }
 
-      if (key in LETTER_KEY_MAP && !isBossMode) {
+      if (key in LETTER_KEY_MAP && !isLocalCoop) {
         return {
           playerId: "P1" as CoopPlayerId,
           cellIdx: LETTER_KEY_MAP[key],
@@ -472,7 +495,7 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
 
       return null;
     },
-    [isBossMode]
+    [isLocalCoop]
   );
 
   const playSound = useCallback(
@@ -604,7 +627,7 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
     }
 
     const emptyCells: number[] = [];
-    const maxIdx = isBossMode ? 18 : 9;
+    const maxIdx = isLocalCoop ? 18 : 9;
 
     for (let i = 0; i < maxIdx; i += 1) {
       if (currentCells[i] === null) {
@@ -720,16 +743,18 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
       scheduleSnippet,
       diff.spawnInterval + jitter
     );
-  }, [getDifficulty, getSnippet, isBossMode]);
+  }, [getDifficulty, getSnippet, isBossMode, isLocalCoop]);
 
   const triggerAbduction = useCallback(function scheduleAbduction() {
     if (phaseRef.current !== "playing" || !isBossMode) return;
 
     const currentCells = cellsRef.current;
     const cleanCellIdxs: number[] = [];
+    const maxIdx = isLocalCoop ? 18 : 9;
 
     currentCells.forEach((cell, index) => {
       if (
+        index < maxIdx &&
         cell &&
         !cell.snippet.isBug &&
         cell.animState !== "exiting" &&
@@ -781,7 +806,7 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
 
     const nextDelay = 4000 + Math.random() * 4000;
     abductionTimerRef.current = window.setTimeout(scheduleAbduction, nextDelay);
-  }, [isBossMode]);
+  }, [isBossMode, isLocalCoop]);
 
   const spawnTickerMessage = useCallback(() => {
     if (!isBossMode) return;
@@ -835,6 +860,91 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
 
     setTickerMessages((prev) => [...prev.slice(-4), message]);
   }, []);
+
+  const { sendAttack, sendSync, lastLaserEvent, sendReady, sendStartRaid } = useOnlineRaid({
+    partyCode: isOnlineCoop ? onlinePartyCode : "",
+    isHost: isPartyHost,
+    onPartnerReady: (isPartnerReady) => {
+      setPartnerReady(isPartnerReady);
+      pushTickerMessage(
+        isPartnerReady
+          ? `${remoteCoPilot?.name || "CO-PILOT"} is READY! ✓`
+          : `${remoteCoPilot?.name || "CO-PILOT"} is preparing...`
+      );
+    },
+    onRaidStart: () => {
+      startCountdown();
+    },
+    onPartnerAttack: (attack) => {
+      setUfoHitFlash(true);
+      window.setTimeout(
+        () => setUfoHitFlash(false),
+        getMotionMs("bossRaidHit")
+      );
+      addDamageNumber(attack.damage);
+      dealBossDamage(attack.damage, attack.senderName);
+      playSound("laser");
+      pushTickerMessage(
+        `${attack.senderName} blasted UFO for ${attack.damage} DMG!`
+      );
+    },
+    onSyncTick: (sync) => {
+      if (!isPartyHost && sync.timeLeft !== undefined) {
+        setTimeLeft(sync.timeLeft);
+      }
+    },
+  });
+
+
+  useEffect(() => {
+    if (phase !== "intro") return;
+
+    if (isOnlineCoop) {
+      if (myReady && partnerReady) {
+        if (isPartyHost) {
+          sendStartRaid();
+        }
+        const timer = setTimeout(() => {
+          startCountdown();
+        }, 500);
+        return () => clearTimeout(timer);
+      }
+    } else if (isLocalCoop) {
+      if (myReady && partnerReady) {
+        const timer = setTimeout(() => {
+          startCountdown();
+        }, 500);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [isOnlineCoop, isLocalCoop, myReady, partnerReady, phase, isPartyHost, sendStartRaid]);
+
+  const handleToggleMyReady = () => {
+    const next = !myReady;
+    setMyReady(next);
+    playSound("countdown");
+    if (isOnlineCoop) {
+      sendReady(next);
+    } else if (!isLocalCoop) {
+
+      setTimeout(() => {
+        startCountdown();
+      }, 350);
+    }
+  };
+
+  const handleToggleP2Ready = () => {
+    setPartnerReady((prev) => !prev);
+    playSound("countdown");
+  };
+
+  const handleCopyPartyCode = () => {
+    if (onlinePartyCode) {
+      navigator.clipboard.writeText(onlinePartyCode);
+      setCopyFeedback(true);
+      setTimeout(() => setCopyFeedback(false), 2500);
+    }
+  };
 
   const handleCellAction = useCallback(
     (cellIdx: number, playerId: CoopPlayerId = "P1") => {
@@ -908,6 +1018,10 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
 
           pushTickerMessage(`${playerProfile.id} smashed a bug for ${damage} DMG`);
           playSound("laser");
+
+          if (isOnlineCoop) {
+            sendAttack(damage, snippet.category, newCombo, bossGlobalHP - damage);
+          }
         }
 
         setFeedbacks((prev) => {
@@ -1062,6 +1176,9 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
     [
       playSound,
       isBossMode,
+      isOnlineCoop,
+      sendAttack,
+      bossGlobalHP,
       addDamageNumber,
       dealBossDamage,
       pushTickerMessage,
@@ -1131,6 +1248,10 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
 
         if (prev <= 11) playSfx("timerLowTime");
 
+        if (isOnlineCoop && isPartyHost) {
+          sendSync(bossGlobalHP, prev - 1);
+        }
+
         return prev - 1;
       });
     }, 1000);
@@ -1153,6 +1274,10 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
     phase,
     spawnSnippet,
     isBossMode,
+    isOnlineCoop,
+    isPartyHost,
+    sendSync,
+    bossGlobalHP,
     playSfx,
     triggerAbduction,
     spawnTickerMessage,
@@ -1263,6 +1388,8 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
   const handleReplay = () => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
 
+    setMyReady(false);
+    setPartnerReady(false);
     setPhase("intro");
     setTimeLeft(GAME_DURATION);
     setScore(0);
@@ -1463,344 +1590,186 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
   }
 
   if (phase === "intro") {
+    const isEn = language === "en";
+    const currentPlatform = detectCurrentPlatform();
+    const totalScore = useGameStore.getState().getTotalScore();
+
+    const p1PilotData = {
+      id: "P1" as const,
+      name: playerData.name || (isEn ? "CADET PILOT" : "PILOT KADET"),
+      role: isBossMode && isLocalCoop
+        ? "PILOT 1 (HOST)"
+        : isOnlineCoop
+        ? (isPartyHost ? "SQUAD LEADER (P1)" : "CO-PILOT (P2)")
+        : "PILOT",
+      character,
+      colorId: spacemanColor,
+      hatId: spacemanHat,
+      petId: spacemanPet,
+      platform: currentPlatform,
+      totalScore,
+      isReady: myReady,
+      isConnected: true,
+    };
+
+    const p2PilotData: PilotData | null = isOnlineCoop
+      ? {
+          id: "P2",
+          name: remoteCoPilot?.name || "CO-PILOT",
+          role: isPartyHost ? "CO-PILOT (P2)" : "SQUAD LEADER (P1)",
+          character: remoteCoPilot?.character || "white",
+          colorId: (remoteCoPilot?.colorId as PilotData["colorId"]) || "ion-cyan",
+          hatId: (remoteCoPilot?.hatId as PilotData["hatId"]) || "none",
+          petId: (remoteCoPilot?.petId as PilotData["petId"]) || "none",
+          platform: (remoteCoPilot?.platform as "PC" | "MOBILE") || "PC",
+          totalScore: remoteCoPilot?.totalScore || 0,
+          isReady: partnerReady,
+          isConnected: !!(remoteCoPilot && remoteCoPilot.isOnline),
+        }
+      : isLocalCoop
+      ? {
+          id: "P2",
+          name: p2NameFromStore || "P2 CO-PILOT",
+          role: "CO-PILOT (P2)",
+          character: "white",
+          colorId: "ion-cyan",
+          hatId: "none",
+          petId: "none",
+          platform: currentPlatform,
+          totalScore: 0,
+          isReady: partnerReady,
+          isConnected: true,
+        }
+      : null;
+
+    const bothReady = isOnlineCoop
+      ? myReady && partnerReady
+      : isLocalCoop
+      ? myReady && partnerReady
+      : myReady;
+
     return (
       <div
         className={`stage-bug-hunt intro-phase ${isBossMode ? "boss-mode" : ""} ${screenEffect}`}
       >
-        <div className="bughunt-canvas-corner">
-          <AdaptiveCanvas
-            camera={{ position: [0, 1.2, 6], fov: 44 }}
-            dpr={[1, 1.1]}
-            quality="low"
-            gl={{ alpha: true, antialias: true }}
-          >
-            <ambientLight intensity={0.9} />
-            <directionalLight
-              position={[2, 4, 6]}
-              intensity={1.5}
-              color="#ffffff"
-            />
-            <pointLight
-              position={[5, 5, 5]}
-              intensity={80}
-              color="#ffcc00"
-            />
-            <InteractiveRobot
-              reaction={robotReaction}
-              scale={5.2}
-              position={[0, -1.55, 0]}
-              onClick={handleRobotClick}
-            />
-            <Stars
-              radius={100}
-              depth={20}
-              count={140}
-              factor={4}
-              saturation={0}
-              fade
-              speed={1}
-            />
-          </AdaptiveCanvas>
-
-          {speechMessage && (
-            <SpeechBubble
-              message={speechMessage}
-              type="robot"
-              duration={3000}
-              onDone={() => setSpeechMessage("")}
-            />
-          )}
-        </div>
-
         <FloatingParticles />
 
-        <div className="bughunt-intro-overlay">
-          <div
-            className={`bughunt-intro-layout ${
-              isBossMode ? "boss-mode" : "normal-mode"
-            }`}
-          >
-            {!isBossMode && (
-              <div className="normal-tutorial-section">
-                <div className="tutorial-header-line">
-                  <span className="tutorial-header-dash" />
-                  <span className="boss-coop-label">{t.stages.stage6.soloInputMatrix}</span>
-                  <span className="tutorial-header-dash" />
-                </div>
+        <div className="stage6-lobby-wrapper">
 
-                <p className="tutorial-section-lede">
-                  {t.stages.stage6.chooseControlMap}
-                </p>
-
-                <div className="tutorial-cards-grid">
-                  <div className="tutorial-card">
-                    <div className="tutorial-card-header">
-                      <span className="tutorial-card-badge">M1</span>
-                      <div>
-                        <div className="tutorial-card-title">{t.stages.stage6.mouseTitle}</div>
-                        <div className="tutorial-card-subtitle">
-                          {t.stages.stage6.mouseSubtitle}
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="tutorial-card-hint">{t.stages.stage6.mouseHint}</div>
-
-                    <div className="tutorial-card-keys">
-                      <div className="tutorial-key-row">
-                        <kbd>LMB</kbd>
-                      </div>
-                    </div>
-
-                    <p className="tutorial-card-desc">
-                      {t.stages.stage6.mouseDesc}
-                    </p>
-                  </div>
-
-                  <div className="tutorial-card">
-                    <div className="tutorial-card-header">
-                      <span className="tutorial-card-badge">N9</span>
-                      <div>
-                        <div className="tutorial-card-title">
-                          {t.stages.stage6.numpadTitle}
-                        </div>
-                        <div className="tutorial-card-subtitle">
-                          {t.stages.stage6.numpadSubtitle}
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="tutorial-card-hint">{t.stages.stage6.numpadHint}</div>
-
-                    <div className="tutorial-card-keys">
-                      <div className="tutorial-key-row">
-                        <kbd>7</kbd>
-                        <kbd>8</kbd>
-                        <kbd>9</kbd>
-                      </div>
-                      <div className="tutorial-key-row">
-                        <kbd>4</kbd>
-                        <kbd>5</kbd>
-                        <kbd>6</kbd>
-                      </div>
-                      <div className="tutorial-key-row">
-                        <kbd>1</kbd>
-                        <kbd>2</kbd>
-                        <kbd>3</kbd>
-                      </div>
-                    </div>
-
-                    <p className="tutorial-card-desc">
-                      {t.stages.stage6.numpadDesc}
-                    </p>
-                  </div>
-
-                  <div className="tutorial-card">
-                    <div className="tutorial-card-header">
-                      <span className="tutorial-card-badge">KB</span>
-                      <div>
-                        <div className="tutorial-card-title">
-                          {t.stages.stage6.keyboardTitle}
-                        </div>
-                        <div className="tutorial-card-subtitle">
-                          Q W E | A S D | Z X C
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="tutorial-card-hint">{t.stages.stage6.keyboardHint}</div>
-
-                    <div className="tutorial-card-keys">
-                      <div className="tutorial-key-row">
-                        <kbd>Q</kbd>
-                        <kbd>W</kbd>
-                        <kbd>E</kbd>
-                      </div>
-                      <div className="tutorial-key-row">
-                        <kbd>A</kbd>
-                        <kbd>S</kbd>
-                        <kbd>D</kbd>
-                      </div>
-                      <div className="tutorial-key-row">
-                        <kbd>Z</kbd>
-                        <kbd>X</kbd>
-                        <kbd>C</kbd>
-                      </div>
-                    </div>
-
-                    <p className="tutorial-card-desc">
-                      {t.stages.stage6.keyboardDesc}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            <div
-              className={`bughunt-intro-card ${
-                isBossMode ? "boss-intro" : ""
-              }`}
-            >
-              <div className="intro-scanline-overlay" />
-              <div className="intro-orbit-ring intro-orbit-ring--1" />
-              <div className="intro-orbit-ring intro-orbit-ring--2" />
-
-              <div className="bughunt-mode-strip">
-                <div className="bughunt-mode-identity">
-                  <span className="bughunt-mode-beacon" />
-                  <span>{t.stages.stage6.missionMode}</span>
-                  <strong>{isBossMode ? t.stages.stage6.bossCoop : t.stages.stage6.normalOps}</strong>
-                </div>
-                <div className="bughunt-mode-capacity">
-                  <span>{isBossMode ? t.stages.stage6.localRaidLink : t.stages.stage6.soloSession}</span>
-                  <strong>{isBossMode ? t.stages.stage6.twoPilots : t.stages.stage6.onePilot}</strong>
-                </div>
-              </div>
-
-              <div className="bughunt-briefing-heading">
-                <div className="intro-icon-wrapper">
-                  <div className="intro-icon-pulse" />
-                  <div className="bughunt-intro-icon">
-                    {isBossMode ? "RAID" : "06"}
-                  </div>
-                </div>
-
-                <div className="bughunt-briefing-copy">
-                  <h1
-                    className="bughunt-title"
-                    data-text={isBossMode ? t.stages.stage6.bossRaidTitle : t.stages.stage6.bugHuntTitle}
-                  >
-                    {isBossMode ? t.stages.stage6.bossRaidTitle : t.stages.stage6.bugHuntTitle}
-                  </h1>
-
-                  <h2 className="bughunt-subtitle">
-                    <span className="subtitle-line" />
-                    {isBossMode
-                      ? t.stages.stage6.bossSubtitle
-                      : t.stages.stage6.normalSubtitle}
-                    <span className="subtitle-line" />
-                  </h2>
-                </div>
-              </div>
-
-              {isBossMode && (
-                <div className="boss-hp-preview">
-                  <div className="boss-hp-label">{t.stages.stage6.ufoGlobalHp}</div>
-
-                  <div className="boss-hp-bar-track">
-                    <div
-                      className="boss-hp-bar-fill"
-                      style={{ width: `${bossHPPercent}%` }}
-                    />
-                  </div>
-
-                  <div className="boss-hp-text">
-                    {bossGlobalHP.toLocaleString()} /{" "}
-                    {bossMaxHP.toLocaleString()}
-                  </div>
-                </div>
-              )}
-
-              <div className="bughunt-rules">
-                <div className="rule-item rule-good">
-                  <div className="rule-item-glow" />
-                  <span className="rule-icon">01</span>
-                  <div>
-                    <strong>
-                      {isBossMode
-                        ? t.stages.stage6.bossRule1Title
-                        : t.stages.stage6.huntBugsTitle}
-                    </strong>
-                    <p>
-                      {isBossMode
-                        ? t.stages.stage6.bossRule1Desc
-                        : t.stages.stage6.huntBugsDesc}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="rule-item rule-bad">
-                  <div className="rule-item-glow" />
-                  <span className="rule-icon">02</span>
-                  <div>
-                    <strong>
-                      {isBossMode
-                        ? t.stages.stage6.bossRule2Title
-                        : t.stages.stage6.avoidCleanTitle}
-                    </strong>
-                    <p>
-                      {isBossMode
-                        ? t.stages.stage6.bossRule2Desc
-                        : t.stages.stage6.avoidCleanDesc}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="rule-item rule-combo">
-                  <div className="rule-item-glow" />
-                  <span className="rule-icon">03</span>
-                  <div>
-                    <strong>
-                      {isBossMode ? t.stages.stage6.bossRule3Title : t.stages.stage6.buildCombosTitle}
-                    </strong>
-                    <p>
-                      {isBossMode
-                        ? t.stages.stage6.bossRule3Desc
-                        : t.stages.stage6.buildCombosDesc}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {isBossMode && (
-                <div className="boss-raid-note">
-                  <span className="boss-raid-note-icon">P2</span> {t.stages.stage6.bossRaidNote}
-                </div>
-              )}
-
-              <div className="intro-timer-preview">
-                <div className="timer-ring">
-                  <svg viewBox="0 0 40 40" className="timer-ring-svg">
-                    <circle cx="20" cy="20" r="17" className="timer-ring-bg" />
-                    <circle cx="20" cy="20" r="17" className="timer-ring-fill" />
-                  </svg>
-                  <span className="timer-ring-label">T</span>
-                </div>
-
-                <div className="timer-text-block">
-                  <span className="timer-big">{GAME_DURATION}s</span>
-                  <span className="timer-sub">{t.stages.stage6.missionTimeLimit}</span>
-                </div>
-              </div>
-
-              <button
-                className={`bughunt-start-btn ${
-                  isBossMode ? "boss-start" : ""
-                }`}
-                onClick={startCountdown}
-              >
-                <span className="btn-inner-text">
-                  {isBossMode ? t.stages.stage6.engageBoss : t.stages.stage6.launchMission}
+          <header className="stage6-lobby-top-bar">
+            <div className="stage6-top-info">
+              <div className={`stage6-raid-chip ${isBossMode ? "raid" : "solo"}`}>
+                <span className="chip-pulse" />
+                <span>
+                  {isOnlineCoop
+                    ? "ONLINE CO-OP RAID"
+                    : isLocalCoop
+                    ? "LOCAL CO-OP RAID"
+                    : isBossMode
+                    ? "BOSS RAID // SOLO"
+                    : "NORMAL SIMULATION"}
                 </span>
-                <span className="btn-glow" />
-                <span className="btn-shimmer" />
-              </button>
+              </div>
+
+              <div className="stage6-lobby-title-block">
+                <h1>{isBossMode ? t.stages.stage6.bossRaidTitle : t.stages.stage6.bugHuntTitle}</h1>
+                <p>{isBossMode ? t.stages.stage6.bossSubtitle : t.stages.stage6.normalSubtitle}</p>
+              </div>
             </div>
 
             {isBossMode && (
-              <div className="boss-coop-section">
-                <div className="boss-coop-label">{t.stages.stage6.bossCoopSectionTitle}</div>
-                <p className="tutorial-section-lede">
-                  {t.stages.stage6.bossCoopSectionLede}
-                </p>
-                <CoopLegend profiles={coopProfiles} />
-                <div className="boss-coop-note">
-                  {t.stages.stage6.bossCoopSectionNote}
+              <div className="stage6-boss-hp-header">
+                <div className="boss-hp-header-label">
+                  <span>{t.stages.stage6.ufoGlobalHp}</span>
+                  <span>
+                    {bossGlobalHP.toLocaleString()} / {bossMaxHP.toLocaleString()}
+                  </span>
+                </div>
+                <div className="boss-hp-header-track">
+                  <div
+                    className="boss-hp-header-fill"
+                    style={{ width: `${bossHPPercent}%` }}
+                  />
                 </div>
               </div>
             )}
-          </div>
+
+
+            <div className="stage6-top-actions">
+              <div className={`stage6-top-status-chip ${bothReady ? "all-ready" : ""}`}>
+                {bothReady ? (
+                  <span>⚡ {isEn ? "STARTING 3 2 1..." : "MEMULAI 3 2 1..."}</span>
+                ) : isOnlineCoop ? (
+                  p2PilotData?.isConnected ? (
+                    myReady && !partnerReady ? (
+                      <span>⏳ {isEn ? "WAITING FOR CO-PILOT..." : "MENUNGGU CO-PILOT..."}</span>
+                    ) : !myReady && partnerReady ? (
+                      <span>⚠️ {isEn ? "CO-PILOT IS READY!" : "CO-PILOT SIAP!"}</span>
+                    ) : (
+                      <span>⚔️ {isEn ? "CLICK READY" : "KLIK READY"}</span>
+                    )
+                  ) : (
+                    <span>🛸 {isEn ? "ROOM OPEN // SHARE PIN" : "ROOM SIAP // BAGIKAN PIN"}</span>
+                  )
+                ) : isLocalCoop ? (
+                  <span>🎮 {isEn ? "P1 & P2 CONFIRM READY" : "P1 & P2 TEKAN READY"}</span>
+                ) : (
+                  <span>🚀 {isEn ? "SOLO PILOT READY" : "PILOT SOLO SIAP"}</span>
+                )}
+              </div>
+
+
+              <button
+                className="stage6-manual-btn"
+                onClick={() => setIsManualOpen(true)}
+                aria-label="Open mission manual"
+              >
+                <span className="manual-book-icon">📖</span>
+                <span>{isEn ? "MANUAL" : "CARA BERMAIN"}</span>
+              </button>
+
+
+              {!isLocalCoop && (
+                <button
+                  className={`stage6-top-ready-btn ${myReady ? "active-ready" : ""}`}
+                  onClick={handleToggleMyReady}
+                >
+                  <div className="stage6-ready-btn-glow" />
+                  <span>
+                    {myReady
+                      ? isEn
+                        ? "✓ READY (CANCEL)"
+                        : "✓ READY (BATAL)"
+                      : isEn
+                      ? "⚔️ READY"
+                      : "⚔️ SIAP / READY"}
+                  </span>
+                </button>
+              )}
+            </div>
+          </header>
+
+
+          <main className="stage6-lobby-center">
+            <PilotShowcasePodium
+              p1Data={p1PilotData}
+              p2Data={p2PilotData}
+              isOnlineCoop={isOnlineCoop}
+              isLocalCoop={isLocalCoop}
+              onToggleP1Ready={handleToggleMyReady}
+              onToggleP2Ready={handleToggleP2Ready}
+              partyCode={onlinePartyCode}
+              onCopyPartyCode={handleCopyPartyCode}
+              copyFeedback={copyFeedback}
+            />
+          </main>
         </div>
+
+
+        <MissionManualModal
+          isOpen={isManualOpen}
+          onClose={() => setIsManualOpen(false)}
+        />
       </div>
     );
   }
@@ -1812,7 +1781,7 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
 
         <div className="bughunt-countdown-overlay">
           <div className={`countdown-number ${countdown === 0 ? "go" : ""}`}>
-            {countdown > 0 ? countdown : isBossMode ? t.stages.stage6.countdownRaid : t.stages.stage6.countdownGo}
+            {countdown > 0 ? countdown : "START!"}
           </div>
         </div>
       </div>
@@ -2144,7 +2113,7 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
         </div>
       )}
 
-      {isBossMode ? (
+      {isBossMode && isLocalCoop ? (
         <div className="boss-split-screen">
           <div className="split-panel split-panel-p1">
             <div
@@ -2299,6 +2268,71 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
             </div>
 
             <div className="split-grid-container">{renderGameGrid("P2")}</div>
+          </div>
+        </div>
+      ) : isBossMode ? (
+        <div className="online-raid-arena">
+          <div className="online-raid-ufo-stage">
+            <AdaptiveCanvas
+              camera={{ position: [0, 3.2, 13], fov: 36 }}
+              dpr={[1, 1.2]}
+              quality="low"
+              gl={{ alpha: true, antialias: true }}
+            >
+              <ambientLight intensity={0.9} />
+              <directionalLight
+                position={[3, 6, 8]}
+                intensity={1.8}
+                color="#ffffff"
+              />
+              <pointLight
+                position={[0, 10, 5]}
+                intensity={35}
+                color="#00ffcc"
+              />
+              <BossUFO
+                hp={bossGlobalHP}
+                maxHP={bossMaxHP}
+                hitFlash={ufoHitFlash}
+                position={[0, 0.7, 0]}
+                scale={1.15}
+              />
+              <Stars
+                radius={100}
+                depth={20}
+                count={90}
+                factor={3}
+                saturation={0}
+                fade
+                speed={1}
+              />
+            </AdaptiveCanvas>
+
+            {damageNumbers.map((damageNumber) => (
+              <div
+                key={damageNumber.id}
+                className="damage-number"
+                style={{
+                  left: `${damageNumber.x}%`,
+                  top: `${damageNumber.y}%`,
+                }}
+              >
+                −{damageNumber.value}
+              </div>
+            ))}
+
+            {laserActive && <div className="laser-beam" />}
+            {isOnlineCoop && lastLaserEvent && Date.now() - lastLaserEvent.timestamp < 400 && (
+              <div className="cross-screen-laser" />
+            )}
+          </div>
+
+          {isOnlineCoop && remoteCoPilot && (
+            <CoPilotTelemetryHUD coPilot={remoteCoPilot} />
+          )}
+
+          <div className="online-raid-grid-wrapper">
+            {renderGameGrid("P1")}
           </div>
         </div>
       ) : (
