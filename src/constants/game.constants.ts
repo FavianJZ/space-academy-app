@@ -1,4 +1,4 @@
-export const BOSS_MAX_HP = 20000;
+export const BOSS_MAX_HP = 10000;
 
 export const STORAGE_KEY = "space-academy-storage";
 

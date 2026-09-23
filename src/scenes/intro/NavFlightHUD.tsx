@@ -7,6 +7,7 @@ import {
   NAV_FLIGHT_GATES,
   type NavFlightTelemetry,
 } from "./navFlightConfig";
+import FloatingFlightJoystick from "./FloatingFlightJoystick";
 
 import "./NavFlightHUD.css";
 
@@ -130,10 +131,12 @@ export const NavFlightHUD: React.FC<NavFlightHUDProps> = ({
   const landingClass = discrete.isLandingGate ? " is-landing" : "";
 
   return (
-    <div
-      className={`nav-flight-hud${visible ? " is-visible" : ""}`}
-      aria-hidden="true"
-    >
+    <>
+      <FloatingFlightJoystick visible={visible} />
+      <div
+        className={`nav-flight-hud${visible ? " is-visible" : ""}`}
+        aria-hidden="true"
+      >
 
       {discrete.onScreen && (
         <div ref={reticleRef} className={`nav-flight-reticle${landingClass}`}>
@@ -248,7 +251,8 @@ export const NavFlightHUD: React.FC<NavFlightHUDProps> = ({
           : "BATAS SEKTOR // AUTOPILOT MENGOREKSI HALUAN"}
       </div>
     </div>
-  );
+  </>
+);
 };
 
 export default NavFlightHUD;

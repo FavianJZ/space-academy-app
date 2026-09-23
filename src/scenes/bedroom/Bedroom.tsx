@@ -30,6 +30,10 @@ import { getTranslation } from "../../i18n/translations";
 
 import { containsProfanity, validateAppropriateText } from "../../utils/profanityFilter";
 import { INITIAL_TELEMETRY_SIGNALS } from "../../utils/specializationCalculator";
+import {
+  hasDevicePlayedBefore,
+  markDeviceAsPlayed,
+} from "../../services/deviceAccountService";
 
 import "./Bedroom.css";
 
@@ -818,6 +822,7 @@ const Bedroom: React.FC = () => {
   const [skipTyping, setSkipTyping] = useState(false);
   const [autoPlay, setAutoPlay] = useState(false);
   const [skipModeActive, setSkipModeActive] = useState(false);
+  const [canSkip] = useState(() => hasDevicePlayedBefore());
   const [wakeComplete, setWakeComplete] = useState(false);
 
   const wakeProgressRef = useRef(0);
@@ -1099,7 +1104,7 @@ const Bedroom: React.FC = () => {
   ]);
 
   const handleSkipDialogue = useCallback(() => {
-    if (dialoguePhase >= 5) return;
+    if (!canSkip || dialoguePhase >= 5) return;
 
     cancelSpeechNarration();
     setNarrationDone(true);
@@ -1126,6 +1131,7 @@ const Bedroom: React.FC = () => {
       }
     }
   }, [
+    canSkip,
     dialoguePhase,
     identityStep,
     isSubmittingStep,
@@ -1229,6 +1235,7 @@ const Bedroom: React.FC = () => {
 
     setIdentityStep("submitted");
     setDialoguePhase(5);
+    markDeviceAsPlayed();
 
     const safetyTimer = window.setTimeout(() => {
       navigate("/mainhub");
@@ -1617,22 +1624,24 @@ const Bedroom: React.FC = () => {
                   {autoPlay ? "⏸ AUTO" : "▶ AUTO"}
                 </button>
 
-                <button
-                  className={`skip-dialog-btn ${
-                    skipModeActive ? "active" : ""
-                  }`}
-                  data-audio-cue="tab"
-                  onClick={() => {
-                    if (skipModeActive) {
-                      setSkipModeActive(false);
-                    } else {
-                      handleSkipDialogue();
-                    }
-                  }}
-                  title="Toggle Fast Mode (skip all dialogues)"
-                >
-                  {skipModeActive ? "⏩ FAST MODE ON" : "⏭ FAST MODE"}
-                </button>
+                {canSkip && (
+                  <button
+                    className={`skip-dialog-btn ${
+                      skipModeActive ? "active" : ""
+                    }`}
+                    data-audio-cue="tab"
+                    onClick={() => {
+                      if (skipModeActive) {
+                        setSkipModeActive(false);
+                      } else {
+                        handleSkipDialogue();
+                      }
+                    }}
+                    title="Toggle Fast Mode (skip all dialogues)"
+                  >
+                    {skipModeActive ? "⏩ FAST MODE ON" : "⏭ FAST MODE"}
+                  </button>
+                )}
               </div>
             )}
 

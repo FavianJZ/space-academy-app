@@ -241,8 +241,6 @@ const Stage3PuzzleGame: React.FC<Stage3PuzzleGameProps> = ({ planetId }) => {
     setTilt({ x: 0, y: 0 });
   };
 
-  const timerPercent = (timeLeft / INITIAL_TIME) * 100;
-
   if (showCompletion) {
     return (
       <div className="stage-puzzle completion-screen">
@@ -294,32 +292,6 @@ const Stage3PuzzleGame: React.FC<Stage3PuzzleGameProps> = ({ planetId }) => {
 
   return (
     <div className={`stage-puzzle ${screenEffect}`}>
-
-      <div
-        className="top-left-floating-btn hud-sweep-btn-wrapper"
-        style={{
-          position: "absolute",
-          top: "20px",
-          left: "30px",
-          zIndex: 50,
-          margin: 0,
-        }}
-      >
-        <button
-          className="solve-btn hud-sweep-btn"
-          onClick={handleRestart}
-          style={{
-            padding: "10px 24px",
-            fontSize: "0.85rem",
-            width: "auto",
-            minWidth: "160px",
-          }}
-        >
-          {language === "en" ? "🔄 RESET CURRENT PIPELINE" : "🔄 RESET PIPELINE SAAT INI"}
-        </button>
-      </div>
-
-
       <div className="canvas-container">
         <AdaptiveCanvas
           camera={{ position: [0, 1, 5], fov: 50 }}
@@ -357,7 +329,6 @@ const Stage3PuzzleGame: React.FC<Stage3PuzzleGameProps> = ({ planetId }) => {
 
       <FloatingParticles />
 
-
       <div className="puzzle-content hud-content-layer">
         <div
           className="puzzle-card hud-3d-card"
@@ -375,103 +346,56 @@ const Stage3PuzzleGame: React.FC<Stage3PuzzleGameProps> = ({ planetId }) => {
         >
           <div className="card-scanline" />
 
-
-          <div className="puzzle-header" style={{ marginBottom: "14px" }}>
+          <div className="quiz-top-bar puzzle-top-bar">
             <div
-              style={{
-                display: "inline-block",
-                padding: "3px 12px",
-                borderRadius: "20px",
-                background: "rgba(0, 255, 204, 0.12)",
-                border: "1px solid rgba(0, 255, 204, 0.4)",
-                color: "#00ffcc",
-                fontSize: "10.5px",
-                fontWeight: "bold",
-                letterSpacing: "1.5px",
-                marginBottom: "6px",
-              }}
+              className={`quiz-timer-badge ${
+                timeLeft <= 10 ? "danger" : timeLeft <= 20 ? "warning" : ""
+              }`}
             >
-              {currentChallenge.category} • {language === "en" ? "LEVEL" : "LEVEL"} {challengeIdx + 1}/{pipelineChallenges.length}
+              <span className="timer-icon">T</span>
+              <span className="timer-value">{timeLeft}s</span>
             </div>
-            <h1 style={{ fontSize: "1.6rem", margin: "4px 0" }}>
-              {currentChallenge.title}
-            </h1>
-            <p
-              className="puzzle-subtitle"
-              style={{ fontSize: "0.95rem", color: "#b8d5ed", margin: 0 }}
+
+            <button
+              type="button"
+              className="puzzle-reset-btn"
+              onClick={handleRestart}
+              title={language === "en" ? "Reset order" : "Acak ulang susunan"}
             >
+              🔄 {language === "en" ? "RESET PIPELINE" : "RESET PIPELINE"}
+            </button>
+
+            <div className="quiz-score-badge">
+              <span className="score-icon">{language === "en" ? "MOVES" : "LANGKAH"}</span>
+              <span className="score-value">{moves}</span>
+            </div>
+          </div>
+
+          <div className="step-indicators">
+            {pipelineChallenges.map((_, idx) => (
+              <div
+                key={idx}
+                className={`step-dot ${idx === challengeIdx ? "active" : ""} ${
+                  idx < challengeIdx ? "completed" : ""
+                }`}
+              />
+            ))}
+          </div>
+
+          <div className="puzzle-header">
+            <span className="stage-category-tag">
+              {currentChallenge.category} • {language === "en" ? "LEVEL" : "LEVEL"} {challengeIdx + 1}/{pipelineChallenges.length}
+            </span>
+            <h1>{currentChallenge.title}</h1>
+            <p className="puzzle-subtitle">
               {currentChallenge.description}
             </p>
           </div>
 
-
-          <div
-            className="puzzle-stats-bar"
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              padding: "10px 16px",
-              background: "rgba(6, 18, 42, 0.65)",
-              borderRadius: "10px",
-              marginBottom: "18px",
-            }}
-          >
-            <div
-              className={`puzzle-timer-circle ${
-                timeLeft <= 20 ? (timeLeft <= 10 ? "danger" : "warning") : ""
-              }`}
-            >
-              <svg className="timer-ring" viewBox="0 0 44 44">
-                <circle
-                  cx="22"
-                  cy="22"
-                  r="19"
-                  fill="none"
-                  stroke="rgba(0,255,255,0.12)"
-                  strokeWidth="3"
-                />
-                <circle
-                  cx="22"
-                  cy="22"
-                  r="19"
-                  fill="none"
-                  stroke={
-                    timeLeft <= 10
-                      ? "#ff4444"
-                      : timeLeft <= 20
-                      ? "#ffaa00"
-                      : "#00ffff"
-                  }
-                  strokeWidth="3"
-                  strokeLinecap="round"
-                  strokeDasharray={`${timerPercent * 1.194} 119.4`}
-                  style={{
-                    transform: "rotate(-90deg)",
-                    transformOrigin: "center",
-                    transition: "stroke-dasharray 1s linear",
-                  }}
-                />
-              </svg>
-              <span className="timer-text">{timeLeft}s</span>
-            </div>
-
-            <div
-              style={{
-                fontSize: "12px",
-                color: selectedIdx !== null ? "#ffcc00" : "#7ef9ff",
-                fontWeight: 600,
-              }}
-            >
-              {selectedIdx !== null
-                ? (language === "en" ? "👉 Click another card to SWAP position" : "👉 Klik kartu lain untuk TUKAR posisi")
-                : (language === "en" ? "💡 Tap any card to select, then tap another to SWAP" : "💡 Ketuk kartu untuk memilih, lalu ketuk kartu lain untuk TUKAR")}
-            </div>
-
-            <div className="puzzle-moves-badge">
-              <span className="moves-label">{language === "en" ? "MOVES" : "LANGKAH"}</span>
-              <span className="moves-count">{moves}</span>
-            </div>
+          <div className="stage-hint-bar">
+            {selectedIdx !== null
+              ? (language === "en" ? "👉 Tap another card to SWAP position" : "👉 Ketuk kartu lain untuk TUKAR posisi")
+              : (language === "en" ? "💡 Tap any card to select, then tap another to SWAP" : "💡 Ketuk kartu untuk memilih, lalu ketuk kartu lain untuk TUKAR")}
           </div>
 
 
@@ -592,7 +516,7 @@ const Stage3PuzzleGame: React.FC<Stage3PuzzleGameProps> = ({ planetId }) => {
               </div>
               <button
                 onClick={goToNextChallenge}
-                className="hud-sweep-btn"
+                className="hud-sweep-btn pipeline-next-btn"
                 style={{
                   background: "linear-gradient(135deg, #00ffcc 0%, #00b894 100%)",
                   color: "#030f1e",
@@ -605,7 +529,6 @@ const Stage3PuzzleGame: React.FC<Stage3PuzzleGameProps> = ({ planetId }) => {
                   boxShadow: "0 0 15px rgba(0, 255, 204, 0.5)",
                   letterSpacing: "1px",
                   transition: "all 0.2s ease",
-                  marginLeft: "auto",
                 }}
               >
                 {challengeIdx < pipelineChallenges.length - 1
@@ -614,6 +537,22 @@ const Stage3PuzzleGame: React.FC<Stage3PuzzleGameProps> = ({ planetId }) => {
               </button>
             </div>
           )}
+
+          <div className="quiz-footer">
+            <div className="intro-progress quiz-progress-inline">
+              <div className="progress-bar hud-progress-bar">
+                <div
+                  className="progress-fill hud-progress-fill"
+                  style={{
+                    width: `${((challengeIdx + 1) / pipelineChallenges.length) * 100}%`,
+                  }}
+                />
+              </div>
+              <span className="progress-text">
+                {challengeIdx + 1} / {pipelineChallenges.length}
+              </span>
+            </div>
+          </div>
         </div>
       </div>
     </div>

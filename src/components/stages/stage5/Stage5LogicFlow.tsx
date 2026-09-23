@@ -78,6 +78,7 @@ const Stage5LogicFlow: React.FC<Stage5LogicFlowProps> = ({ planetId }) => {
 
   const [currentLevelIdx, setCurrentLevelIdx] = useState(0);
   const [wires, setWires] = useState<Wire[]>([]);
+  const [selectedPort, setSelectedPort] = useState<string | null>(null);
   const [dragStart, setDragStart] = useState<{
     portId: string;
     x: number;
@@ -128,7 +129,7 @@ const Stage5LogicFlow: React.FC<Stage5LogicFlowProps> = ({ planetId }) => {
     }
   };
 
-  const getPortPosition = (portId: string) => {
+  const getPortPosition = useCallback((portId: string) => {
     if (!containerRef.current) return { x: 0, y: 0 };
 
     const portEl = containerRef.current.querySelector(
@@ -144,7 +145,7 @@ const Stage5LogicFlow: React.FC<Stage5LogicFlowProps> = ({ planetId }) => {
       x: rect.left - containerRect.left + rect.width / 2,
       y: rect.top - containerRect.top + rect.height / 2,
     };
-  };
+  }, []);
 
   const calculateSpeedScore = (): number => {
     const answerTime =
@@ -223,31 +224,58 @@ const Stage5LogicFlow: React.FC<Stage5LogicFlowProps> = ({ planetId }) => {
     }
   }, [handleComplete, timeLeft]);
 
-  useEffect(() => {
-    const frameId = window.requestAnimationFrame(() => {
-      const newRenderedWires = wires.map((wire) => {
-        const start = getPortPosition(wire.from);
-        const end = getPortPosition(wire.to);
+  const updateWires = useCallback(() => {
+    if (!containerRef.current) return;
+    const newRenderedWires = wires.map((wire) => {
+      const start = getPortPosition(wire.from);
+      const end = getPortPosition(wire.to);
 
-        let color = "#00ffff";
+      let color = "#00ffff";
 
-        if (status === "success") color = "#00ff88";
-        if (status === "failure") color = "#ff3333";
+      if (status === "success") color = "#00ff88";
+      if (status === "failure") color = "#ff3333";
 
-        return {
-          x1: start.x,
-          y1: start.y,
-          x2: end.x,
-          y2: end.y,
-          color,
-        };
-      });
-
-      setRenderedWires(newRenderedWires);
+      return {
+        x1: start.x,
+        y1: start.y,
+        x2: end.x,
+        y2: end.y,
+        color,
+      };
     });
 
-    return () => window.cancelAnimationFrame(frameId);
-  }, [wires, status, currentLevelIdx]);
+    setRenderedWires(newRenderedWires);
+  }, [wires, status, getPortPosition]);
+
+  useEffect(() => {
+    const frameId = window.requestAnimationFrame(updateWires);
+    const timer = window.setTimeout(updateWires, 100);
+    const timer2 = window.setTimeout(updateWires, 350);
+
+    const onResize = () => {
+      window.requestAnimationFrame(updateWires);
+    };
+
+    window.addEventListener("resize", onResize);
+    window.addEventListener("orientationchange", onResize);
+
+    let ro: ResizeObserver | null = null;
+    if (containerRef.current && typeof ResizeObserver !== "undefined") {
+      ro = new ResizeObserver(() => {
+        window.requestAnimationFrame(updateWires);
+      });
+      ro.observe(containerRef.current);
+    }
+
+    return () => {
+      window.cancelAnimationFrame(frameId);
+      window.clearTimeout(timer);
+      window.clearTimeout(timer2);
+      window.removeEventListener("resize", onResize);
+      window.removeEventListener("orientationchange", onResize);
+      if (ro) ro.disconnect();
+    };
+  }, [updateWires, currentLevelIdx]);
 
   const handleRobotClick = () => {
     const messages = getRobotMessages(language);
@@ -259,138 +287,7 @@ const Stage5LogicFlow: React.FC<Stage5LogicFlowProps> = ({ planetId }) => {
     }, 2000);
   };
 
-  const handleMouseDown = (
-    _event: React.MouseEvent<HTMLDivElement>,
-    portId: string
-  ) => {
-    if (status !== "playing") return;
-    if (portId === "diamond-in" || portId === "bulb-in") return;
-
-    playSfx("nodeDragStart");
-    setWires((prev) => prev.filter((wire) => wire.from !== portId));
-
-    const pos = getPortPosition(portId);
-
-    setDragStart({
-      portId,
-      x: pos.x,
-      y: pos.y,
-    });
-
-    setDragCurrent({
-      x: pos.x,
-      y: pos.y,
-    });
-  };
-
-  const handleMouseMove = (event: React.MouseEvent<HTMLDivElement>) => {
-    if (!dragStart || !containerRef.current) return;
-
-    const containerRect = containerRef.current.getBoundingClientRect();
-
-    setDragCurrent({
-      x: event.clientX - containerRect.left,
-      y: event.clientY - containerRect.top,
-    });
-  };
-
-  const completeConnection = (targetPort: string | null) => {
-    if (dragStart && targetPort) {
-      let isValid = false;
-
-      if (dragStart.portId === "start-out" && targetPort === "diamond-in") {
-        isValid = true;
-      }
-
-      if (
-        (dragStart.portId === "diamond-true" ||
-          dragStart.portId === "diamond-false") &&
-        targetPort === "bulb-in"
-      ) {
-        isValid = true;
-      }
-
-      if (isValid) {
-        const newWires = [...wires, { from: dragStart.portId, to: targetPort }];
-
-        playSfx("circuitConnect");
-        setWires(newWires);
-        checkWinCondition(newWires);
-      } else {
-        playSfx("nodeDrop");
-      }
-    } else if (dragStart) {
-      playSfx("nodeDrop");
-    }
-
-    setDragStart(null);
-    setDragCurrent(null);
-  };
-
-  const handleMouseUp = (event: React.MouseEvent<HTMLDivElement>) => {
-    const target = event.target as HTMLElement;
-    const targetPort = target.getAttribute("data-port");
-
-    completeConnection(targetPort);
-  };
-
-  const handleTouchStart = (
-    event: React.TouchEvent<HTMLDivElement>,
-    portId: string
-  ) => {
-    if (status !== "playing") return;
-    if (portId === "diamond-in" || portId === "bulb-in") return;
-    if (!containerRef.current) return;
-
-    playSfx("nodeDragStart");
-    setWires((prev) => prev.filter((wire) => wire.from !== portId));
-
-    const touch = event.touches[0];
-    const containerRect = containerRef.current.getBoundingClientRect();
-
-    const pos = {
-      x: touch.clientX - containerRect.left,
-      y: touch.clientY - containerRect.top,
-    };
-
-    setDragStart({
-      portId,
-      x: pos.x,
-      y: pos.y,
-    });
-
-    setDragCurrent(pos);
-  };
-
-  const handleTouchMove = (event: React.TouchEvent<HTMLDivElement>) => {
-    if (!dragStart || !containerRef.current) return;
-
-    event.preventDefault();
-
-    const touch = event.touches[0];
-    const containerRect = containerRef.current.getBoundingClientRect();
-
-    setDragCurrent({
-      x: touch.clientX - containerRect.left,
-      y: touch.clientY - containerRect.top,
-    });
-  };
-
-  const handleTouchEnd = (event: React.TouchEvent<HTMLDivElement>) => {
-    if (!dragStart || !containerRef.current) return;
-
-    const touch = event.changedTouches[0];
-    const element = document.elementFromPoint(
-      touch.clientX,
-      touch.clientY
-    ) as HTMLElement | null;
-
-    const targetPort = element?.getAttribute("data-port") ?? null;
-
-    completeConnection(targetPort);
-  };
-
-  const checkWinCondition = (currentWires: Wire[]) => {
+  const checkWinCondition = useCallback((currentWires: Wire[]) => {
     const hasStartToDiamond = currentWires.some(
       (wire) => wire.from === "start-out" && wire.to === "diamond-in"
     );
@@ -429,12 +326,214 @@ const Stage5LogicFlow: React.FC<Stage5LogicFlowProps> = ({ planetId }) => {
         setRobotReaction("idle");
       }, reaction.motionMs);
     }
+  }, [currentLevel, language, playSfx]);
+
+  const tryConnectPorts = useCallback((portA: string, portB: string): boolean => {
+    let fromPort = "";
+    let toPort = "";
+
+    if (
+      (portA === "start-out" && portB === "diamond-in") ||
+      (portB === "start-out" && portA === "diamond-in")
+    ) {
+      fromPort = "start-out";
+      toPort = "diamond-in";
+    }
+
+    if (
+      (portA === "diamond-true" || portA === "diamond-false") &&
+      portB === "bulb-in"
+    ) {
+      fromPort = portA;
+      toPort = "bulb-in";
+    } else if (
+      (portB === "diamond-true" || portB === "diamond-false") &&
+      portA === "bulb-in"
+    ) {
+      fromPort = portB;
+      toPort = "bulb-in";
+    }
+
+    if (fromPort && toPort) {
+      const filtered = wires.filter(
+        (w) => w.from !== fromPort && w.to !== toPort
+      );
+      const newWires = [...filtered, { from: fromPort, to: toPort }];
+      playSfx("circuitConnect");
+      setWires(newWires);
+      setSelectedPort(null);
+      checkWinCondition(newWires);
+      return true;
+    }
+
+    return false;
+  }, [wires, playSfx, checkWinCondition]);
+
+  const handlePortTap = (portId: string) => {
+    if (status !== "playing") return;
+
+    if (!selectedPort) {
+      setSelectedPort(portId);
+      playSfx("nodeDragStart");
+      return;
+    }
+
+    if (selectedPort === portId) {
+      setSelectedPort(null);
+      playSfx("uiSelect");
+      return;
+    }
+
+    const connected = tryConnectPorts(selectedPort, portId);
+    if (!connected) {
+      setSelectedPort(portId);
+      playSfx("nodeDragStart");
+    }
+  };
+
+  const handleMouseDown = (
+    _event: React.MouseEvent<HTMLDivElement>,
+    portId: string
+  ) => {
+    if (status !== "playing") return;
+
+    playSfx("nodeDragStart");
+    setWires((prev) => prev.filter((wire) => wire.from !== portId && wire.to !== portId));
+
+    const pos = getPortPosition(portId);
+
+    setDragStart({
+      portId,
+      x: pos.x,
+      y: pos.y,
+    });
+
+    setDragCurrent({
+      x: pos.x,
+      y: pos.y,
+    });
+  };
+
+  const handleMouseMove = (event: React.MouseEvent<HTMLDivElement>) => {
+    if (!dragStart || !containerRef.current) return;
+
+    const containerRect = containerRef.current.getBoundingClientRect();
+
+    setDragCurrent({
+      x: event.clientX - containerRect.left,
+      y: event.clientY - containerRect.top,
+    });
+  };
+
+  const completeConnection = (
+    targetPort: string | null,
+    clientX?: number,
+    clientY?: number
+  ) => {
+    if (dragStart) {
+      let resolvedTarget = targetPort;
+
+      if (!resolvedTarget && clientX !== undefined && clientY !== undefined && containerRef.current) {
+        const ports = ["start-out", "diamond-in", "diamond-true", "diamond-false", "bulb-in"];
+        const containerRect = containerRef.current.getBoundingClientRect();
+        const touchRelX = clientX - containerRect.left;
+        const touchRelY = clientY - containerRect.top;
+
+        let closestPort: string | null = null;
+        let minDistance = 55;
+
+        for (const p of ports) {
+          if (p === dragStart.portId) continue;
+          const pPos = getPortPosition(p);
+          const dist = Math.hypot(pPos.x - touchRelX, pPos.y - touchRelY);
+          if (dist < minDistance) {
+            minDistance = dist;
+            closestPort = p;
+          }
+        }
+        resolvedTarget = closestPort;
+      }
+
+      if (resolvedTarget) {
+        const connected = tryConnectPorts(dragStart.portId, resolvedTarget);
+        if (!connected) {
+          playSfx("nodeDrop");
+        }
+      } else {
+        playSfx("nodeDrop");
+      }
+    }
+
+    setDragStart(null);
+    setDragCurrent(null);
+  };
+
+  const handleMouseUp = (event: React.MouseEvent<HTMLDivElement>) => {
+    const target = event.target as HTMLElement;
+    const targetPort = target.closest("[data-port]")?.getAttribute("data-port") ?? null;
+
+    completeConnection(targetPort, event.clientX, event.clientY);
+  };
+
+  const handleTouchStart = (
+    _event: React.TouchEvent<HTMLDivElement>,
+    portId: string
+  ) => {
+    if (status !== "playing") return;
+    if (!containerRef.current) return;
+
+    playSfx("nodeDragStart");
+    setWires((prev) => prev.filter((wire) => wire.from !== portId && wire.to !== portId));
+
+    const pos = getPortPosition(portId);
+
+    setDragStart({
+      portId,
+      x: pos.x,
+      y: pos.y,
+    });
+
+    setDragCurrent({
+      x: pos.x,
+      y: pos.y,
+    });
+  };
+
+  const handleTouchMove = (event: React.TouchEvent<HTMLDivElement>) => {
+    if (!dragStart || !containerRef.current) return;
+
+    if (event.cancelable) {
+      event.preventDefault();
+    }
+
+    const touch = event.touches[0];
+    const containerRect = containerRef.current.getBoundingClientRect();
+
+    setDragCurrent({
+      x: touch.clientX - containerRect.left,
+      y: touch.clientY - containerRect.top,
+    });
+  };
+
+  const handleTouchEnd = (event: React.TouchEvent<HTMLDivElement>) => {
+    if (!dragStart || !containerRef.current) return;
+
+    const touch = event.changedTouches[0];
+    const element = document.elementFromPoint(
+      touch.clientX,
+      touch.clientY
+    ) as HTMLElement | null;
+
+    const targetPort = element?.closest("[data-port]")?.getAttribute("data-port") ?? null;
+
+    completeConnection(targetPort, touch.clientX, touch.clientY);
   };
 
   const handleNext = () => {
     if (currentLevelIdx < levels.length - 1) {
       setCurrentLevelIdx((prev) => prev + 1);
       setWires([]);
+      setSelectedPort(null);
       setStatus("playing");
       levelStartTimeRef.current = getStageTimestamp();
     } else {
@@ -444,6 +543,7 @@ const Stage5LogicFlow: React.FC<Stage5LogicFlowProps> = ({ planetId }) => {
 
   const handleRetryLevel = () => {
     setWires([]);
+    setSelectedPort(null);
     setStatus("playing");
     levelStartTimeRef.current = getStageTimestamp();
   };
@@ -455,6 +555,7 @@ const Stage5LogicFlow: React.FC<Stage5LogicFlowProps> = ({ planetId }) => {
     setShowCompletion(false);
     setCurrentLevelIdx(0);
     setWires([]);
+    setSelectedPort(null);
     setScore(0);
     setStatus("playing");
     setRobotReaction("idle");
@@ -468,6 +569,11 @@ const Stage5LogicFlow: React.FC<Stage5LogicFlowProps> = ({ planetId }) => {
   };
 
   const handleTiltMouseMove = (event: React.MouseEvent<HTMLDivElement>) => {
+    if (dragStart || window.innerWidth <= 768) {
+      if (tilt.x !== 0 || tilt.y !== 0) setTilt({ x: 0, y: 0 });
+      return;
+    }
+
     const { clientX, clientY, currentTarget } = event;
     const { left, top, width, height } = currentTarget.getBoundingClientRect();
 
@@ -605,147 +711,203 @@ const Stage5LogicFlow: React.FC<Stage5LogicFlowProps> = ({ planetId }) => {
 
       <FloatingParticles />
 
-      <div className="logic-header-overlay">
-        <h2>
-          {language === "en" ? "Pipeline Challenge" : "Tantangan Pipeline"} {currentLevelIdx + 1}/{levels.length}
-        </h2>
-        <p>{currentLevel.scenario}</p>
+      <div className="logic-content hud-content-layer">
+        <div className="logic-card hud-3d-card">
+          <div className="card-scanline" />
 
-        <div
-          style={{
-            display: "inline-block",
-            marginTop: "8px",
-            background:
-              timeLeft <= 10
-                ? "rgba(255,50,50,0.9)"
-                : "rgba(0,200,255,0.2)",
-            border:
-              timeLeft <= 10
-                ? "2px solid #ff3232"
-                : "2px solid rgba(0,200,255,0.5)",
-            borderRadius: "12px",
-            padding: "6px 14px",
-            color: timeLeft <= 10 ? "#fff" : "#00c8ff",
-            fontFamily: "'Orbitron', sans-serif",
-            fontSize: "1rem",
-            fontWeight: 700,
-            animation: timeLeft <= 10 ? "pulse 1s infinite" : "none",
-          }}
-        >
-          T {timeLeft}s
-        </div>
-      </div>
+          <div className="quiz-top-bar logic-top-bar">
+            <div
+              className={`quiz-timer-badge ${
+                timeLeft <= 10 ? "danger" : timeLeft <= 20 ? "warning" : ""
+              }`}
+            >
+              <span className="timer-icon">T</span>
+              <span className="timer-value">{timeLeft}s</span>
+            </div>
 
-      <div
-        className="circuit-board circuit-board--extended hud-3d-card"
-        ref={containerRef}
-        onMouseMove={handleTiltMouseMove}
-        onMouseLeave={handleTiltMouseLeave}
-        style={{
-          transform: `perspective(1200px) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)`,
-          transition:
-            tilt.x === 0 && tilt.y === 0
-              ? "transform 0.5s cubic-bezier(0.25, 1, 0.5, 1)"
-              : "transform 0.1s linear",
-        }}
-      >
-        <div className="card-scanline" />
+            <div className="logic-interactive-hint">
+              {selectedPort
+                ? (language === "en"
+                    ? `⚡ Port "${selectedPort}" selected. Tap target port!`
+                    : `⚡ Port "${selectedPort}" dipilih. Ketuk port tujuan!`)
+                : (language === "en"
+                    ? "💡 Tap or drag ports to link data circuits"
+                    : "💡 Ketuk atau tarik port untuk menyambungkan")}
+            </div>
 
-        <svg className="wire-layer">
-          {renderedWires.map((wire, index) => (
-            <line
-              key={`${wire.x1}-${wire.y1}-${wire.x2}-${wire.y2}-${index}`}
-              x1={wire.x1}
-              y1={wire.y1}
-              x2={wire.x2}
-              y2={wire.y2}
-              stroke={wire.color}
-              strokeWidth="4"
-              strokeLinecap="round"
-              className={status === "success" ? "wire-pulse" : ""}
-            />
-          ))}
+            <div className="quiz-score-badge">
+              <span className="score-icon">PTS</span>
+              <span className="score-value">{score}</span>
+            </div>
+          </div>
 
-          {dragStart && dragCurrent && (
-            <line
-              x1={dragStart.x}
-              y1={dragStart.y}
-              x2={dragCurrent.x}
-              y2={dragCurrent.y}
-              stroke="#ffff00"
-              strokeWidth="4"
-              strokeDasharray="10,5"
-              strokeLinecap="round"
-            />
-          )}
-        </svg>
+          <div className="step-indicators">
+            {levels.map((_, idx) => (
+              <div
+                key={idx}
+                className={`step-dot ${idx === currentLevelIdx ? "active" : ""} ${
+                  idx < currentLevelIdx ? "completed" : ""
+                }`}
+              />
+            ))}
+          </div>
 
-        <div className="circuit-component start-component">
-          <div className="component-label">{language === "en" ? "POWER SOURCE" : "SUMBER DAYA"}</div>
-          <div className="component-value">{currentLevel.factValue}</div>
+          <div className="logic-header">
+            <span className="stage-category-tag">
+              {language === "en" ? "LOGIC CIRCUIT" : "SIRKUIT LOGIKA"} • {language === "en" ? "LEVEL" : "LEVEL"} {currentLevelIdx + 1}/{levels.length}
+            </span>
+            <h1>
+              {language === "en" ? "Pipeline Challenge" : "Tantangan Pipeline"} {currentLevelIdx + 1}/{levels.length}
+            </h1>
+            <p className="logic-scenario-text">{currentLevel.scenario}</p>
+          </div>
 
           <div
-            className="port output-port"
-            data-port="start-out"
-            onMouseDown={(event) => handleMouseDown(event, "start-out")}
-            onTouchStart={(event) => handleTouchStart(event, "start-out")}
-          />
-        </div>
+            className="circuit-board circuit-board--extended"
+            ref={containerRef}
+            onMouseMove={handleTiltMouseMove}
+            onMouseLeave={handleTiltMouseLeave}
+            style={{
+              transform: `perspective(1200px) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)`,
+              transition:
+                tilt.x === 0 && tilt.y === 0
+                  ? "transform 0.5s cubic-bezier(0.25, 1, 0.5, 1)"
+                  : "transform 0.1s linear",
+            }}
+          >
+            <svg className="wire-layer">
+              {renderedWires.map((wire, index) => (
+                <line
+                  key={`${wire.x1}-${wire.y1}-${wire.x2}-${wire.y2}-${index}`}
+                  x1={wire.x1}
+                  y1={wire.y1}
+                  x2={wire.x2}
+                  y2={wire.y2}
+                  stroke={wire.color}
+                  strokeWidth="4"
+                  strokeLinecap="round"
+                  className={status === "success" ? "wire-pulse" : ""}
+                />
+              ))}
 
-        <div className="circuit-component diamond-component">
-          <div className="port input-port" data-port="diamond-in" />
+              {dragStart && dragCurrent && (
+                <line
+                  x1={dragStart.x}
+                  y1={dragStart.y}
+                  x2={dragCurrent.x}
+                  y2={dragCurrent.y}
+                  stroke="#ffff00"
+                  strokeWidth="4"
+                  strokeDasharray="10,5"
+                  strokeLinecap="round"
+                />
+              )}
+            </svg>
 
-          <div className="diamond-shape">
-            <div className="diamond-content">
-              <span className="condition-text">
-                {currentLevel.conditionText}
+            <div className="circuit-component start-component">
+              <div className="component-label">{language === "en" ? "POWER SOURCE" : "SUMBER DAYA"}</div>
+              <div className="component-value">{currentLevel.factValue}</div>
+
+              <div
+                className={`port output-port ${selectedPort === "start-out" ? "selected-port" : ""}`}
+                data-port="start-out"
+                onClick={() => handlePortTap("start-out")}
+                onMouseDown={(event) => handleMouseDown(event, "start-out")}
+                onTouchStart={(event) => handleTouchStart(event, "start-out")}
+                title="Start Output"
+              />
+            </div>
+
+            <div className="circuit-component diamond-component">
+              <div
+                className={`port input-port ${selectedPort === "diamond-in" ? "selected-port" : ""}`}
+                data-port="diamond-in"
+                onClick={() => handlePortTap("diamond-in")}
+                onMouseDown={(event) => handleMouseDown(event, "diamond-in")}
+                onTouchStart={(event) => handleTouchStart(event, "diamond-in")}
+                title="Condition Input"
+              />
+
+              <div className="diamond-shape">
+                <div className="diamond-content">
+                  <span className="condition-text">
+                    {currentLevel.conditionText}
+                  </span>
+                </div>
+              </div>
+
+              <div className="diamond-outputs">
+                <div className="output-wrapper">
+                  <span>TRUE</span>
+                  <div
+                    className={`port output-port ${selectedPort === "diamond-true" ? "selected-port" : ""}`}
+                    data-port="diamond-true"
+                    onClick={() => handlePortTap("diamond-true")}
+                    onMouseDown={(event) =>
+                      handleMouseDown(event, "diamond-true")
+                    }
+                    onTouchStart={(event) =>
+                      handleTouchStart(event, "diamond-true")
+                    }
+                    title="Condition True"
+                  />
+                </div>
+
+                <div className="output-wrapper">
+                  <span>FALSE</span>
+                  <div
+                    className={`port output-port ${selectedPort === "diamond-false" ? "selected-port" : ""}`}
+                    data-port="diamond-false"
+                    onClick={() => handlePortTap("diamond-false")}
+                    onMouseDown={(event) =>
+                      handleMouseDown(event, "diamond-false")
+                    }
+                    onTouchStart={(event) =>
+                      handleTouchStart(event, "diamond-false")
+                    }
+                    title="Condition False"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div
+              className={`circuit-component bulb-component ${
+                status === "success" ? "bulb-on" : "bulb-off"
+              }`}
+            >
+              <div
+                className={`port input-port ${selectedPort === "bulb-in" ? "selected-port" : ""}`}
+                data-port="bulb-in"
+                onClick={() => handlePortTap("bulb-in")}
+                onMouseDown={(event) => handleMouseDown(event, "bulb-in")}
+                onTouchStart={(event) => handleTouchStart(event, "bulb-in")}
+                title="Bulb Input"
+              />
+
+              <div className="bulb-glass">
+                <div className="bulb-filament" />
+              </div>
+
+              <div className="component-label">{language === "en" ? "INDICATOR" : "INDIKATOR"}</div>
+            </div>
+          </div>
+
+          <div className="quiz-footer">
+            <div className="intro-progress quiz-progress-inline">
+              <div className="progress-bar hud-progress-bar">
+                <div
+                  className="progress-fill hud-progress-fill"
+                  style={{
+                    width: `${((currentLevelIdx + 1) / levels.length) * 100}%`,
+                  }}
+                />
+              </div>
+              <span className="progress-text">
+                {currentLevelIdx + 1} / {levels.length}
               </span>
             </div>
           </div>
-
-          <div className="diamond-outputs">
-            <div className="output-wrapper">
-              <span>TRUE</span>
-              <div
-                className="port output-port"
-                data-port="diamond-true"
-                onMouseDown={(event) =>
-                  handleMouseDown(event, "diamond-true")
-                }
-                onTouchStart={(event) =>
-                  handleTouchStart(event, "diamond-true")
-                }
-              />
-            </div>
-
-            <div className="output-wrapper">
-              <span>FALSE</span>
-              <div
-                className="port output-port"
-                data-port="diamond-false"
-                onMouseDown={(event) =>
-                  handleMouseDown(event, "diamond-false")
-                }
-                onTouchStart={(event) =>
-                  handleTouchStart(event, "diamond-false")
-                }
-              />
-            </div>
-          </div>
-        </div>
-
-        <div
-          className={`circuit-component bulb-component ${
-            status === "success" ? "bulb-on" : "bulb-off"
-          }`}
-        >
-          <div className="port input-port" data-port="bulb-in" />
-
-          <div className="bulb-glass">
-            <div className="bulb-filament" />
-          </div>
-
-          <div className="component-label">{language === "en" ? "INDICATOR" : "INDIKATOR"}</div>
         </div>
       </div>
 

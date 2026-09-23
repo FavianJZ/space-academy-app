@@ -129,12 +129,11 @@
 .hologram-card {
   background: rgba(5, 14, 30, 0.92);
   border: 1.5px solid var(--accent, #00ffff);
-  border-radius: 60px;
-  padding: 40px 50px 35px;
-  min-width: 820px;
-  max-width: 980px;
-  min-height: 620px;
-  max-height: 20px;
+  border-radius: 24px;
+  padding: clamp(20px, 3vw, 36px) clamp(24px, 4vw, 48px);
+  width: min(90vw, 680px);
+  max-width: 95vw;
+  box-sizing: border-box;
   font-family: 'Orbitron', sans-serif;
   position: relative;
   overflow: visible;
@@ -474,10 +473,10 @@
 
 .indicator-text {
   font-family: 'Orbitron', sans-serif;
-  font-size: 72px;
+  font-size: clamp(1.2rem, 3.4vw, 2.4rem);
   font-weight: 900;
   color: #fff;
-  letter-spacing: 6px;
+  letter-spacing: clamp(2px, 0.4vw, 5px);
   text-transform: uppercase;
   background: linear-gradient(
     105deg,
@@ -488,19 +487,23 @@
     rgba(0, 15, 30, 0.85) 100%
   );
   background-size: 200% 100%;
-  padding: 16px 40px;
-  border: 3px solid var(--accent);
+  padding: clamp(8px, 1.5vw, 14px) clamp(16px, 3vw, 32px);
+  border: 2px solid var(--accent);
   border-radius: 12px;
   animation: startHerePulse 2s ease-in-out infinite, gradientShimmer 3s infinite linear;
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   position: relative;
+  white-space: nowrap;
+  max-width: 90vw;
+  box-sizing: border-box;
+  text-align: center;
 }
 
 .indicator-text::after {
   content: '';
   position: absolute;
-  inset: -6px; 
+  inset: -5px; 
   border-radius: 16px; 
   border: 2px solid var(--accent);
   background: transparent;
@@ -512,10 +515,9 @@
 .indicator-arrows {
   display: flex;
   flex-direction: column;
-  gap: -15px;
-  
+  gap: -10px;
   color: var(--accent);
-  font-size: 64px;
+  font-size: clamp(28px, 4.5vw, 46px);
   line-height: 0.6;
 }
 
@@ -1124,6 +1126,163 @@
   background: rgba(170, 102, 255, 0.3);
   box-shadow: 0 0 30px rgba(170, 102, 255, 0.7);
   transform: scale(1.05);
+}
+
+.edit-profile-btn {
+  padding: clamp(6px, 1vw, 10px) clamp(10px, 2vw, 20px);
+  font-size: clamp(9px, 1.4vw, 12px);
+  border: 2px solid #ffbb33;
+  border-radius: 6px;
+  background: rgba(255, 187, 51, 0.18);
+  color: #ffcc55;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: bold;
+  box-shadow: 0 0 15px rgba(255, 187, 51, 0.35);
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.edit-profile-btn:hover {
+  background: rgba(255, 187, 51, 0.32);
+  box-shadow: 0 0 30px rgba(255, 187, 51, 0.7);
+  transform: scale(1.05);
+}
+
+.hub-active-raid-banner {
+  position: absolute;
+  top: clamp(14px, 2.5vh, 28px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 120;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  background: linear-gradient(135deg, rgba(16, 28, 48, 0.95) 0%, rgba(8, 16, 32, 0.98) 100%);
+  border: 1.5px solid #00ffcc;
+  border-radius: 30px;
+  padding: 8px 16px 8px 20px;
+  box-shadow: 0 0 25px rgba(0, 255, 204, 0.4), inset 0 0 15px rgba(0, 255, 204, 0.1);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  animation: raidBannerDrop 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  max-width: min(92vw, 680px);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+@keyframes raidBannerDrop {
+  from { opacity: 0; transform: translate(-50%, -20px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+.harb-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.harb-icon {
+  font-size: 24px;
+  filter: drop-shadow(0 0 8px rgba(0, 255, 204, 0.8));
+  animation: harbPulse 1.5s infinite;
+}
+
+@keyframes harbPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+}
+
+.harb-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.harb-text strong {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.78rem;
+  color: #00ffcc;
+  letter-spacing: 1px;
+}
+
+.harb-text span {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 0.7rem;
+  color: #c4e8f8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.harb-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.harb-btn-rejoin {
+  background: linear-gradient(135deg, #00ffcc 0%, #00ccff 100%);
+  border: none;
+  color: #05141c;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.74rem;
+  font-weight: 800;
+  padding: 7px 14px;
+  border-radius: 20px;
+  cursor: pointer;
+  letter-spacing: 0.8px;
+  box-shadow: 0 0 12px rgba(0, 255, 204, 0.6);
+  transition: all 0.2s ease;
+}
+
+.harb-btn-rejoin:hover {
+  transform: scale(1.04);
+  box-shadow: 0 0 20px rgba(0, 255, 204, 0.9);
+}
+
+.harb-btn-dismiss {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #a0c0d0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  transition: all 0.2s ease;
+}
+
+.harb-btn-dismiss:hover {
+  background: rgba(255, 60, 60, 0.3);
+  border-color: #ff4444;
+  color: #ffffff;
+}
+
+@media (max-width: 600px) {
+  .hub-active-raid-banner {
+    flex-direction: column;
+    align-items: stretch;
+    border-radius: 16px;
+    padding: 10px 14px;
+    gap: 10px;
+  }
+  .harb-actions {
+    justify-content: space-between;
+  }
+  .harb-btn-rejoin {
+    flex: 1;
+  }
 }
 
 .top-right-area {
@@ -3614,14 +3773,42 @@
 
 @media (max-width: 760px) {
   .mainhub-scene .welcome-message {
-    top: 28px;
-    left: 16px;
-    max-width: calc(100vw - 104px);
+    top: max(12px, env(safe-area-inset-top, 0px) + 6px);
+    left: 12px;
+    max-width: calc(100vw - 84px);
+    z-index: 40;
+  }
+
+  .mainhub-scene .welcome-message h1 {
+    font-size: clamp(12px, 3.4vw, 16px);
+    line-height: 1.2;
+    margin: 0;
+  }
+
+  .mainhub-scene .welcome-message > p {
+    display: none;
+  }
+
+  .mainhub-scene .hub-buttons {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 6px;
+  }
+
+  .mainhub-scene :is(.leaderboard-btn, .dossier-btn, .settings-btn) {
+    min-height: 32px;
+    padding: 4px 9px;
+    font-size: 0.65rem;
+    letter-spacing: 0.05em;
+    width: auto;
   }
 
   .mainhub-scene .top-right-area {
-    top: 28px;
-    right: 16px;
+    top: max(12px, env(safe-area-inset-top, 0px) + 6px);
+    right: 12px;
+    z-index: 40;
   }
 
   .hub-command-kicker {
@@ -3629,7 +3816,8 @@
   }
 
   .hub-status-row {
-    margin-top: 8px;
+    margin-top: 4px;
+    font-size: 0.65rem;
   }
 
   .hub-status-row span + span {
@@ -3637,12 +3825,83 @@
   }
 
   .mainhub-scene .planet-selection-ui {
-    bottom: 18px;
-    max-height: calc(100dvh - 104px);
+    bottom: max(10px, env(safe-area-inset-bottom, 10px));
+    width: calc(100vw - 20px);
+    max-width: 440px;
+    max-height: min(78dvh, 520px);
+    padding: 12px 14px;
+    box-sizing: border-box;
+    z-index: 100;
+  }
+
+  .mainhub-scene .planet-info h2 {
+    font-size: clamp(1.3rem, 4vw, 1.7rem);
+    line-height: 1.1;
+    margin-bottom: 2px;
+  }
+
+  .mainhub-scene .planet-info-type {
+    margin: 3px 0 6px;
+    font-size: 0.52rem;
+  }
+
+  .mainhub-scene .planet-info p {
+    font-size: 0.74rem;
+    line-height: 1.35;
+    margin-bottom: 6px;
+    max-height: 60px;
+    overflow-y: auto;
+  }
+
+  .mainhub-scene .planet-info-meta {
+    padding: 6px 8px;
+    font-size: 0.68rem;
+    margin-bottom: 6px;
+  }
+
+  .mainhub-scene .planet-completed-banner {
+    padding: 6px 8px;
+    margin-bottom: 6px;
+  }
+
+  .mainhub-scene .planet-completed-stats {
+    gap: 6px;
+  }
+
+  .mainhub-scene .planet-completed-stat-value {
+    font-size: 0.8rem;
+  }
+
+  .mainhub-scene .planet-selection-ui .button-group {
+    position: sticky;
+    bottom: 0;
+    z-index: 10;
+    background: linear-gradient(180deg, rgba(7, 24, 33, 0.85) 0%, rgba(2, 10, 16, 0.98) 100%);
+    padding-top: 8px;
+    margin-top: 6px;
+    display: flex !important;
+    flex-direction: row !important;
+    gap: 8px !important;
+  }
+
+  .mainhub-scene .planet-selection-ui .depart-btn {
+    flex: 2 !important;
+    min-height: 42px !important;
+    font-size: 0.78rem !important;
+    justify-content: center !important;
+    padding: 8px 12px !important;
+  }
+
+  .mainhub-scene .planet-selection-ui .back-btn {
+    flex: 1 !important;
+    min-height: 42px !important;
+    font-size: 0.78rem !important;
+    justify-content: center !important;
+    padding: 8px 10px !important;
   }
 
   .mainhub-scene .level-roadmap-bar {
-    padding: 8px 8px 15px;
+    padding: 6px 6px 12px;
   }
 }
 

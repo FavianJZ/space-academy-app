@@ -23,6 +23,7 @@ import {
 } from "../../audio/speechNarration";
 import { useGameStore } from "../../stores/useGameStore";
 import { getTranslation } from "../../i18n/translations";
+import { hasDevicePlayedBefore } from "../../services/deviceAccountService";
 
 import { AsteroidObject, CockpitModel } from "../../components/models";
 import AdaptiveCanvas from "../../components/common/AdaptiveCanvas";
@@ -364,6 +365,7 @@ export const NewIntroScene: React.FC<{
   const [selectedRoute, setSelectedRoute] = useState<NavigationRoute>();
   const [isStranded, setIsStranded] = useState(false);
   const [manualStage, setManualStage] = useState<ManualFlightStage>("off");
+  const [canSkip] = useState(() => hasDevicePlayedBefore());
 
   const routePresentation = useMemo(() => {
     const r = t.intro.routes;
@@ -850,7 +852,7 @@ const courseRef = useRef<NavCourseState>(createNavCourseState());
         </aside>
       )}
 
-      {!initUIVisible && (
+      {!initUIVisible && (canSkip || isStranded) && (
         <button
           className={`intro-skip-control${isStranded ? " is-recovery" : ""}`}
           type="button"

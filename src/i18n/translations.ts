@@ -111,6 +111,12 @@ export const TRANSLATIONS = {
       muteAll: "SENYAPKAN SEMUA",
       restoreAll: "PULIHKAN SEMUA",
 
+      cadetIdentityHeading: "IDENTITAS KADET",
+      cadetProfileTitle: "Profil Kadet & Pilot",
+      cadetProfileDesc: "Nama, asal sekolah, kontak, dan peminatan kadet antariksa.",
+      editProfileBtn: "UBAH PROFIL",
+      pilotLabel: "KADET",
+
       languagePrefHeading: "BAHASA SISTEM",
       languageTitle: "Bahasa Antarmuka",
       languageDesc: "Pilih bahasa tampilan untuk menu, dialog, dan catatan misi.",
@@ -731,7 +737,7 @@ export const TRANSLATIONS = {
         ufoGlobalHp: "TOTAL HP UFO",
         ufoRemainingHp: "SISA HP UFO",
         bossRule1Title: "Basmi bug untuk serang UFO",
-        bossRule1Desc: "Setiap bug yang dibasmi menembakkan laser ke bos! +100 DMG",
+        bossRule1Desc: "Setiap bug yang dibasmi menembakkan laser ke bos! +180 DMG (hingga 3x combo)",
         bossRule2Title: "Waspadai Berkas Penculik!",
         bossRule2Desc: "UFO mengincar kode bersih dengan sinar hijau — mengkliknya mengurangi −300 poin!",
         bossRule3Title: "Combo = Kerusakan Lebih Besar",
@@ -893,6 +899,12 @@ export const TRANSLATIONS = {
       currentLanguage: "LANGUAGE: ENGLISH",
       muteAll: "MUTE ALL",
       restoreAll: "RESTORE ALL",
+
+      cadetIdentityHeading: "CADET IDENTITY",
+      cadetProfileTitle: "Pilot & Cadet Profile",
+      cadetProfileDesc: "Pilot callsign, academy/school, contact, and division.",
+      editProfileBtn: "EDIT PROFILE",
+      pilotLabel: "PILOT",
 
       languagePrefHeading: "SYSTEM PREFERENCE",
       languageTitle: "Interface Language",
@@ -1514,7 +1526,7 @@ export const TRANSLATIONS = {
         ufoGlobalHp: "UFO GLOBAL HP",
         ufoRemainingHp: "UFO REMAINING HP",
         bossRule1Title: "Squash bugs to damage UFO",
-        bossRule1Desc: "Each bug squashed fires a laser at the boss! +100 DMG",
+        bossRule1Desc: "Each bug squashed fires a laser at the boss! +180 DMG (up to 3x combo)",
         bossRule2Title: "Watch for Abduction Beams!",
         bossRule2Desc: "The UFO targets clean code with green beams — clicking them costs −300 pts!",
         bossRule3Title: "Combo = More damage",

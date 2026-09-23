@@ -1,5 +1,6 @@
 import { supabase, isSupabaseEnabled } from "../lib/supabase";
 import { getLocalPlayerId } from "./playerService";
+import { BOSS_MAX_HP } from "../constants/game.constants";
 
 export async function fetchBossHP(): Promise<{
   global_hp: number;
@@ -29,31 +30,17 @@ export async function dealBossDamage(
 
   const playerId = getLocalPlayerId();
 
-const current = await fetchBossHP();
-  if (!current) return null;
-
-  const newHP = Math.max(0, current.global_hp - damage);
-
-const { error: updateError } = await supabase!
-    .from("boss_state")
-    .update({
-      global_hp: newHP,
-      updated_at: new Date().toISOString(),
-    })
-    .eq("id", 1);
-
-  if (updateError) {
-    console.error("[bossService] update HP failed:", updateError.message);
-    return null;
+  try {
+    await supabase!.from("boss_damage_log").insert({
+      player_id: playerId,
+      player_name: playerName,
+      damage,
+    });
+  } catch (err) {
+    console.warn("[bossService] log damage error:", err);
   }
 
-await supabase!.from("boss_damage_log").insert({
-    player_id: playerId,
-    player_name: playerName,
-    damage,
-  });
-
-  return newHP;
+  return damage;
 }
 
 export async function resetBoss(): Promise<boolean> {
@@ -62,8 +49,8 @@ export async function resetBoss(): Promise<boolean> {
   const { error } = await supabase!
     .from("boss_state")
     .update({
-      global_hp: 20000,
-      max_hp: 20000,
+      global_hp: BOSS_MAX_HP,
+      max_hp: BOSS_MAX_HP,
       updated_at: new Date().toISOString(),
     })
     .eq("id", 1);

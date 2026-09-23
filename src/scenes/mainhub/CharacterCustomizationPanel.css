@@ -1441,8 +1441,10 @@
   }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 768px) {
   .character-customizer-backdrop {
+    align-items: center;
+    justify-content: center;
     padding: 8px;
   }
 

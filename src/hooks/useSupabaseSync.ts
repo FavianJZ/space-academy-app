@@ -45,6 +45,24 @@ export function useSupabaseSync(): void {
     if (window.location.pathname.includes("/bedroom")) return;
     if (lastRegisteredName.current.toLowerCase() === cleanName.toLowerCase() && getLocalPlayerId()) return;
 
+    const existingId = useGameStore.getState().playerId || getLocalPlayerId();
+    if (existingId && !existingId.startsWith("local_")) {
+      lastRegisteredName.current = cleanName;
+      updatePlayer(existingId, {
+        name: cleanName,
+        phone: playerData.phone,
+        school: playerData.school,
+        major: playerData.major,
+        character_type: character,
+        spaceman_color: spacemanColor,
+        spaceman_hat: spacemanHat,
+        spaceman_pet: spacemanPet,
+        specialization_result: specializationResult,
+      });
+      snapshotCurrentStoreAccount();
+      return;
+    }
+
     registerPlayer({
       name: cleanName,
       phone: playerData.phone,

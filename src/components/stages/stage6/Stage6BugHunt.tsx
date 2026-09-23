@@ -122,9 +122,9 @@ interface TickerMessage {
 
 const GAME_DURATION = 60;
 const BUG_RATIO = 0.6;
-const BOSS_BUG_RATIO = 0.55;
+const BOSS_BUG_RATIO = 0.7;
 const ABDUCTION_PENALTY = 300;
-const BOSS_DAMAGE_PER_BUG = 100;
+const BOSS_DAMAGE_PER_BUG = 180;
 
 type CoopPlayerId = "P1" | "P2";
 
@@ -343,7 +343,13 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
   const bossMaxHP = useGameStore((state) => state.bossMaxHP);
   const dealBossDamage = useGameStore((state) => state.dealBossDamage);
   const submitBossDamage = useGameStore((state) => state.submitBossDamage);
+  const resetBossHP = useGameStore((state) => state.resetBossHP);
+  const setBossGlobalHP = useGameStore((state) => state.setBossGlobalHP);
   const p2NameFromStore = useGameStore((state) => state.p2Name);
+
+  useEffect(() => {
+    resetBossHP();
+  }, [resetBossHP]);
 
   const stageStartRef = useRef(0);
 
@@ -379,6 +385,10 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
   >("intro");
   const [countdown, setCountdown] = useState(3);
   const [timeLeft, setTimeLeft] = useState(GAME_DURATION);
+
+  const [isPartnerDisconnected, setIsPartnerDisconnected] = useState(false);
+  const [disconnectedPartnerName, setDisconnectedPartnerName] = useState("");
+  const [resumeCountdown, setResumeCountdown] = useState<number | null>(null);
 
   const [cells, setCells] = useState<(ActiveCell | null)[]>(
     Array(18).fill(null)
@@ -554,32 +564,32 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
     if (isBossMode) {
       if (elapsed < 15) {
         return {
-          spawnInterval: 900,
-          lifetime: 3200,
+          spawnInterval: 750,
+          lifetime: 3000,
           maxActive: 6,
         };
       }
 
       if (elapsed < 30) {
         return {
-          spawnInterval: 700,
-          lifetime: 2800,
-          maxActive: 8,
+          spawnInterval: 600,
+          lifetime: 2600,
+          maxActive: 7,
         };
       }
 
       if (elapsed < 45) {
         return {
-          spawnInterval: 550,
+          spawnInterval: 500,
           lifetime: 2200,
-          maxActive: 10,
+          maxActive: 8,
         };
       }
 
       return {
         spawnInterval: 400,
         lifetime: 1800,
-        maxActive: 12,
+        maxActive: 9,
       };
     }
 
@@ -861,7 +871,38 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
     setTickerMessages((prev) => [...prev.slice(-4), message]);
   }, []);
 
-  const { sendAttack, sendSync, lastLaserEvent, sendReady, sendStartRaid } = useOnlineRaid({
+  const triggerResumeCountdown = useCallback(() => {
+    setIsPartnerDisconnected(false);
+    setResumeCountdown(3);
+    playSound("countdown");
+
+    let count = 3;
+    const interval = window.setInterval(() => {
+      count -= 1;
+      if (count > 0) {
+        setResumeCountdown(count);
+        playSound("countdown");
+      } else if (count === 0) {
+        setResumeCountdown(0);
+        playSound("go");
+      } else {
+        clearInterval(interval);
+        setResumeCountdown(null);
+      }
+    }, 900);
+  }, [playSound]);
+
+  const {
+    sendAttack,
+    sendSync,
+    lastLaserEvent,
+    sendReady,
+    sendStartRaid,
+    sendDisconnect,
+    sendReconnectRequest,
+    sendReconnectSync,
+    sendReconnectResume,
+  } = useOnlineRaid({
     partyCode: isOnlineCoop ? onlinePartyCode : "",
     isHost: isPartyHost,
     onPartnerReady: (isPartnerReady) => {
@@ -873,6 +914,7 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
       );
     },
     onRaidStart: () => {
+      resetBossHP();
       startCountdown();
     },
     onPartnerAttack: (attack) => {
@@ -883,15 +925,64 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
       );
       addDamageNumber(attack.damage);
       dealBossDamage(attack.damage, attack.senderName);
+      if (!isPartyHost && typeof attack.newBossHP === "number") {
+        setBossGlobalHP(attack.newBossHP);
+      }
       playSound("laser");
       pushTickerMessage(
         `${attack.senderName} blasted UFO for ${attack.damage} DMG!`
       );
     },
     onSyncTick: (sync) => {
-      if (!isPartyHost && sync.timeLeft !== undefined) {
-        setTimeLeft(sync.timeLeft);
+      if (!isPartyHost) {
+        if (sync.timeLeft !== undefined) {
+          setTimeLeft(sync.timeLeft);
+        }
+        if (typeof sync.bossHP === "number") {
+          setBossGlobalHP(sync.bossHP);
+        }
       }
+    },
+    onPartnerDisconnected: (payload) => {
+      if (phaseRef.current === "playing") {
+        setIsPartnerDisconnected(true);
+        setDisconnectedPartnerName(payload.playerName || "CO-PILOT");
+        playSound("abduct");
+        pushTickerMessage(
+          language === "en"
+            ? `⚠️ ${payload.playerName || "CO-PILOT"} disconnected! Game paused.`
+            : `⚠️ ${payload.playerName || "CO-PILOT"} terputus! Game dijeda.`
+        );
+      }
+    },
+    onPartnerReconnectRequest: (payload) => {
+      if (phaseRef.current === "playing") {
+        pushTickerMessage(
+          language === "en"
+            ? `⚡ ${payload.playerName || "CO-PILOT"} reconnected! Resuming...`
+            : `⚡ ${payload.playerName || "CO-PILOT"} tersambung kembali! Melanjutkan...`
+        );
+        sendReconnectSync({
+          bossHP: bossGlobalHP,
+          timeLeft: timeRef.current,
+          score: scoreRef.current,
+          combo: comboRef.current,
+        });
+        sendReconnectResume();
+        triggerResumeCountdown();
+      }
+    },
+    onReconnectSync: (sync) => {
+      setTimeLeft(sync.timeLeft);
+      setScore(sync.score);
+      setCombo(sync.combo);
+      if (typeof sync.bossHP === "number") {
+        setBossGlobalHP(sync.bossHP);
+      }
+      setIsPartnerDisconnected(false);
+    },
+    onReconnectResume: () => {
+      triggerResumeCountdown();
     },
   });
 
@@ -990,7 +1081,11 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
         }));
 
         if (isBossMode) {
-          const damage = Math.round(BOSS_DAMAGE_PER_BUG * comboMultiplier);
+          const baseDamage =
+            isOnlineCoop || isLocalCoop
+              ? BOSS_DAMAGE_PER_BUG
+              : Math.round(BOSS_DAMAGE_PER_BUG * 1.8);
+          const damage = Math.round(baseDamage * comboMultiplier);
 
           setBossDamageTaken((prev) => prev + damage);
           bossDmgRef.current += damage;
@@ -1020,7 +1115,8 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
           playSound("laser");
 
           if (isOnlineCoop) {
-            sendAttack(damage, snippet.category, newCombo, bossGlobalHP - damage);
+            const currentHp = useGameStore.getState().bossGlobalHP;
+            sendAttack(damage, snippet.category, newCombo, currentHp);
           }
         }
 
@@ -1209,6 +1305,7 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
   };
 
   const startCountdown = () => {
+    resetBossHP();
     setPhase("countdown");
     setCountdown(3);
     playSound("countdown");
@@ -1236,6 +1333,7 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
 
   useEffect(() => {
     if (phase !== "playing") return;
+    if (isPartnerDisconnected || resumeCountdown !== null) return;
 
     spawnTimerRef.current = window.setTimeout(spawnSnippet, 800);
 
@@ -1272,6 +1370,8 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
     };
   }, [
     phase,
+    isPartnerDisconnected,
+    resumeCountdown,
     spawnSnippet,
     isBossMode,
     isOnlineCoop,
@@ -1282,6 +1382,44 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
     triggerAbduction,
     spawnTickerMessage,
   ]);
+
+  useEffect(() => {
+    if (phase === "playing" && isOnlineCoop && onlinePartyCode) {
+      sessionStorage.setItem(
+        "space_academy_active_raid",
+        JSON.stringify({
+          partyCode: onlinePartyCode,
+          isHost: isPartyHost,
+          partnerName: remoteCoPilot?.name || "CO-PILOT",
+          isInGame: true,
+          stageId: 6,
+          timestamp: Date.now(),
+        })
+      );
+    } else if (phase === "results" || phase === "completion") {
+      sessionStorage.removeItem("space_academy_active_raid");
+    }
+  }, [phase, isOnlineCoop, onlinePartyCode, isPartyHost, remoteCoPilot?.name]);
+
+  useEffect(() => {
+    if (isOnlineCoop && onlinePartyCode && phase === "intro") {
+      const activeRaw = sessionStorage.getItem("space_academy_active_raid");
+      if (activeRaw) {
+        try {
+          const parsed = JSON.parse(activeRaw);
+          if (parsed.partyCode === onlinePartyCode && parsed.isInGame) {
+            setPhase("playing");
+            setIsPartnerDisconnected(true);
+            setDisconnectedPartnerName(parsed.partnerName || "CO-PILOT");
+            const timer = setTimeout(() => {
+              sendReconnectRequest();
+            }, 600);
+            return () => clearTimeout(timer);
+          }
+        } catch (_) {}
+      }
+    }
+  }, [isOnlineCoop, onlinePartyCode, phase, sendReconnectRequest]);
 
   useEffect(() => {
     if (phase !== "results") return;
@@ -1386,6 +1524,7 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
   ]);
 
   const handleReplay = () => {
+    resetBossHP();
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
 
     setMyReady(false);
@@ -1837,7 +1976,11 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
             }`}
           >
             <h1 className="results-title">
-              {isBossMode ? t.stages.stage6.raidReport : t.stages.stage6.missionReport}
+              {isBossMode
+                ? bossGlobalHP <= 0
+                  ? (language === "en" ? "🎉 UFO DESTROYED! RAID VICTORY!" : "🎉 UFO HANCUR! KEMENANGAN RAID!")
+                  : t.stages.stage6.raidReport
+                : t.stages.stage6.missionReport}
             </h1>
 
             <div className="results-stars">
@@ -2382,6 +2525,75 @@ const Stage6BugHunt: React.FC<Stage6BugHuntProps> = ({ planetId }) => {
         <span>🎯 {accuracy}%</span>
         {isBossMode && <span>⚔ {bossDamageTaken} DMG</span>}
       </div>
+
+      {isPartnerDisconnected && (
+        <div className="raid-disconnect-pause-overlay">
+          <div className="raid-disconnect-modal">
+            <div className="rd-modal-beacon">⚠️</div>
+            <h2>{language === "en" ? "CO-PILOT DISCONNECTED" : "REKAN TIM TERPUTUS"}</h2>
+            <p className="rd-modal-desc">
+              {language === "en"
+                ? `Co-pilot ${disconnectedPartnerName || "partner"} lost connection or returned to Main Hub. Gameplay is temporarily paused to preserve your team's score and time.`
+                : `Kadet ${disconnectedPartnerName || "rekan tim"} terputus atau keluar ke Main Hub. Permainan dijeda sementara agar progress skor dan waktu tim tetap aman.`}
+            </p>
+
+            <div className="rd-party-code-box">
+              <span className="rd-lbl">{language === "en" ? "ROOM PARTY CODE" : "KODE RUANG RAID"}</span>
+              <div className="rd-code-row">
+                <code>{onlinePartyCode}</code>
+                <button
+                  type="button"
+                  className="rd-copy-btn"
+                  onClick={handleCopyPartyCode}
+                >
+                  {copyFeedback ? "✓ TERSALIN" : "📋 SALIN KODE"}
+                </button>
+              </div>
+            </div>
+
+            <div className="rd-waiting-pulse">
+              <span className="rd-spinner" />
+              <span>
+                {language === "en"
+                  ? "Waiting for co-pilot to reconnect..."
+                  : "Menunggu rekan tim menyambung kembali..."}
+              </span>
+            </div>
+
+            <div className="rd-modal-actions">
+              <button
+                type="button"
+                className="rd-btn-hub"
+                onClick={() => {
+                  sendDisconnect("player_quit_to_hub");
+                  sessionStorage.removeItem("space_academy_active_raid");
+                  navigate("/mainhub");
+                }}
+              >
+                {language === "en" ? "Leave To Hub" : "Keluar Ke Main Hub"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {resumeCountdown !== null && (
+        <div className="raid-resume-countdown-overlay">
+          <div className="raid-resume-card">
+            <span className="raid-resume-kicker">
+              {language === "en" ? "CO-PILOT RECONNECTED // RESUMING IN" : "REKAN KEMBALI TERHUBUNG // MEMULAI DALAM"}
+            </span>
+            <div className="raid-resume-num">
+              {resumeCountdown === 0 ? "START!" : resumeCountdown}
+            </div>
+            <p className="raid-resume-note">
+              {language === "en"
+                ? "Telemetry synchronized. Resuming raid..."
+                : "Telemetri tersinkronisasi. Melanjutkan raid..."}
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

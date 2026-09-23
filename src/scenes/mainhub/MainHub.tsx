@@ -24,6 +24,8 @@ import { CadetDossierModal } from "../../components/specialization/CadetDossierM
 import { MainHubAvatarBeacon } from "./MainHubAvatarBeacon";
 import { containsProfanity } from "../../utils/profanityFilter";
 import { supabase, isSupabaseEnabled } from "../../lib/supabase";
+import type { RealtimeChannel } from "@supabase/supabase-js";
+import { markDeviceAsPlayed } from "../../services/deviceAccountService";
 import { RaidModeSelectModal } from "../../components/stages/stage6/RaidModeSelectModal";
 import { OnlinePartyLobbyModal } from "../../components/stages/stage6/OnlinePartyLobbyModal";
 
@@ -584,7 +586,7 @@ const MainHub: React.FC = () => {
     }, 5000);
 
 
-    let channel: any = null;
+    let channel: RealtimeChannel | null = null;
     if (isSupabaseEnabled() && supabase) {
       channel = supabase
         .channel(`realtime-planet-lb-${selectedPlanet}`)
@@ -650,6 +652,7 @@ const MainHub: React.FC = () => {
   >(introCompleted || (playerData.name && playerData.major) ? "hub" : "story");
 
   useEffect(() => {
+    markDeviceAsPlayed();
     if (playerData.name && playerData.major && !introCompleted) {
       setIntroCompleted(true);
     }
@@ -661,6 +664,41 @@ const MainHub: React.FC = () => {
     school: playerData.school || "",
     major: playerData.major || "",
   });
+
+  const [activeRaidSession, setActiveRaidSession] = useState<{
+    partyCode: string;
+    isHost: boolean;
+    partnerName: string;
+    timestamp: number;
+  } | null>(() => {
+    try {
+      const raw = sessionStorage.getItem("space_academy_active_raid");
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed.partyCode && parsed.isInGame && Date.now() - (parsed.timestamp || 0) < 15 * 60 * 1000) {
+          return parsed;
+        }
+      }
+    } catch {
+      // sessionStorage unavailable or invalid json
+    }
+    return null;
+  });
+
+  const handleResumeActiveRaid = () => {
+    if (!activeRaidSession) return;
+    playSfx("uiConfirm");
+    setRaidMode("online_coop");
+    setOnlinePartyCode(activeRaidSession.partyCode);
+    setIsPartyHost(activeRaidSession.isHost);
+    navigate("/stage/6");
+  };
+
+  const handleDismissActiveRaid = () => {
+    playSfx("uiClose");
+    sessionStorage.removeItem("space_academy_active_raid");
+    setActiveRaidSession(null);
+  };
 
   const CharacterModel = character === "pink" ? SpacemanPink : SpacemanWhite;
 
@@ -1618,6 +1656,41 @@ const MainHub: React.FC = () => {
           onPetChange={setSpacemanPet}
           onClose={handleCloseCharacterCustomizer}
         />
+      )}
+
+      {activeRaidSession && (
+        <div className="hub-active-raid-banner">
+          <div className="harb-content">
+            <span className="harb-icon">🛸</span>
+            <div className="harb-text">
+              <strong>
+                {language === "en" ? "ACTIVE RAID IN PROGRESS" : "SESI RAID SEDANG BERJALAN"}
+              </strong>
+              <span>
+                {language === "en"
+                  ? `Room ${activeRaidSession.partyCode} with ${activeRaidSession.partnerName || "co-pilot"}. Reconnect now!`
+                  : `Kode Ruang: ${activeRaidSession.partyCode} bersama ${activeRaidSession.partnerName || "rekan tim"}. Sambung kembali!`}
+              </span>
+            </div>
+          </div>
+          <div className="harb-actions">
+            <button
+              type="button"
+              className="harb-btn-rejoin"
+              onClick={handleResumeActiveRaid}
+            >
+              🚀 {language === "en" ? "RECONNECT" : "SAMBUNG KEMBALI"}
+            </button>
+            <button
+              type="button"
+              className="harb-btn-dismiss"
+              onClick={handleDismissActiveRaid}
+              title={language === "en" ? "Dismiss" : "Abaikan"}
+            >
+              ✕
+            </button>
+          </div>
+        </div>
       )}
 
       <div className="welcome-message">

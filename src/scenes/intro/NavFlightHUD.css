@@ -369,13 +369,15 @@
 
 @media (max-width: 900px) {
   .nav-flight-controls {
-    display: none;
+    display: none !important;
   }
 
   .nav-flight-throttle {
     right: 16px;
-    bottom: 112px;
-    width: 118px;
+    bottom: 198px;
+    width: 116px;
+    padding: 8px 10px;
+    gap: 5px;
   }
 
   .nav-flight-target {

@@ -294,13 +294,28 @@
 
 @media (max-width: 768px) {
   .stage6-lobby-wrapper {
-    padding: 1rem 0.75rem;
+    padding: 0.75rem 0.5rem;
   }
   .stage6-lobby-top-bar {
     flex-direction: column;
     align-items: stretch;
-    gap: 0.75rem;
-    padding: 1rem;
+    gap: 0.6rem;
+    padding: 0.85rem;
+  }
+  .stage6-top-actions {
+    flex-direction: row;
+    flex-wrap: wrap;
+    width: 100%;
+    gap: 0.4rem;
+  }
+  .stage6-top-status-chip,
+  .stage6-manual-btn,
+  .stage6-top-ready-btn {
+    flex: 1 1 auto;
+    justify-content: center;
+    padding: 0.5rem 0.65rem;
+    font-size: 0.72rem;
+    min-height: 36px;
   }
   .stage6-ready-buttons-row {
     flex-direction: column;
@@ -314,3 +329,229 @@
     gap: 1rem;
   }
 }
+
+/* ==========================================================================
+   MULTIPLAYER RECONNECT & DISCONNECT PAUSE OVERLAYS
+   ========================================================================== */
+.raid-disconnect-pause-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(3, 8, 16, 0.88);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  animation: raidOverlayFadeIn 0.3s ease-out;
+}
+
+@keyframes raidOverlayFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.raid-disconnect-modal {
+  background: linear-gradient(180deg, rgba(20, 10, 24, 0.96) 0%, rgba(10, 15, 28, 0.98) 100%);
+  border: 2px solid #ff4466;
+  border-radius: 20px;
+  max-width: 480px;
+  width: 100%;
+  padding: 28px 24px;
+  text-align: center;
+  box-shadow: 0 0 50px rgba(255, 68, 102, 0.4), inset 0 0 30px rgba(255, 68, 102, 0.1);
+  animation: raidModalPop 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes raidModalPop {
+  from { opacity: 0; transform: scale(0.92) translateY(12px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.rd-modal-beacon {
+  font-size: 42px;
+  margin-bottom: 8px;
+  filter: drop-shadow(0 0 16px rgba(255, 68, 102, 0.8));
+  animation: beaconPulse 1.4s infinite ease-in-out;
+}
+
+@keyframes beaconPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.12); }
+}
+
+.raid-disconnect-modal h2 {
+  font-family: 'Orbitron', sans-serif;
+  font-size: clamp(1.15rem, 3.2vw, 1.45rem);
+  font-weight: 900;
+  color: #ff4466;
+  letter-spacing: 1.5px;
+  margin: 0 0 12px 0;
+  text-shadow: 0 0 20px rgba(255, 68, 102, 0.6);
+}
+
+.rd-modal-desc {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 0.82rem;
+  color: #c8d8e8;
+  line-height: 1.55;
+  margin: 0 0 20px 0;
+}
+
+.rd-party-code-box {
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px dashed rgba(255, 68, 102, 0.4);
+  border-radius: 12px;
+  padding: 12px 16px;
+  margin-bottom: 18px;
+  text-align: left;
+}
+
+.rd-lbl {
+  display: block;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.65rem;
+  color: #ff88a4;
+  letter-spacing: 1px;
+  margin-bottom: 6px;
+}
+
+.rd-code-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.rd-code-row code {
+  font-family: 'Orbitron', monospace;
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: 3px;
+}
+
+.rd-copy-btn {
+  background: rgba(255, 68, 102, 0.2);
+  border: 1px solid #ff4466;
+  color: #ffffff;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.rd-copy-btn:hover {
+  background: #ff4466;
+  color: #05101a;
+  box-shadow: 0 0 14px rgba(255, 68, 102, 0.6);
+}
+
+.rd-waiting-pulse {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 22px;
+  font-family: 'Roboto Mono', monospace;
+  font-size: 0.78rem;
+  color: #ffbb44;
+}
+
+.rd-spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 187, 68, 0.3);
+  border-top-color: #ffbb44;
+  border-radius: 50%;
+  animation: rdSpin 0.9s linear infinite;
+}
+
+@keyframes rdSpin {
+  to { transform: rotate(360deg); }
+}
+
+.rd-modal-actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+}
+
+.rd-btn-hub {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: #d0e0ee;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.76rem;
+  font-weight: 700;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  letter-spacing: 0.8px;
+  transition: all 0.2s ease;
+}
+
+.rd-btn-hub:hover {
+  background: rgba(255, 255, 255, 0.18);
+  color: #ffffff;
+  border-color: #ffffff;
+}
+
+/* Resume Countdown Overlay */
+.raid-resume-countdown-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  background: rgba(3, 14, 24, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: raidOverlayFadeIn 0.2s ease-out;
+}
+
+.raid-resume-card {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.raid-resume-kicker {
+  font-family: 'Orbitron', sans-serif;
+  font-size: clamp(0.75rem, 2vw, 0.95rem);
+  font-weight: 800;
+  color: #00ffcc;
+  letter-spacing: 2px;
+  text-shadow: 0 0 15px rgba(0, 255, 204, 0.6);
+}
+
+.raid-resume-num {
+  font-family: 'Orbitron', sans-serif;
+  font-size: clamp(4.5rem, 12vw, 7.5rem);
+  font-weight: 900;
+  color: #ffffff;
+  text-shadow: 0 0 35px #00ffcc, 0 0 70px rgba(0, 255, 204, 0.4);
+  animation: resumeNumPulse 0.85s ease-out infinite;
+  line-height: 1;
+}
+
+@keyframes resumeNumPulse {
+  0% { transform: scale(0.8); opacity: 0.6; }
+  50% { transform: scale(1.1); opacity: 1; }
+  100% { transform: scale(1); opacity: 0.95; }
+}
+
+.raid-resume-note {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 0.85rem;
+  color: #99ddee;
+  margin: 0;
+}
+

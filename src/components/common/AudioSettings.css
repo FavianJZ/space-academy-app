@@ -107,6 +107,10 @@ body:has(.mainhub-scene .welcome-message .settings-btn)
   display: none;
 }
 
+body:has(.dam-overlay) .audio-settings-launcher {
+  display: none !important;
+}
+
 .audio-settings-launcher--stage {
   top: clamp(22px, 3.3vh, 34px);
   right: clamp(174px, 11.5vw, 224px);
@@ -115,6 +119,48 @@ body:has(.mainhub-scene .welcome-message .settings-btn)
 .audio-settings-launcher--leaderboard {
   top: clamp(18px, 3vh, 32px);
   right: clamp(18px, 3vw, 40px);
+}
+
+@media (max-width: 768px) {
+  .audio-settings-launcher--stage {
+    top: 22px;
+    right: 116px;
+    min-width: 36px;
+    width: 36px;
+    height: 36px;
+    min-height: 36px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    clip-path: none;
+  }
+
+  .audio-settings-launcher--stage > span,
+  .audio-settings-launcher--stage > i {
+    display: none !important;
+  }
+
+  .audio-settings-launcher--selection {
+    top: 14px;
+    right: 14px;
+    min-width: 36px;
+    width: 36px;
+    height: 36px;
+    min-height: 36px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    clip-path: none;
+  }
+
+  .audio-settings-launcher--selection > span,
+  .audio-settings-launcher--selection > i {
+    display: none !important;
+  }
 }
 
 .audio-settings-overlay {
@@ -741,8 +787,19 @@ body:has(.mainhub-scene .welcome-message .settings-btn)
   }
 
   .audio-settings-launcher--stage {
-    top: max(76px, calc(env(safe-area-inset-top) + 62px));
-    right: max(14px, env(safe-area-inset-right));
+    top: max(12px, env(safe-area-inset-top, 0px) + 6px) !important;
+    right: clamp(108px, 24vw, 130px) !important;
+    min-width: 36px !important;
+    width: 36px !important;
+    height: 36px !important;
+    min-height: 36px !important;
+    padding: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border-radius: 4px !important;
+    clip-path: none !important;
+    z-index: 20 !important;
   }
 
   .audio-settings-dialog {
@@ -926,6 +983,251 @@ body:has(.mainhub-scene .welcome-message .settings-btn)
   .audio-settings-lang-pill {
     flex: 1;
     justify-content: center;
+  }
+}
+
+/* ==========================================================================
+   CADET PROFILE IN SETTINGS (SCI-FI STYLING)
+   ========================================================================== */
+.audio-settings-channel--profile {
+  background:
+    linear-gradient(120deg, rgba(0, 255, 204, 0.08) 0%, rgba(103, 232, 255, 0.03) 50%, transparent 100%),
+    rgba(4, 21, 31, 0.72);
+  border: 1px solid rgba(0, 255, 204, 0.32);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25), inset 0 0 15px rgba(0, 255, 204, 0.04);
+  position: relative;
+  overflow: hidden;
+}
+
+.audio-settings-channel--profile::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 3px;
+  height: 100%;
+  background: linear-gradient(180deg, #00ffcc, #00b4d8);
+  box-shadow: 0 0 8px #00ffcc;
+}
+
+.audio-settings-channel-icon--profile {
+  background: rgba(0, 255, 204, 0.08);
+  border-color: rgba(0, 255, 204, 0.4);
+  color: #00ffcc;
+  box-shadow: 0 0 12px rgba(0, 255, 204, 0.2);
+}
+
+.audio-settings-profile-info {
+  min-width: 0;
+}
+
+.audio-settings-profile-kicker {
+  display: block;
+  margin-bottom: 3px;
+  color: #00ffcc !important;
+  font-size: 7.5px !important;
+  font-weight: 700;
+  letter-spacing: 0.18em !important;
+  text-shadow: 0 0 8px rgba(0, 255, 204, 0.4);
+}
+
+.audio-settings-profile-name-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.audio-settings-profile-name {
+  margin: 0;
+  color: #f0fdf4 !important;
+  font-family: "Orbitron", "Arial Narrow", sans-serif !important;
+  font-size: 14px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.04em !important;
+  text-shadow: 0 0 14px rgba(0, 255, 204, 0.3);
+}
+
+.audio-settings-major-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  background: rgba(0, 255, 204, 0.12);
+  border: 1px solid rgba(0, 255, 204, 0.5);
+  border-radius: 999px;
+  color: #00ffcc;
+  font-family: "Orbitron", monospace;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+
+.audio-settings-profile-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 5px;
+  flex-wrap: wrap;
+}
+
+.profile-meta-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: #8bb3c4;
+  font-size: 8.5px;
+  font-family: "Roboto Mono", monospace;
+}
+
+.profile-meta-tag svg {
+  width: 12px;
+  height: 12px;
+  color: #00ffcc;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.8;
+}
+
+.audio-settings-profile-action {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.audio-settings-edit-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 16px;
+  background: linear-gradient(135deg, rgba(0, 255, 204, 0.16) 0%, rgba(0, 180, 216, 0.24) 100%);
+  border: 1.5px solid rgba(0, 255, 204, 0.55);
+  border-radius: 6px;
+  color: #00ffcc;
+  font-family: "Orbitron", monospace;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  box-shadow: 0 0 16px rgba(0, 255, 204, 0.18), inset 0 0 8px rgba(0, 255, 204, 0.08);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  white-space: nowrap;
+}
+
+.audio-settings-edit-btn svg {
+  width: 13px;
+  height: 13px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: transform 0.2s ease;
+}
+
+.audio-settings-edit-btn:hover {
+  background: linear-gradient(135deg, rgba(0, 255, 204, 0.32) 0%, rgba(0, 180, 216, 0.42) 100%);
+  border-color: #00ffcc;
+  color: #ffffff;
+  box-shadow: 0 0 24px rgba(0, 255, 204, 0.45), inset 0 0 12px rgba(0, 255, 204, 0.2);
+  transform: translateY(-1px) scale(1.02);
+}
+
+.audio-settings-edit-btn:hover svg {
+  transform: rotate(-10deg) scale(1.1);
+}
+
+.audio-settings-edit-btn:active {
+  transform: translateY(0) scale(0.98);
+}
+
+@media (max-width: 640px) {
+  .audio-settings-channel--profile .audio-settings-channel-head {
+    grid-template-columns: 36px minmax(0, 1fr);
+  }
+
+  .audio-settings-profile-action {
+    grid-column: 1 / -1;
+    margin-top: 8px;
+    width: 100%;
+  }
+
+  .audio-settings-edit-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 768px) {
+  .audio-settings-overlay {
+    padding: 10px;
+  }
+
+  .audio-settings-dialog {
+    width: 100%;
+    max-height: 94dvh;
+    border-radius: 12px;
+    clip-path: none;
+  }
+
+  .audio-settings-header {
+    padding: 14px 16px 12px;
+  }
+
+  .audio-settings-header h2 {
+    font-size: 1.05rem;
+  }
+
+  .audio-settings-body {
+    grid-template-columns: 1fr;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .audio-settings-monitor {
+    border-right: none;
+    border-bottom: 1px solid rgba(117, 222, 246, 0.14);
+    padding: 14px 16px;
+  }
+
+  .audio-settings-wave {
+    display: none;
+  }
+
+  .audio-settings-monitor dl {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px 12px;
+  }
+
+  .audio-settings-mixer {
+    padding: 14px 16px;
+    gap: 12px;
+  }
+
+  .audio-settings-channel {
+    padding: 12px 14px;
+  }
+
+  .audio-settings-footer {
+    flex-direction: column;
+    gap: 10px;
+    padding: 12px 16px;
+  }
+
+  .audio-settings-shortcuts {
+    display: none;
+  }
+
+  .audio-settings-footer-actions {
+    width: 100%;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .audio-settings-footer-actions button {
+    flex: 1;
+    min-height: 40px;
+    font-size: 0.72rem;
   }
 }
 

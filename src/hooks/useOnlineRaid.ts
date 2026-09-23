@@ -5,6 +5,7 @@ import type {
   AttackEventPayload,
   MultiplayerMessageType,
   PartyMessage,
+  ReconnectSyncPayload,
   RoomJoinPayload,
   SyncTickPayload,
 } from "../types/multiplayer.types";
@@ -28,6 +29,10 @@ interface UseOnlineRaidOptions {
   onPartnerAttack?: (attack: AttackEventPayload) => void;
   onSyncTick?: (sync: SyncTickPayload) => void;
   onPartnerLeft?: (name: string) => void;
+  onPartnerDisconnected?: (payload: { playerName: string; reason?: string }) => void;
+  onPartnerReconnectRequest?: (payload: { playerName: string }) => void;
+  onReconnectSync?: (sync: ReconnectSyncPayload) => void;
+  onReconnectResume?: () => void;
 }
 
 interface NetworkPacket {
@@ -46,6 +51,10 @@ export function useOnlineRaid({
   onPartnerAttack,
   onSyncTick,
   onPartnerLeft,
+  onPartnerDisconnected,
+  onPartnerReconnectRequest,
+  onReconnectSync,
+  onReconnectResume,
 }: UseOnlineRaidOptions) {
   const broadcastChannelRef = useRef<BroadcastChannel | null>(null);
   const channelRef = useRef<RealtimeChannel | null>(null);
@@ -53,6 +62,7 @@ export function useOnlineRaid({
     `client_${Math.random().toString(36).substring(2, 9)}_${Date.now()}`
   );
   const hasPartnerRef = useRef(false);
+  const lastPartnerHeartbeatRef = useRef<number>(Date.now());
 
   const [isConnected, setIsConnected] = useState(false);
   const [hasPartner, setHasPartner] = useState(false);
@@ -70,9 +80,9 @@ export function useOnlineRaid({
   const spacemanColor = useGameStore((state) => state.spacemanColor);
   const spacemanHat = useGameStore((state) => state.spacemanHat);
   const spacemanPet = useGameStore((state) => state.spacemanPet);
+  const remoteCoPilot = useGameStore((state) => state.remoteCoPilot);
   const setRemoteCoPilot = useGameStore((state) => state.setRemoteCoPilot);
   const updateRemoteCoPilot = useGameStore((state) => state.updateRemoteCoPilot);
-
 
   const onPartnerJoinedRef = useRef(onPartnerJoined);
   onPartnerJoinedRef.current = onPartnerJoined;
@@ -86,6 +96,14 @@ export function useOnlineRaid({
   onSyncTickRef.current = onSyncTick;
   const onPartnerLeftRef = useRef(onPartnerLeft);
   onPartnerLeftRef.current = onPartnerLeft;
+  const onPartnerDisconnectedRef = useRef(onPartnerDisconnected);
+  onPartnerDisconnectedRef.current = onPartnerDisconnected;
+  const onPartnerReconnectRequestRef = useRef(onPartnerReconnectRequest);
+  onPartnerReconnectRequestRef.current = onPartnerReconnectRequest;
+  const onReconnectSyncRef = useRef(onReconnectSync);
+  onReconnectSyncRef.current = onReconnectSync;
+  const onReconnectResumeRef = useRef(onReconnectResume);
+  onReconnectResumeRef.current = onReconnectResume;
 
 
   const sendBroadcast = useCallback(
@@ -217,7 +235,53 @@ export function useOnlineRaid({
         }
 
         case "SYNC_TICK": {
+          lastPartnerHeartbeatRef.current = Date.now();
           onSyncTickRef.current?.(packet.payload as SyncTickPayload);
+          break;
+        }
+
+        case "HEARTBEAT_PING": {
+          lastPartnerHeartbeatRef.current = Date.now();
+          if (!hasPartnerRef.current) {
+            hasPartnerRef.current = true;
+            setHasPartner(true);
+            updateRemoteCoPilot({ isOnline: true });
+          }
+          break;
+        }
+
+        case "PLAYER_DISCONNECTED": {
+          hasPartnerRef.current = false;
+          setHasPartner(false);
+          updateRemoteCoPilot({ isOnline: false });
+          onPartnerDisconnectedRef.current?.(packet.payload);
+          break;
+        }
+
+        case "RECONNECT_REQUEST": {
+          hasPartnerRef.current = true;
+          setHasPartner(true);
+          updateRemoteCoPilot({ isOnline: true });
+          lastPartnerHeartbeatRef.current = Date.now();
+          onPartnerReconnectRequestRef.current?.(packet.payload);
+          break;
+        }
+
+        case "RECONNECT_SYNC": {
+          hasPartnerRef.current = true;
+          setHasPartner(true);
+          updateRemoteCoPilot({ isOnline: true });
+          lastPartnerHeartbeatRef.current = Date.now();
+          onReconnectSyncRef.current?.(packet.payload as ReconnectSyncPayload);
+          break;
+        }
+
+        case "RECONNECT_RESUME": {
+          hasPartnerRef.current = true;
+          setHasPartner(true);
+          updateRemoteCoPilot({ isOnline: true });
+          lastPartnerHeartbeatRef.current = Date.now();
+          onReconnectResumeRef.current?.();
           break;
         }
 
@@ -226,6 +290,10 @@ export function useOnlineRaid({
           setHasPartner(false);
           updateRemoteCoPilot({ isOnline: false });
           onPartnerLeftRef.current?.(packet.payload.playerName);
+          onPartnerDisconnectedRef.current?.({
+            playerName: packet.payload.playerName || "CO-PILOT",
+            reason: "room_leave",
+          });
           break;
         }
       }
@@ -302,6 +370,54 @@ export function useOnlineRaid({
     },
     [sendBroadcast, isHost]
   );
+
+  const sendDisconnect = useCallback(
+    (reason: string = "voluntary_leave") => {
+      sendBroadcast({
+        type: "PLAYER_DISCONNECTED",
+        payload: {
+          senderId: isHost ? "P1" : "P2",
+          playerName: playerData.name || (isHost ? "P1" : "P2"),
+          reason,
+          timestamp: Date.now(),
+        },
+      });
+    },
+    [sendBroadcast, isHost, playerData.name]
+  );
+
+  const sendReconnectRequest = useCallback(() => {
+    sendBroadcast({
+      type: "RECONNECT_REQUEST",
+      payload: {
+        senderId: isHost ? "P1" : "P2",
+        playerName: playerData.name || (isHost ? "P1" : "P2"),
+        timestamp: Date.now(),
+      },
+    });
+  }, [sendBroadcast, isHost, playerData.name]);
+
+  const sendReconnectSync = useCallback(
+    (snapshot: { bossHP: number; timeLeft: number; score: number; combo: number }) => {
+      sendBroadcast({
+        type: "RECONNECT_SYNC",
+        payload: {
+          ...snapshot,
+          timestamp: Date.now(),
+        },
+      });
+    },
+    [sendBroadcast]
+  );
+
+  const sendReconnectResume = useCallback(() => {
+    sendBroadcast({
+      type: "RECONNECT_RESUME",
+      payload: {
+        timestamp: Date.now(),
+      },
+    });
+  }, [sendBroadcast]);
 
   useEffect(() => {
     const cleanCode = partyCode.toUpperCase().trim();
@@ -408,18 +524,51 @@ export function useOnlineRaid({
 
 
     let heartbeatCount = 0;
-    const heartbeatTimer = setInterval(() => {
+    const initialHeartbeatTimer = setInterval(() => {
       heartbeatCount++;
       if (hasPartnerRef.current || heartbeatCount > 50) {
-        clearInterval(heartbeatTimer);
+        clearInterval(initialHeartbeatTimer);
         return;
       }
       announcePresence();
     }, 1500);
 
+    const continuousPingTimer = setInterval(() => {
+      sendBroadcastRef.current({
+        type: "HEARTBEAT_PING",
+        payload: {
+          senderId: isHost ? "P1" : "P2",
+          playerName: playerData.name || (isHost ? "P1" : "P2"),
+          isHost,
+          timestamp: Date.now(),
+        },
+      });
+
+      if (hasPartnerRef.current && Date.now() - lastPartnerHeartbeatRef.current > 7000) {
+        hasPartnerRef.current = false;
+        setHasPartner(false);
+        updateRemoteCoPilot({ isOnline: false });
+        onPartnerDisconnectedRef.current?.({
+          playerName: remoteCoPilot?.name || "CO-PILOT",
+          reason: "timeout",
+        });
+      }
+    }, 2200);
+
     return () => {
-      clearInterval(heartbeatTimer);
+      clearInterval(initialHeartbeatTimer);
+      clearInterval(continuousPingTimer);
       window.removeEventListener("storage", handleStorage);
+
+      sendBroadcastRef.current({
+        type: "PLAYER_DISCONNECTED",
+        payload: {
+          senderId: isHost ? "P1" : "P2",
+          playerName: playerData.name || (isHost ? "P1" : "P2"),
+          reason: "voluntary_leave",
+          timestamp: Date.now(),
+        },
+      });
 
       sendBroadcastRef.current({
         type: "ROOM_LEAVE",
@@ -449,6 +598,8 @@ export function useOnlineRaid({
     spacemanColor,
     spacemanHat,
     spacemanPet,
+    remoteCoPilot?.name,
+    updateRemoteCoPilot,
     handlePacket,
   ]);
 
@@ -461,5 +612,9 @@ export function useOnlineRaid({
     sendSync,
     sendStartRaid,
     sendReady,
+    sendDisconnect,
+    sendReconnectRequest,
+    sendReconnectSync,
+    sendReconnectResume,
   };
 }

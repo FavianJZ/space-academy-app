@@ -1,0 +1,327 @@
+/* Floating Joystick Touch Overlay (Archero Style) */
+.floating-joystick-touch-zone {
+  position: fixed;
+  inset: 0;
+  z-index: 28;
+  touch-action: none;
+  user-select: none;
+  pointer-events: auto;
+  overflow: hidden;
+}
+
+/* Base Ring: positioned dynamically at touch origin */
+.floating-joystick-base {
+  position: absolute;
+  width: 124px;
+  height: 124px;
+  margin-left: -62px;
+  margin-top: -62px;
+  pointer-events: none;
+  opacity: 0;
+  transform: scale(0.65);
+  transition: opacity 120ms ease, transform 120ms cubic-bezier(0.18, 0.89, 0.32, 1.28);
+  will-change: transform, opacity, left, top;
+}
+
+.floating-joystick-base.is-active {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.joystick-base-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid rgba(0, 229, 255, 0.65);
+  background: radial-gradient(
+    circle,
+    rgba(0, 229, 255, 0.16) 0%,
+    rgba(3, 18, 30, 0.55) 70%
+  );
+  box-shadow: 0 0 24px rgba(0, 229, 255, 0.38),
+    inset 0 0 16px rgba(0, 229, 255, 0.22);
+  backdrop-filter: blur(4px);
+}
+
+/* Inner rotating dashed ring */
+.joystick-ring-dashed {
+  position: absolute;
+  inset: 12px;
+  border-radius: 50%;
+  border: 1px dashed rgba(125, 233, 255, 0.4);
+  animation: joystickSpin 12s linear infinite;
+}
+
+@keyframes joystickSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Crosshair ticks */
+.joystick-tick {
+  position: absolute;
+  background: #00ffea;
+  box-shadow: 0 0 8px #00e5ff;
+}
+
+.tick-n {
+  top: -4px;
+  left: 50%;
+  width: 2px;
+  height: 8px;
+  transform: translateX(-50%);
+}
+
+.tick-s {
+  bottom: -4px;
+  left: 50%;
+  width: 2px;
+  height: 8px;
+  transform: translateX(-50%);
+}
+
+.tick-w {
+  left: -4px;
+  top: 50%;
+  width: 8px;
+  height: 2px;
+  transform: translateY(-50%);
+}
+
+.tick-e {
+  right: -4px;
+  top: 50%;
+  width: 8px;
+  height: 2px;
+  transform: translateY(-50%);
+}
+
+/* Connecting laser vector line from center to knob */
+.joystick-laser-line {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  height: 2px;
+  width: 0;
+  background: linear-gradient(90deg, rgba(0, 229, 255, 0.3), #00ffea);
+  transform-origin: 0 50%;
+  box-shadow: 0 0 8px rgba(0, 229, 255, 0.7);
+  pointer-events: none;
+  opacity: 0;
+}
+
+/* Inner Thumb Knob */
+.joystick-thumb-knob {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 48px;
+  height: 48px;
+  margin-left: -24px;
+  margin-top: -24px;
+  border-radius: 50%;
+  border: 2px solid #ffffff;
+  background: radial-gradient(
+    circle at 35% 35%,
+    #a8f8ff 0%,
+    #00c4e6 55%,
+    #006b8f 100%
+  );
+  box-shadow: 0 0 18px rgba(0, 229, 255, 0.9), 0 4px 12px rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  will-change: transform;
+}
+
+.joystick-knob-core {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 0 10px #ffffff;
+}
+
+.joystick-knob-pulse {
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 229, 255, 0.5);
+  animation: knobPing 1.8s ease-out infinite;
+}
+
+@keyframes knobPing {
+  0% {
+    transform: scale(0.9);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1.4);
+    opacity: 0;
+  }
+}
+
+/* 2-Finger Turbo Boost Glowing Effects on Joystick */
+.floating-joystick-base.is-boosted .joystick-base-ring {
+  border-color: #ffaa00;
+  background: radial-gradient(
+    circle,
+    rgba(255, 170, 0, 0.28) 0%,
+    rgba(40, 20, 0, 0.65) 70%
+  );
+  box-shadow: 0 0 36px rgba(255, 170, 0, 0.7), inset 0 0 20px rgba(255, 170, 0, 0.4);
+  animation: boostBasePulse 0.4s ease-in-out infinite alternate;
+}
+
+@keyframes boostBasePulse {
+  from {
+    transform: scale(1);
+    box-shadow: 0 0 28px rgba(255, 170, 0, 0.6), inset 0 0 16px rgba(255, 170, 0, 0.3);
+  }
+  to {
+    transform: scale(1.08);
+    box-shadow: 0 0 44px rgba(255, 200, 0, 0.85), inset 0 0 26px rgba(255, 170, 0, 0.55);
+  }
+}
+
+.floating-joystick-base.is-boosted .joystick-thumb-knob {
+  border-color: #ffe082;
+  background: radial-gradient(
+    circle at 35% 35%,
+    #fff4cc 0%,
+    #ffb300 55%,
+    #d84315 100%
+  );
+  box-shadow: 0 0 28px rgba(255, 170, 0, 0.95), 0 0 14px #ffc107;
+}
+
+.floating-joystick-base.is-boosted .joystick-laser-line {
+  background: linear-gradient(90deg, rgba(255, 170, 0, 0.4), #ffdd00);
+  box-shadow: 0 0 12px rgba(255, 170, 0, 0.9);
+}
+
+/* High-tech 2-Finger Turbo Boost HUD Indicator */
+.mobile-two-finger-boost-hud {
+  position: absolute;
+  top: 86px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 18px;
+  border-radius: 24px;
+  border: 2px solid #ffaa00;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(80, 35, 0, 0.9) 0%,
+    rgba(25, 10, 0, 0.95) 100%
+  );
+  box-shadow: 0 0 30px rgba(255, 170, 0, 0.65), 0 8px 24px rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(10px);
+  pointer-events: none;
+  z-index: 34;
+  animation: boostHudPulse 0.4s ease-in-out infinite alternate;
+  white-space: nowrap;
+}
+
+@keyframes boostHudPulse {
+  from {
+    transform: translateX(-50%) scale(0.98);
+    border-color: #ff9100;
+    box-shadow: 0 0 20px rgba(255, 145, 0, 0.5);
+  }
+  to {
+    transform: translateX(-50%) scale(1.04);
+    border-color: #ffd54f;
+    box-shadow: 0 0 35px rgba(255, 213, 79, 0.85);
+  }
+}
+
+.mobile-two-finger-boost-hud .boost-hud-flame {
+  font-size: 18px;
+  animation: flameFlicker 0.25s infinite alternate;
+}
+
+@keyframes flameFlicker {
+  from {
+    transform: scale(1) rotate(-5deg);
+  }
+  to {
+    transform: scale(1.2) rotate(5deg);
+  }
+}
+
+.mobile-two-finger-boost-hud .boost-hud-label {
+  font-family: "Share Tech Mono", monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  color: #fff3e0;
+  text-shadow: 0 0 10px #ff9100, 0 0 20px #ff6d00;
+}
+
+.mobile-two-finger-boost-hud .boost-hud-icon {
+  font-size: 16px;
+  filter: drop-shadow(0 0 8px #ffb300);
+}
+
+/* Subtle mobile pilot guidance banner */
+.nav-mobile-pilot-hint {
+  position: absolute;
+  left: 50%;
+  bottom: 36px;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 20px;
+  border: 1px solid rgba(0, 229, 255, 0.3);
+  background: rgba(4, 18, 30, 0.82);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.5), 0 0 16px rgba(0, 229, 255, 0.2);
+  font-family: "Share Tech Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: #a8f8ff;
+  pointer-events: none;
+  animation: pulseHint 2.2s ease-in-out infinite;
+  white-space: nowrap;
+  z-index: 29;
+}
+
+.nav-mobile-pilot-hint .hint-icon {
+  font-size: 15px;
+}
+
+@keyframes pulseHint {
+  0%,
+  100% {
+    opacity: 0.85;
+    transform: translateX(-50%) translateY(0);
+  }
+  50% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(-3px);
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  .nav-mobile-pilot-hint {
+    bottom: 30px;
+    font-size: 10px;
+    padding: 6px 14px;
+  }
+  .mobile-two-finger-boost-hud {
+    top: 72px;
+    padding: 6px 14px;
+  }
+  .mobile-two-finger-boost-hud .boost-hud-label {
+    font-size: 9px;
+    letter-spacing: 0.12em;
+  }
+}
+

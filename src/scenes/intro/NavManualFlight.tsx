@@ -8,7 +8,7 @@ import React, {
 } from "react";
 import * as THREE from "three";
 
-import { useFlightControls } from "../../hooks/useFlightControls";
+import { useFlightControls, flightAnalogState } from "../../hooks/useFlightControls";
 import { MODEL_URLS, NormalizedModel } from "./introModels";
 import {
   FLIGHT_BOUNDS,
@@ -628,11 +628,25 @@ export const NavFlightController: React.FC<NavFlightControllerProps> = ({
 
     if (course.stage === "flying") {
       const actions = actionsRef.current;
-      const pitchTarget =
+      const analog = flightAnalogState;
+
+      let pitchTarget =
         (actions.pitchDown ? 1 : 0) - (actions.pitchUp ? 1 : 0);
-      const rollTarget =
+      let rollTarget =
         (actions.rollRight ? 1 : 0) - (actions.rollLeft ? 1 : 0);
-      const yawTarget = (actions.yawLeft ? 1 : 0) - (actions.yawRight ? 1 : 0);
+      let yawTarget = (actions.yawLeft ? 1 : 0) - (actions.yawRight ? 1 : 0);
+      let throttleTarget = actions.throttle ? 1 : 0;
+
+      if (analog.active) {
+        // Dragging UP (analog.y < 0) pitches nose UP (-analog.y in pitchUp sense, which is negative in Three.js X rotation)
+        // Dragging DOWN (analog.y > 0) pitches nose DOWN
+        pitchTarget = THREE.MathUtils.clamp(pitchTarget + analog.y, -1, 1);
+        rollTarget = THREE.MathUtils.clamp(rollTarget + analog.x, -1, 1);
+        yawTarget = THREE.MathUtils.clamp(yawTarget - analog.x, -1, 1);
+        if (analog.throttle) {
+          throttleTarget = 1;
+        }
+      }
 
       state.pitchInput = damp(
         state.pitchInput,
@@ -665,7 +679,6 @@ export const NavFlightController: React.FC<NavFlightControllerProps> = ({
       scratch.deltaQuaternion.setFromEuler(scratch.euler);
       state.quaternion.multiply(scratch.deltaQuaternion).normalize();
 
-      const throttleTarget = actions.throttle ? 1 : 0;
       throttleRef.current = moveToward(
         throttleRef.current,
         throttleTarget,

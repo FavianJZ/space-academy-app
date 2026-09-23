@@ -76,7 +76,7 @@ function scheduleProfileSync(get: () => GameState) {
   }, PROFILE_SYNC_DELAY_MS);
 }
 
-function scheduleSettingsSync(_get: () => GameState) {
+function scheduleSettingsSync(_get?: () => GameState) {
 
 }
 
@@ -442,11 +442,18 @@ export const useGameStore = create<GameState>()(
 
       bossDamageLog: [],
 
-      resetBossHP: () => {
+      resetBossHP: (newMaxHp = BOSS_MAX_HP) => {
         set({
-          bossGlobalHP: BOSS_MAX_HP,
-          bossMaxHP: BOSS_MAX_HP,
+          bossGlobalHP: newMaxHp,
+          bossMaxHP: newMaxHp,
           bossDamageLog: [],
+        });
+      },
+
+      setBossGlobalHP: (hp: number) => {
+        const maxHp = get().bossMaxHP || BOSS_MAX_HP;
+        set({
+          bossGlobalHP: Math.max(0, Math.min(maxHp, hp)),
         });
       },
 
@@ -548,7 +555,7 @@ export const useGameStore = create<GameState>()(
             id: r.id,
             name: r.player_name,
             school: "",
-            major: (r.major === "IPA" || r.major === "IPS" ? r.major : null) as any,
+            major: (r.major === "IPA" || r.major === "IPS" ? r.major : null),
             character: "pink",
             totalScore: r.total_score,
             updatedAt: r.updated_at,
@@ -722,12 +729,15 @@ export const useGameStore = create<GameState>()(
     {
       name: STORAGE_KEY,
       storage,
-      version: 8,
+      version: 9,
       partialize: (state) => {
         const rest = { ...state };
         delete (rest as Partial<GameState>).remoteCoPilot;
         delete (rest as Partial<GameState>).onlinePartyCode;
         delete (rest as Partial<GameState>).isPartyHost;
+        delete (rest as Partial<GameState>).bossGlobalHP;
+        delete (rest as Partial<GameState>).bossMaxHP;
+        delete (rest as Partial<GameState>).bossDamageLog;
         return {
           ...rest,
           remoteCoPilot: null,
@@ -790,11 +800,21 @@ export const useGameStore = create<GameState>()(
           version < 8
             ? {
                 ...botLeaderboardRecalibratedState,
-                language: ((botLeaderboardRecalibratedState as any).language as "id" | "en") || "id",
+                language: ((botLeaderboardRecalibratedState as Record<string, unknown>).language as "id" | "en") || "id",
               }
             : botLeaderboardRecalibratedState;
 
-        return languageMigratedState as GameState;
+        const bossHPMigratedState =
+          version < 9
+            ? {
+                ...languageMigratedState,
+                bossGlobalHP: BOSS_MAX_HP,
+                bossMaxHP: BOSS_MAX_HP,
+                bossDamageLog: [],
+              }
+            : languageMigratedState;
+
+        return bossHPMigratedState as GameState;
       },
     }
   )

@@ -26,11 +26,14 @@
 .party-lobby-modal {
   width: 100%;
   max-width: 680px;
+  max-height: 94dvh;
   background: linear-gradient(180deg, #071530 0%, #030a1c 100%);
   border: 1.5px solid #00ffcc;
   box-shadow: 0 0 50px rgba(0, 255, 204, 0.25), inset 0 0 30px rgba(0, 255, 204, 0.08);
   border-radius: 16px;
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
   display: flex;
   flex-direction: column;
 }
@@ -423,4 +426,81 @@
 .local-mode-tip-box .tip-icon {
   font-size: 16px;
   flex-shrink: 0;
+}
+
+@media (max-width: 680px) {
+  .party-lobby-overlay {
+    padding: 10px;
+  }
+
+  .party-lobby-top {
+    padding: 10px 14px;
+  }
+
+  .lobby-tab-btn {
+    padding: 10px 8px;
+    font-size: 11px;
+  }
+
+  .party-lobby-body {
+    padding: 14px;
+  }
+
+  .party-code-card {
+    padding: 14px 12px;
+  }
+
+  .party-code-display {
+    flex-direction: column !important;
+    gap: 10px !important;
+  }
+
+  .code-text {
+    font-size: clamp(24px, 6vw, 34px) !important;
+    letter-spacing: clamp(4px, 1.2vw, 8px) !important;
+    padding: 6px 14px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    text-align: center !important;
+  }
+
+  .copy-code-btn {
+    width: 100% !important;
+    min-height: 40px !important;
+    padding: 10px !important;
+  }
+
+  .join-input-wrap {
+    flex-direction: column !important;
+    gap: 10px !important;
+  }
+
+  .join-input {
+    font-size: clamp(18px, 4.5vw, 24px) !important;
+    letter-spacing: 4px !important;
+    padding: 10px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .join-submit-btn {
+    width: 100% !important;
+    min-height: 42px !important;
+  }
+
+  .launch-raid-btn {
+    width: 100% !important;
+    min-height: 44px !important;
+    padding: 12px !important;
+  }
+
+  .party-lobby-footer {
+    padding: 12px 14px;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .lobby-action-btn {
+    width: 100%;
+  }
 }

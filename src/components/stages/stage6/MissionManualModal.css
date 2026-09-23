@@ -25,6 +25,7 @@
 .mission-manual-modal {
   width: 100%;
   max-width: 620px;
+  max-height: 92dvh;
   background: linear-gradient(135deg, rgba(13, 27, 42, 0.96) 0%, rgba(8, 14, 26, 0.98) 100%);
   border: 1px solid rgba(0, 243, 255, 0.35);
   box-shadow:
@@ -129,7 +130,11 @@
 
 .manual-body {
   padding: 1.5rem;
-  min-height: 240px;
+  min-height: 0;
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
 }
 
 .manual-tab-content {
@@ -296,3 +301,57 @@
   transform: translateY(-2px);
   box-shadow: 0 0 25px rgba(0, 243, 255, 0.7);
 }
+
+@media (max-width: 600px) {
+  .mission-manual-backdrop {
+    padding: 8px;
+  }
+
+  .mission-manual-header {
+    padding: 10px 14px;
+  }
+
+  .manual-book-badge {
+    font-size: 1.3rem;
+  }
+
+  .manual-title {
+    font-size: 1rem;
+  }
+
+  .manual-tabs {
+    padding: 0.2rem 0.5rem 0;
+    gap: 0.25rem;
+    overflow-x: auto;
+  }
+
+  .manual-tab-btn {
+    padding: 0.5rem 0.6rem;
+    font-size: 0.75rem;
+    white-space: nowrap;
+  }
+
+  .manual-body {
+    padding: 12px;
+  }
+
+  .manual-controls-grid {
+    grid-template-columns: 1fr !important;
+    gap: 8px !important;
+  }
+
+  .manual-card {
+    padding: 10px 12px;
+  }
+
+  .mission-manual-footer {
+    padding: 10px 14px;
+  }
+
+  .manual-action-btn {
+    width: 100%;
+    min-height: 42px;
+    text-align: center;
+  }
+}
+

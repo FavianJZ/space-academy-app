@@ -467,40 +467,40 @@ const Stage4FlowchartFixer: React.FC<Stage4FlowchartFixerProps> = ({
             >
               <div className="card-scanline" />
 
-              <div className="flowchart-header">
+              <div className="quiz-top-bar flowchart-top-bar">
                 <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                  }}
+                  className={`quiz-timer-badge ${
+                    timeLeft <= 10 ? "danger" : timeLeft <= 20 ? "warning" : ""
+                  }`}
                 >
-                  <h1 style={{ margin: 0 }}>
-                    {language === "en" ? "Challenge" : "Tantangan"} {currentChallengeIdx + 1}/{challenges.length}
-                  </h1>
-
-                  <div
-                    style={{
-                      background:
-                        timeLeft <= 10
-                          ? "rgba(255,50,50,0.9)"
-                          : "rgba(0,200,255,0.2)",
-                      border:
-                        timeLeft <= 10
-                          ? "2px solid #ff3232"
-                          : "2px solid rgba(0,200,255,0.5)",
-                      borderRadius: "12px",
-                      padding: "6px 14px",
-                      color: timeLeft <= 10 ? "#fff" : "#00c8ff",
-                      fontFamily: "'Orbitron', sans-serif",
-                      fontSize: "1rem",
-                      fontWeight: 700,
-                      animation: timeLeft <= 10 ? "pulse 1s infinite" : "none",
-                    }}
-                  >
-                    T {timeLeft}s
-                  </div>
+                  <span className="timer-icon">T</span>
+                  <span className="timer-value">{timeLeft}s</span>
                 </div>
+
+                <div className="quiz-score-badge">
+                  <span className="score-icon">PTS</span>
+                  <span className="score-value">{score}</span>
+                </div>
+              </div>
+
+              <div className="step-indicators">
+                {challenges.map((_, idx) => (
+                  <div
+                    key={idx}
+                    className={`step-dot ${idx === currentChallengeIdx ? "active" : ""} ${
+                      idx < currentChallengeIdx ? "completed" : ""
+                    }`}
+                  />
+                ))}
+              </div>
+
+              <div className="flowchart-header">
+                <span className="stage-category-tag">
+                  {language === "en" ? "LOGIC FLOWCHART" : "FLOWCHART LOGIKA"} • {language === "en" ? "LEVEL" : "LEVEL"} {currentChallengeIdx + 1}/{challenges.length}
+                </span>
+                <h1>
+                  {language === "en" ? "Challenge" : "Tantangan"} {currentChallengeIdx + 1}/{challenges.length}
+                </h1>
 
                 <p className="flowchart-description">
                   {currentChallenge.description}

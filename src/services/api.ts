@@ -53,8 +53,7 @@ async function fetchEnvelope<T>(
   try {
     body = await response.json();
   } catch {
-
-
+    // Non-JSON response body
   }
 
   if (!response.ok || !body?.success) {

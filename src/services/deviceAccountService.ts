@@ -1,11 +1,11 @@
 import { supabase, isSupabaseEnabled } from "../lib/supabase";
-import type { Character } from "../types/game.types";
+import type { Character, Major } from "../types/game.types";
 import type {
   SpacemanColorId,
   SpacemanHatId,
   SpacemanPetId,
 } from "../types/customization.types";
-import type { TelemetrySignals } from "../types/specialization.types";
+import type { SpecializationResult, TelemetrySignals } from "../types/specialization.types";
 import { INITIAL_TELEMETRY_SIGNALS } from "../utils/specializationCalculator";
 import { useGameStore } from "../stores/useGameStore";
 import {
@@ -34,7 +34,7 @@ export interface SavedDeviceAccount {
   planetScores: [string, { planetId: number; stageId: number; score: number; completed: boolean }][];
   totalScore: number;
   isGameCompleted: boolean;
-  specializationResult?: any;
+  specializationResult?: SpecializationResult | null;
   telemetrySignals?: TelemetrySignals;
   createdAt: number;
   updatedAt: number;
@@ -42,8 +42,8 @@ export interface SavedDeviceAccount {
 
 const DEVICE_ID_KEY = "space-academy-device-uuid";
 const DEVICE_ACCOUNTS_KEY = "space-academy-device-accounts";
+const UNLINKED_PILOTS_KEY = "space-academy-unlinked-pilots";
 export const MAX_ACCOUNTS_PER_DEVICE = 2;
-
 
 export function getLocalDeviceId(): string {
   let id = localStorage.getItem(DEVICE_ID_KEY);
@@ -56,26 +56,188 @@ export function getLocalDeviceId(): string {
   return id;
 }
 
+export function getUnlinkedPilots(): { names: string[]; ids: string[] } {
+  try {
+    const raw = localStorage.getItem(UNLINKED_PILOTS_KEY);
+    if (!raw) return { names: [], ids: [] };
+    const parsed = JSON.parse(raw);
+    return {
+      names: Array.isArray(parsed?.names) ? parsed.names : [],
+      ids: Array.isArray(parsed?.ids) ? parsed.ids : [],
+    };
+  } catch {
+    return { names: [], ids: [] };
+  }
+}
+
+export function isPilotUnlinked(
+  id?: string | null,
+  name?: string | null,
+  cache?: { names: string[]; ids: string[] }
+): boolean {
+  const list = cache || getUnlinkedPilots();
+  const cleanName = name?.trim().toLowerCase();
+  const cleanId = id?.trim();
+
+  if (cleanName && list.names.includes(cleanName)) return true;
+  if (cleanId && !cleanId.startsWith("local_") && list.ids.includes(cleanId)) return true;
+  return false;
+}
+
+export function addUnlinkedPilot(id?: string | null, name?: string | null): void {
+  try {
+    const list = getUnlinkedPilots();
+    const cleanName = name?.trim().toLowerCase();
+    const cleanId = id?.trim();
+
+    let changed = false;
+    if (cleanName && !list.names.includes(cleanName)) {
+      list.names.push(cleanName);
+      changed = true;
+    }
+    if (cleanId && !cleanId.startsWith("local_") && !list.ids.includes(cleanId)) {
+      list.ids.push(cleanId);
+      changed = true;
+    }
+    if (changed) {
+      localStorage.setItem(UNLINKED_PILOTS_KEY, JSON.stringify(list));
+    }
+  } catch (e) {
+    console.warn("[deviceAccountService] Error adding unlinked pilot tombstone:", e);
+  }
+}
+
+export function removeUnlinkedPilot(name?: string | null, id?: string | null): void {
+  try {
+    const list = getUnlinkedPilots();
+    const cleanName = name?.trim().toLowerCase();
+    const cleanId = id?.trim();
+
+    const filteredNames = cleanName ? list.names.filter((n) => n !== cleanName) : list.names;
+    const filteredIds = cleanId ? list.ids.filter((i) => i !== cleanId) : list.ids;
+
+    localStorage.setItem(
+      UNLINKED_PILOTS_KEY,
+      JSON.stringify({ names: filteredNames, ids: filteredIds })
+    );
+  } catch (e) {
+    console.warn("[deviceAccountService] Error removing unlinked pilot tombstone:", e);
+  }
+}
+
+export function clearUnlinkedPilots(): void {
+  try {
+    localStorage.removeItem(UNLINKED_PILOTS_KEY);
+  } catch (e) {
+    console.warn("[deviceAccountService] Error clearing unlinked pilots:", e);
+  }
+}
 
 export function getLocalSavedAccounts(): SavedDeviceAccount[] {
   try {
     const raw = localStorage.getItem(DEVICE_ACCOUNTS_KEY);
     if (!raw) return [];
     const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed.slice(0, MAX_ACCOUNTS_PER_DEVICE) : [];
+    if (!Array.isArray(parsed)) return [];
+    const unlinked = getUnlinkedPilots();
+    const valid = parsed.filter((acc) => !isPilotUnlinked(acc.id, acc.name, unlinked));
+    if (valid.length !== parsed.length) {
+      localStorage.setItem(DEVICE_ACCOUNTS_KEY, JSON.stringify(valid.slice(0, MAX_ACCOUNTS_PER_DEVICE)));
+    }
+    return valid.slice(0, MAX_ACCOUNTS_PER_DEVICE);
   } catch (err) {
     console.warn("[deviceAccountService] Error parsing device accounts:", err);
     return [];
   }
 }
 
-
 export function setLocalSavedAccounts(accounts: SavedDeviceAccount[]): void {
   try {
-    const capped = accounts.slice(0, MAX_ACCOUNTS_PER_DEVICE);
+    const unlinked = getUnlinkedPilots();
+    const valid = accounts.filter((acc) => !isPilotUnlinked(acc.id, acc.name, unlinked));
+    const capped = valid.slice(0, MAX_ACCOUNTS_PER_DEVICE);
     localStorage.setItem(DEVICE_ACCOUNTS_KEY, JSON.stringify(capped));
   } catch (err) {
     console.warn("[deviceAccountService] Error saving device accounts:", err);
+  }
+}
+
+export const DEVICE_HAS_PLAYED_KEY = "space-academy-device-has-played";
+
+/**
+ * Checks if this device has ever played through the story / game at least once.
+ * Returns false if the device is brand new or freshly reset.
+ */
+export function hasDevicePlayedBefore(): boolean {
+  try {
+    // 1. Explicit persistent flag in localStorage
+    if (localStorage.getItem(DEVICE_HAS_PLAYED_KEY) === "true") {
+      return true;
+    }
+
+    // 2. Check current store progress (intro completed, game completed, visited planets, or registered pilot)
+    const store = useGameStore.getState();
+    if (
+      store.introCompleted ||
+      store.isGameCompleted ||
+      (store.visitedPlanets && store.visitedPlanets.size > 0)
+    ) {
+      markDeviceAsPlayed();
+      return true;
+    }
+
+    if (store.playerData?.name?.trim() && store.playerData?.major) {
+      markDeviceAsPlayed();
+      return true;
+    }
+
+    // 3. Check existing saved accounts on this device
+    const saved = getLocalSavedAccounts();
+    if (saved && saved.length > 0) {
+      const hasProgress = saved.some(
+        (acc) =>
+          acc.visitedPlanetsCount > 0 ||
+          acc.isGameCompleted ||
+          (acc.name && acc.name.trim().length > 0 && acc.major)
+      );
+      if (hasProgress) {
+        markDeviceAsPlayed();
+        return true;
+      }
+    }
+
+    // 4. Check if player ID exists in storage from past active session
+    const playerId = localStorage.getItem("space-academy-player-id");
+    if (playerId) {
+      markDeviceAsPlayed();
+      return true;
+    }
+
+    return false;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Marks this device as having completed a playthrough / experienced the story.
+ */
+export function markDeviceAsPlayed(): void {
+  try {
+    localStorage.setItem(DEVICE_HAS_PLAYED_KEY, "true");
+  } catch (err) {
+    console.warn("[deviceAccountService] Error marking device as played:", err);
+  }
+}
+
+/**
+ * Clears the device play history (used when resetting device).
+ */
+export function clearDevicePlayHistory(): void {
+  try {
+    localStorage.removeItem(DEVICE_HAS_PLAYED_KEY);
+  } catch (err) {
+    console.warn("[deviceAccountService] Error clearing device play history:", err);
   }
 }
 
@@ -86,6 +248,12 @@ export function snapshotCurrentStoreAccount(): SavedDeviceAccount | null {
   if (!name) return null;
 
   const currentLocalId = store.playerId || getLocalPlayerId() || `local_${name.toLowerCase()}`;
+
+  // If this account has been unlinked/deleted from this device, never re-snapshot it
+  if (isPilotUnlinked(currentLocalId, name)) {
+    return null;
+  }
+
   const totalScore = store.getTotalScore();
   const visitedArray = Array.from(store.visitedPlanets);
   const planetScoresArray = Array.from(store.planetScores.entries());
@@ -131,14 +299,12 @@ export function snapshotCurrentStoreAccount(): SavedDeviceAccount | null {
   } else if (existing.length < MAX_ACCOUNTS_PER_DEVICE) {
     updatedList = [...existing, account];
   } else {
-
     updatedList = existing;
   }
 
   setLocalSavedAccounts(updatedList);
   return account;
 }
-
 
 export async function fetchDeviceAccounts(): Promise<{
   deviceId: string;
@@ -148,18 +314,21 @@ export async function fetchDeviceAccounts(): Promise<{
 }> {
   const deviceId = getLocalDeviceId();
 
-
+  // Snapshot active store cadet if there's any active player in memory
   snapshotCurrentStoreAccount();
 
   const localAccounts = getLocalSavedAccounts();
+  const unlinked = getUnlinkedPilots();
   const mergedMap = new Map<string, SavedDeviceAccount>();
 
-
+  // Start with clean local accounts
   for (const acc of localAccounts) {
-    mergedMap.set(acc.name.toLowerCase(), acc);
+    if (!isPilotUnlinked(acc.id, acc.name, unlinked)) {
+      mergedMap.set(acc.name.toLowerCase(), acc);
+    }
   }
 
-
+  // If Supabase is connected, query by device_id
   if (isSupabaseEnabled() && supabase && deviceId && deviceId.trim().length > 5) {
     try {
       let remoteRows: any[] | null = null;
@@ -175,7 +344,6 @@ export async function fetchDeviceAccounts(): Promise<{
       if (!error && data) {
         remoteRows = data;
       } else if (error && (error.code === "PGRST204" || error.message?.includes("device_id"))) {
-
         if (localAccounts.length > 0) {
           const names = localAccounts.map((a) => a.name);
           const { data: fallbackRows } = await supabase
@@ -188,16 +356,25 @@ export async function fetchDeviceAccounts(): Promise<{
 
       if (remoteRows) {
         for (const row of remoteRows) {
+          // Permanently ignore any pilot that was unlinked from this device
+          if (isPilotUnlinked(row.id, row.name, unlinked)) {
+            // Proactively clear device_id in Supabase in background
+            supabase
+              .from("players")
+              .update({ device_id: "" })
+              .eq("id", row.id)
+              .then();
+            continue;
+          }
+
           const key = row.name.toLowerCase();
           const existing = mergedMap.get(key);
-
 
           const lbData = row.leaderboard;
           const lbScore = Array.isArray(lbData)
             ? lbData[0]?.total_score
             : lbData?.total_score;
           const remoteTotalScore = lbScore ?? existing?.totalScore ?? 0;
-
 
           if (existing && existing.totalScore > 0 && remoteTotalScore === 0) {
             continue;
@@ -252,9 +429,9 @@ export async function fetchDeviceAccounts(): Promise<{
 export async function syncAccountToSupabase(account: SavedDeviceAccount): Promise<string | null> {
   if (!isSupabaseEnabled()) return null;
   if (!account.name?.trim()) return null;
+  if (isPilotUnlinked(account.id, account.name)) return null;
 
   try {
-
     const playerId = await registerPlayer({
       name: account.name.trim(),
       phone: account.phone || "",
@@ -272,19 +449,16 @@ export async function syncAccountToSupabase(account: SavedDeviceAccount): Promis
       return null;
     }
 
-
     if (account.isGameCompleted || account.visitedPlanetsCount >= 6) {
       await markGameCompleted(playerId);
       await markIntroCompleted(playerId);
     }
-
 
     if (account.specializationResult) {
       await updatePlayer(playerId, {
         specialization_result: account.specializationResult,
       });
     }
-
 
     if (account.totalScore > 0 && account.planetScores && account.planetScores.length > 0) {
       for (const [, scoreData] of account.planetScores) {
@@ -300,7 +474,6 @@ export async function syncAccountToSupabase(account: SavedDeviceAccount): Promis
       }
     }
 
-
     if (account.totalScore > 0) {
       await submitLeaderboardEntry(
         account.name,
@@ -309,7 +482,6 @@ export async function syncAccountToSupabase(account: SavedDeviceAccount): Promis
         playerId
       );
     }
-
 
     if (account.id !== playerId) {
       account.id = playerId;
@@ -347,9 +519,10 @@ export async function syncAllLocalAccountsToSupabase(): Promise<number> {
 
 
 export function activateDeviceAccount(account: SavedDeviceAccount): void {
+  // If this account was previously tombstoned, clear it as the user intentionally activated it
+  removeUnlinkedPilot(account.name, account.id);
 
   setLocalPlayerId(account.id);
-
 
   const visitedSet = new Set<import("../types/planet.types").PlanetId>(
     (account.visitedPlanets || []) as import("../types/planet.types").PlanetId[]
@@ -368,7 +541,7 @@ export function activateDeviceAccount(account: SavedDeviceAccount): void {
       name: account.name,
       phone: account.phone || "",
       school: account.school || "",
-      major: (account.major as any) || "",
+      major: ((account.major === "IPA" || account.major === "IPS") ? account.major : "") as Major,
     },
     p2Name: "",
     p2Phone: "",
@@ -382,12 +555,9 @@ export function activateDeviceAccount(account: SavedDeviceAccount): void {
     telemetrySignals: account.telemetrySignals || INITIAL_TELEMETRY_SIGNALS,
   });
 
-
   useGameStore.getState().refreshSpecializationProfile();
 
-
   snapshotCurrentStoreAccount();
-
 
   syncAccountToSupabase(account).catch(console.warn);
 }
@@ -418,27 +588,113 @@ export function prepareNewCadetSlot(chosenCharacter: Character = "pink"): void {
   localStorage.removeItem("space-academy-player-id");
 }
 
-export function removeDeviceAccount(accountIndex: number): SavedDeviceAccount[] {
+export async function removeDeviceAccount(
+  accountIndexOrIdentifier: number | string
+): Promise<SavedDeviceAccount[]> {
   const accounts = getLocalSavedAccounts();
-  if (accountIndex >= 0 && accountIndex < accounts.length) {
-    const removed = accounts.splice(accountIndex, 1);
-    setLocalSavedAccounts(accounts);
+  let targetIndex = -1;
 
+  if (typeof accountIndexOrIdentifier === "number") {
+    targetIndex = accountIndexOrIdentifier;
+  } else {
+    const cleanQuery = accountIndexOrIdentifier.trim().toLowerCase();
+    targetIndex = accounts.findIndex(
+      (a) => a.id === accountIndexOrIdentifier || a.name.trim().toLowerCase() === cleanQuery
+    );
+  }
+
+  if (targetIndex >= 0 && targetIndex < accounts.length) {
+    const [removed] = accounts.splice(targetIndex, 1);
+    const oldDeviceId = getLocalDeviceId();
+
+    // 1. Blacklist / tombstone this pilot on this device
+    addUnlinkedPilot(removed.id, removed.name);
+
+    // 2. Clear store if current active player matches removed pilot
     const store = useGameStore.getState();
-    if (
-      (removed[0] && store.playerData.name?.toLowerCase() === removed[0].name.toLowerCase()) ||
-      (removed[0] && store.playerId === removed[0].id)
-    ) {
+    const localPlayerId = getLocalPlayerId();
+    const isCurrentActive = Boolean(
+      removed &&
+        ((store.playerData.name &&
+          removed.name &&
+          store.playerData.name.trim().toLowerCase() === removed.name.trim().toLowerCase()) ||
+          (store.playerId && removed.id && store.playerId === removed.id) ||
+          (localPlayerId && removed.id && localPlayerId === removed.id))
+    );
+
+    if (isCurrentActive) {
       prepareNewCadetSlot(store.character || "pink");
     }
+
+    // 3. Generate a fresh device ID for this device
+    // This gives the exact same 100% guarantee that "Reset Perangkat" has,
+    // so Supabase cannot accidentally resurrect the deleted pilot
+    const randomHex = Math.random().toString(36).substring(2, 8).toUpperCase();
+    const timeHex = Date.now().toString(36).toUpperCase();
+    const freshDeviceId = `DEV-${randomHex}-${timeHex}`;
+    localStorage.setItem(DEVICE_ID_KEY, freshDeviceId);
+
+    // 4. Save remaining accounts locally
+    setLocalSavedAccounts(accounts);
+
+    // 5. Supabase remote unlinking & re-tagging remaining accounts
+    if (isSupabaseEnabled() && supabase) {
+      try {
+        // Disassociate removed pilot by ID
+        if (removed.id && !removed.id.startsWith("local_")) {
+          await supabase
+            .from("players")
+            .update({ device_id: "" })
+            .eq("id", removed.id);
+        }
+        // Disassociate removed pilot by name & oldDeviceId
+        if (removed.name) {
+          await supabase
+            .from("players")
+            .update({ device_id: "" })
+            .ilike("name", removed.name.trim())
+            .eq("device_id", oldDeviceId);
+        }
+
+        // Re-tag remaining accounts to freshDeviceId
+        for (const rem of accounts) {
+          if (rem.id && !rem.id.startsWith("local_")) {
+            await supabase
+              .from("players")
+              .update({ device_id: freshDeviceId })
+              .eq("id", rem.id);
+          } else if (rem.name) {
+            await supabase
+              .from("players")
+              .update({ device_id: freshDeviceId })
+              .ilike("name", rem.name.trim());
+          }
+        }
+        console.log(`[deviceAccountService] Sukses menghapus pilot "${removed.name}" dari memori device dan Supabase`);
+      } catch (err) {
+        console.warn("[deviceAccountService] Error unlinking device_id in Supabase:", err);
+      }
+    }
   }
-  return accounts;
+
+  return getLocalSavedAccounts();
 }
 
-export function clearAllDeviceAccounts(): void {
+export async function clearAllDeviceAccounts(): Promise<void> {
+  const currentDeviceId = getLocalDeviceId();
   try {
+    clearUnlinkedPilots();
+    clearDevicePlayHistory();
     localStorage.removeItem(DEVICE_ACCOUNTS_KEY);
     localStorage.removeItem("space-academy-player-id");
+
+    if (isSupabaseEnabled() && supabase && currentDeviceId) {
+      await supabase
+        .from("players")
+        .update({ device_id: "" })
+        .eq("device_id", currentDeviceId);
+    }
+
     const randomHex = Math.random().toString(36).substring(2, 8).toUpperCase();
     const timeHex = Date.now().toString(36).toUpperCase();
     const freshId = `DEV-${randomHex}-${timeHex}`;
@@ -448,4 +704,78 @@ export function clearAllDeviceAccounts(): void {
   }
   prepareNewCadetSlot("pink");
 }
+
+export async function updateCadetProfile(updatedData: {
+  name: string;
+  phone: string;
+  school: string;
+  major: Major;
+}): Promise<boolean> {
+  const store = useGameStore.getState();
+  const oldName = store.playerData.name || "";
+  const trimmedName = updatedData.name.trim();
+  const trimmedPhone = updatedData.phone.trim();
+  const trimmedSchool = updatedData.school.trim();
+  const validMajor: Major = updatedData.major;
+
+  store.setPlayerData({
+    ...store.playerData,
+    name: trimmedName,
+    phone: trimmedPhone,
+    school: trimmedSchool,
+    major: validMajor,
+  });
+
+  const localList = getLocalSavedAccounts();
+  const idx = localList.findIndex(
+    (a) =>
+      (oldName && a.name.toLowerCase() === oldName.toLowerCase()) ||
+      (store.playerId && a.id === store.playerId)
+  );
+
+  const pId = store.playerId || getLocalPlayerId() || (idx >= 0 ? localList[idx]?.id : null);
+
+  if (idx >= 0) {
+    localList[idx] = {
+      ...localList[idx],
+      name: trimmedName,
+      phone: trimmedPhone,
+      school: trimmedSchool,
+      major: validMajor,
+      updatedAt: Date.now(),
+    };
+    setLocalSavedAccounts(localList);
+  } else {
+    snapshotCurrentStoreAccount();
+  }
+
+  if (isSupabaseEnabled() && pId && !pId.startsWith("local_")) {
+    try {
+      // 1. Update players table in-place (ID tetap sama, data profil diperbarui)
+      await updatePlayer(pId, {
+        name: trimmedName,
+        phone: trimmedPhone,
+        school: trimmedSchool,
+        major: validMajor,
+      });
+
+      // 2. Update leaderboard table in-place (player_name & major diperbarui, skor tetap utuh)
+      if (supabase) {
+        await supabase
+          .from("leaderboard")
+          .update({
+            player_name: trimmedName,
+            major: validMajor,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("player_id", pId);
+      }
+    } catch (e) {
+      console.warn("[deviceAccountService] updateCadetProfile Supabase error:", e);
+    }
+  }
+
+  return true;
+}
+
 

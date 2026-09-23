@@ -387,16 +387,34 @@
 .menu-button { width: 100%; margin-top: 4px; }
 .menu-button:hover { transform: translateY(-2px); border-color: #8ef1ff; background: rgba(57, 210, 237, 0.18); }
 
-@media (max-width: 700px) {
-  .gs-mission-header { top: 25px; left: 16px; right: 16px; grid-template-columns: 1fr auto; }
+@media (max-width: 768px) {
+  .gs-mission-header {
+    top: max(12px, env(safe-area-inset-top, 0px) + 6px);
+    left: 12px;
+    right: 12px;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+  }
   .gs-stage-identity { display: none; }
-  .gs-return-control { min-width: 96px; }
+  .gs-mission-brand { gap: 8px; }
+  .gs-mission-brand strong { font-size: 0.68rem; margin-top: 2px; }
+  .gs-mission-brand span { font-size: 0.48rem; }
+  .gs-return-control {
+    min-width: 80px;
+    min-height: 36px;
+    padding: 6px 10px;
+    text-align: center;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    touch-action: manipulation;
+  }
   .gs-return-control span { display: none; }
-  .gs-return-control strong { margin: 0; font-size: 0.5rem; }
+  .gs-return-control strong { margin: 0; font-size: 0.58rem; letter-spacing: 0.08em; }
 }
 
 @media (orientation: landscape) and (max-height: 560px) {
-  .gs-mission-header { top: 22px; }
+  .gs-mission-header { top: 12px; }
   .gs-mission-brand > div { display: none; }
   .gs-stage-identity { transform: scale(0.86); transform-origin: top center; }
 }

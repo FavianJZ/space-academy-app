@@ -129,7 +129,8 @@ export interface GameState {
   bossMaxHP: number;
   dealBossDamage: (damage: number, playerName: string) => void;
   bossDamageLog: BossDamageLog[];
-  resetBossHP: () => void;
+  resetBossHP: (newMaxHp?: number) => void;
+  setBossGlobalHP: (hp: number) => void;
 
   p2Name: string;
   setP2Name: (name: string) => void;

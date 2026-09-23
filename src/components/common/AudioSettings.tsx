@@ -21,6 +21,7 @@ import {
   AudioSettingsContext,
   useAudioSettings,
 } from "./audioSettingsContext";
+import { EditProfileModal } from "../character-selection/EditProfileModal";
 
 import "./AudioSettings.css";
 
@@ -122,6 +123,35 @@ const GlobeIcon = () => (
   </svg>
 );
 
+const PilotBadgeIcon = () => (
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M12 2a5 5 0 0 1 5 5v3a5 5 0 0 1-10 0V7a5 5 0 0 1 5-5Z" />
+    <path d="M4 21v-2a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v2" />
+    <path d="M9 9h6" />
+  </svg>
+);
+
+const EditPencilIcon = () => (
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M12 20h9" />
+    <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+  </svg>
+);
+
+const SchoolMiniIcon = () => (
+  <svg viewBox="0 0 24 24" aria-hidden="true" style={{ width: 12, height: 12, display: "inline-block", verticalAlign: "-1px" }}>
+    <path d="m2 7 10-5 10 5-10 5z" />
+    <path d="M12 22V12" />
+    <path d="M6 9.5v5c0 1.5 2.5 3.5 6 3.5s6-2 6-3.5v-5" />
+  </svg>
+);
+
+const PhoneMiniIcon = () => (
+  <svg viewBox="0 0 24 24" aria-hidden="true" style={{ width: 12, height: 12, display: "inline-block", verticalAlign: "-1px" }}>
+    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+  </svg>
+);
+
 export const AudioSettingsButton = ({
   className = "",
   label = "AUDIO",
@@ -151,8 +181,10 @@ export const AudioSettingsProvider = ({ children }: AudioSettingsProviderProps) 
   const setSfxVolume = useGameStore((state) => state.setSfxVolume);
   const language = useGameStore((state) => state.language);
   const setLanguage = useGameStore((state) => state.setLanguage);
+  const playerData = useGameStore((state) => state.playerData);
   const t = getTranslation(language).settings;
   const [isOpen, setIsOpen] = useState(false);
+  const [showEditProfileModal, setShowEditProfileModal] = useState(false);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const previousFocusRef = useRef<HTMLElement | null>(null);
   const lastMusicVolumeRef = useRef(musicVolume || DEFAULT_MUSIC_VOLUME);
@@ -367,6 +399,7 @@ export const AudioSettingsProvider = ({ children }: AudioSettingsProviderProps) 
 
                   <dl>
                     <div><dt>{t.sector}</dt><dd>{scene.label}</dd></div>
+                    <div><dt>{t.pilotLabel || (language === "en" ? "PILOT" : "KADET")}</dt><dd style={{ color: "#4fffc2", fontWeight: "bold" }}>{playerData.name || "CADET"}</dd></div>
                     <div><dt>{t.profile}</dt><dd>{t.autoSaved}</dd></div>
                     <div><dt>{t.output}</dt><dd>{t.stereoWeb}</dd></div>
                     <div><dt>{t.languagePrefHeading}</dt><dd style={{ color: "var(--audio-settings-accent)", fontWeight: "bold" }}>{language === "id" ? "INDONESIA (ID)" : "ENGLISH (EN)"}</dd></div>
@@ -383,6 +416,53 @@ export const AudioSettingsProvider = ({ children }: AudioSettingsProviderProps) 
                 </aside>
 
                 <div className="audio-settings-mixer">
+
+                  <div className="audio-settings-channel audio-settings-channel--profile">
+                    <div className="audio-settings-channel-head">
+                      <div className="audio-settings-channel-icon audio-settings-channel-icon--profile">
+                        <PilotBadgeIcon />
+                      </div>
+                      <div className="audio-settings-profile-info">
+                        <span className="audio-settings-profile-kicker">
+                          {t.cadetIdentityHeading || (language === "en" ? "CADET IDENTITY" : "IDENTITAS KADET")}
+                        </span>
+                        <div className="audio-settings-profile-name-row">
+                          <h3 className="audio-settings-profile-name">
+                            {playerData.name || (language === "en" ? "Cadet Pilot" : "Kadet Antariksa")}
+                          </h3>
+                          {playerData.major && (
+                            <span className="audio-settings-major-pill">
+                              {playerData.major}
+                            </span>
+                          )}
+                        </div>
+                        <div className="audio-settings-profile-meta-row">
+                          <span className="profile-meta-tag">
+                            <SchoolMiniIcon />
+                            <span>{playerData.school || "Space Academy"}</span>
+                          </span>
+                          <span className="profile-meta-tag">
+                            <PhoneMiniIcon />
+                            <span>{playerData.phone || (language === "en" ? "No phone set" : "Belum diatur")}</span>
+                          </span>
+                        </div>
+                      </div>
+                      <div className="audio-settings-profile-action">
+                        <button
+                          type="button"
+                          className="audio-settings-edit-btn"
+                          data-audio-cue="none"
+                          onClick={() => {
+                            gameAudio.playSfx("uiConfirm");
+                            setShowEditProfileModal(true);
+                          }}
+                        >
+                          <EditPencilIcon />
+                          <span>{t.editProfileBtn || (language === "en" ? "EDIT PROFILE" : "UBAH PROFIL")}</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
 
                   <div className="audio-settings-channel audio-settings-channel--lang">
                     <div className="audio-settings-channel-head">
@@ -530,6 +610,13 @@ export const AudioSettingsProvider = ({ children }: AudioSettingsProviderProps) 
                   </button>
                 </div>
               </footer>
+
+              {showEditProfileModal && (
+                <EditProfileModal
+                  isOpen={showEditProfileModal}
+                  onClose={() => setShowEditProfileModal(false)}
+                />
+              )}
             </section>
           </div>,
           document.body

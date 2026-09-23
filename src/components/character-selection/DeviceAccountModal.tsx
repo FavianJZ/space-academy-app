@@ -12,7 +12,6 @@ import {
   fetchDeviceAccounts,
   activateDeviceAccount,
   prepareNewCadetSlot,
-  syncAllLocalAccountsToSupabase,
   removeDeviceAccount,
   clearAllDeviceAccounts,
   getLocalDeviceId,
@@ -144,9 +143,6 @@ export const DeviceAccountModal: React.FC<DeviceAccountModalProps> = ({
   const loadData = async () => {
     try {
       setIsRefreshing(true);
-      await syncAllLocalAccountsToSupabase().catch((e) =>
-        console.warn("[DeviceAccountModal] Auto sync warning:", e)
-      );
       const res = await fetchDeviceAccounts();
       setDeviceId(res.deviceId);
       setAccounts(res.accounts);
@@ -175,21 +171,30 @@ export const DeviceAccountModal: React.FC<DeviceAccountModalProps> = ({
     navigate("/mainhub");
   };
 
-  const handleRemoveAccount = (index: number) => {
+  const handleRemoveAccount = async (index: number) => {
     const acc = accounts[index];
+    if (!acc) return;
     const confirmMsg =
       language === "en"
-        ? `Remove account "${acc?.name}" from this device?`
-        : `Hapus akun "${acc?.name}" dari perangkat ini?`;
+        ? `Remove pilot "${acc.name}" from this device?`
+        : `Hapus pilot "${acc.name}" dari perangkat ini?`;
     if (!window.confirm(confirmMsg)) return;
 
     playSfx("uiConfirm");
-    const updated = removeDeviceAccount(index);
-    setAccounts([...updated]);
-    setIsFull(updated.length >= MAX_ACCOUNTS_PER_DEVICE);
+    setIsRefreshing(true);
+    try {
+      const updated = await removeDeviceAccount(acc.id || acc.name);
+      setAccounts([...updated]);
+      setIsFull(updated.length >= MAX_ACCOUNTS_PER_DEVICE);
+      setDeviceId(getLocalDeviceId());
+    } catch (err) {
+      console.error("[DeviceAccountModal] Error removing account:", err);
+    } finally {
+      setIsRefreshing(false);
+    }
   };
 
-  const handleClearAll = () => {
+  const handleClearAll = async () => {
     const confirmMsg =
       language === "en"
         ? "Reset all account data from this device memory and start fresh?"
@@ -197,10 +202,17 @@ export const DeviceAccountModal: React.FC<DeviceAccountModalProps> = ({
     if (!window.confirm(confirmMsg)) return;
 
     playSfx("uiConfirm");
-    clearAllDeviceAccounts();
-    setAccounts([]);
-    setIsFull(false);
-    setDeviceId(getLocalDeviceId());
+    setIsRefreshing(true);
+    try {
+      await clearAllDeviceAccounts();
+      setAccounts([]);
+      setIsFull(false);
+      setDeviceId(getLocalDeviceId());
+    } catch (err) {
+      console.error("[DeviceAccountModal] Error clearing accounts:", err);
+    } finally {
+      setIsRefreshing(false);
+    }
   };
 
   const handleCreateNew = () => {

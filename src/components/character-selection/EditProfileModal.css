@@ -1,0 +1,280 @@
+/* ==========================================================================
+   EDIT PROFILE MODAL (SCI-FI STYLING)
+   ========================================================================== */
+.epm-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 12000;
+  background: rgba(2, 8, 18, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  animation: epmFadeIn 0.25s ease-out;
+}
+
+@keyframes epmFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.epm-modal {
+  background: linear-gradient(180deg, rgba(8, 24, 42, 0.95) 0%, rgba(4, 14, 26, 0.98) 100%);
+  border: 1.5px solid rgba(0, 255, 204, 0.4);
+  border-radius: 20px;
+  max-width: 520px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 0 45px rgba(0, 255, 204, 0.25), inset 0 0 25px rgba(0, 255, 204, 0.05);
+  animation: epmPop 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  box-sizing: border-box;
+}
+
+@keyframes epmPop {
+  from { opacity: 0; transform: scale(0.95) translateY(12px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.epm-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid rgba(0, 255, 204, 0.2);
+  background: rgba(0, 255, 204, 0.04);
+}
+
+.epm-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.epm-icon {
+  font-size: 28px;
+  filter: drop-shadow(0 0 10px rgba(0, 255, 204, 0.5));
+}
+
+.epm-header-left h2 {
+  font-family: 'Orbitron', sans-serif;
+  font-size: clamp(1rem, 2.8vw, 1.25rem);
+  font-weight: 900;
+  color: #00ffcc;
+  letter-spacing: 1.5px;
+  margin: 0 0 4px 0;
+  text-shadow: 0 0 15px rgba(0, 255, 204, 0.6);
+}
+
+.epm-header-left p {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 0.72rem;
+  color: #88bbcc;
+  margin: 0;
+}
+
+.epm-close-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  transition: all 0.2s ease;
+}
+
+.epm-close-btn:hover {
+  background: rgba(255, 60, 100, 0.25);
+  border-color: #ff4466;
+  color: #ff4466;
+}
+
+.epm-form {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.epm-alert-error {
+  background: rgba(255, 60, 100, 0.15);
+  border: 1px solid #ff4466;
+  border-radius: 8px;
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #ff88a4;
+  font-family: 'Roboto Mono', monospace;
+  font-size: 0.78rem;
+}
+
+.epm-alert-error p {
+  margin: 0;
+}
+
+.epm-alert-success {
+  background: rgba(0, 255, 136, 0.15);
+  border: 1px solid #00ff88;
+  border-radius: 8px;
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #00ff88;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.epm-alert-success p {
+  margin: 0;
+}
+
+.epm-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.epm-field label {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.68rem;
+  font-weight: 800;
+  color: #72ccff;
+  letter-spacing: 1px;
+}
+
+.epm-field input,
+.epm-field select {
+  width: 100%;
+  box-sizing: border-box;
+  background: rgba(5, 15, 28, 0.85);
+  border: 1.5px solid rgba(0, 255, 204, 0.25);
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-family: 'Roboto Mono', monospace;
+  font-size: 0.88rem;
+  color: #ffffff;
+  outline: none;
+  transition: all 0.25s ease;
+}
+
+.epm-field input:focus,
+.epm-field select:focus {
+  border-color: #00ffcc;
+  box-shadow: 0 0 15px rgba(0, 255, 204, 0.3);
+  background: rgba(8, 22, 40, 0.95);
+}
+
+.epm-field select {
+  cursor: pointer;
+}
+
+.epm-field select option {
+  background: #061524;
+  color: #ffffff;
+}
+
+.epm-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 10px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(0, 255, 204, 0.15);
+}
+
+.epm-cancel-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #c8d8e8;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.76rem;
+  font-weight: 700;
+  padding: 10px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.epm-cancel-btn:hover {
+  background: rgba(255, 255, 255, 0.16);
+  color: #ffffff;
+}
+
+.epm-save-btn {
+  background: linear-gradient(135deg, #00ffcc 0%, #00ccff 100%);
+  border: 1px solid #00ffcc;
+  color: #041018;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  padding: 10px 22px;
+  border-radius: 8px;
+  cursor: pointer;
+  box-shadow: 0 0 20px rgba(0, 255, 204, 0.5);
+  transition: all 0.25s ease;
+}
+
+.epm-save-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 0 30px rgba(0, 255, 204, 0.8);
+}
+
+.epm-save-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@media (max-width: 600px) {
+  .epm-overlay {
+    padding: 8px;
+  }
+  .epm-modal {
+    max-height: 95dvh;
+    border-radius: 14px;
+  }
+  .epm-header {
+    padding: 12px 14px;
+  }
+  .epm-header-left h2 {
+    font-size: 0.92rem;
+  }
+  .epm-header-left p {
+    font-size: 0.68rem;
+  }
+  .epm-form {
+    padding: 14px;
+    gap: 12px;
+  }
+  .epm-form-group label {
+    font-size: 0.68rem;
+  }
+  .epm-input,
+  .epm-select {
+    font-size: 0.8rem;
+    padding: 8px 12px;
+  }
+  .epm-actions {
+    flex-direction: column-reverse;
+    width: 100%;
+    gap: 8px;
+    margin-top: 4px;
+  }
+  .epm-cancel-btn,
+  .epm-save-btn {
+    width: 100%;
+    text-align: center;
+    min-height: 42px;
+  }
+}

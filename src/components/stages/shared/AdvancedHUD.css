@@ -774,7 +774,7 @@
 
 .game-stage-container .feedback-modal {
   position: fixed !important;
-  bottom: clamp(20px, 4vh, 40px) !important;
+  bottom: clamp(14px, 3vh, 32px) !important;
   left: 50% !important;
   transform: translate(-50%, 0) !important;
   margin: 0 auto !important;
@@ -783,8 +783,12 @@
   background: rgba(4, 16, 28, 0.96);
   box-shadow: 0 16px 48px rgba(0, 0, 0, 0.8), 0 0 30px rgba(0, 255, 204, 0.15);
   backdrop-filter: blur(20px);
-  width: min(640px, 92vw);
-  max-width: 92vw;
+  -webkit-backdrop-filter: blur(20px);
+  width: min(560px, calc(100vw - 24px));
+  max-width: calc(100vw - 24px);
+  max-height: min(75dvh, 480px);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   box-sizing: border-box;
   text-align: center;
   z-index: 9999;
@@ -971,7 +975,7 @@
 
 @media (max-width: 700px) {
   .game-stage-container :is(.intro-canvas-container, .canvas-container) {
-    margin: 68px 8px 12px;
+    margin: 62px 8px 8px;
   }
 
   .game-stage-container :is(
@@ -981,7 +985,9 @@
     .flowchart-content,
     .logic-content
   ) {
-    padding: 76px 10px 24px;
+    padding: 0 4px 14px !important;
+    width: 100% !important;
+    max-width: 520px !important;
   }
 
   .game-stage-container :is(
@@ -992,7 +998,10 @@
     .logic-card,
     .hud-3d-card
   ) {
-    padding: 20px 16px;
+    padding: 10px 12px !important;
+    border-radius: 12px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
   }
 
   .game-stage-container .flowchart-workspace {
@@ -1000,11 +1009,11 @@
   }
 
   .game-stage-container .connector-palette {
-    margin-top: 12px;
+    margin-top: 10px;
   }
 
   .game-stage-container .stage-bug-hunt {
-    padding-top: 66px;
+    padding-top: 60px;
   }
 }
 
@@ -1134,22 +1143,44 @@
   .game-stage-container :is(
     .stage-multiple-choice > .quiz-content,
     .stage-puzzle > .puzzle-content,
-    .stage-flowchart > .flowchart-content
+    .stage-flowchart > .flowchart-content,
+    .stage-logic-flow > .logic-content
   ) {
     justify-content: flex-start;
     overflow-x: hidden !important;
     overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+  }
+
+  .game-stage-container :is(
+    .stage-multiple-choice > .quiz-content,
+    .stage-puzzle > .puzzle-content,
+    .stage-flowchart > .flowchart-content
+  ) {
     padding-top: clamp(116px, 12vh, 132px);
     padding-bottom: clamp(72px, 9vh, 104px);
+  }
+
+  .game-stage-container .stage-logic-flow > .logic-content {
+    padding-top: clamp(86px, 10vh, 110px);
+    padding-bottom: clamp(32px, 5vh, 48px);
   }
 
   .game-stage-container :is(
     .stage-multiple-choice .quiz-card,
     .stage-puzzle .puzzle-card,
-    .stage-flowchart .flowchart-card
+    .stage-flowchart .flowchart-card,
+    .stage-logic-flow .logic-card
   ) {
     flex: 0 0 auto;
     max-height: none;
+  }
+
+  .game-stage-container .stage-logic-flow .logic-card {
+    width: min(880px, calc(100vw - clamp(240px, 18vw, 320px)));
+    max-width: 880px;
+    padding: clamp(16px, 2vw, 24px);
   }
 
   .game-stage-container .stage-puzzle > .puzzle-content {
@@ -1216,27 +1247,30 @@
 }
 
 .game-stage-container .stage-logic-flow {
-  justify-content: flex-start;
-  overflow-x: hidden;
-  overflow-y: auto;
-  padding: clamp(210px, 24vh, 250px) clamp(16px, 2.5vw, 34px) clamp(34px, 5vh, 56px);
-  overscroll-behavior: contain;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  overflow: hidden;
+  touch-action: pan-y;
 }
 
-.game-stage-container .stage-logic-flow .circuit-board {
-  flex: 0 0 auto;
-  width: min(900px, calc(100% - 250px));
-  min-width: 620px;
-  height: clamp(380px, 52dvh, 560px);
-  min-height: 380px;
-  margin: 0 auto;
-}
-
+.game-stage-container .stage-logic-flow .circuit-board,
 .game-stage-container .stage-logic-flow .circuit-board--extended {
-  width: min(1180px, calc(100% - clamp(430px, 25vw, 500px)));
-  min-width: 700px;
-  max-width: 1180px;
-  padding-inline: clamp(42px, 4.5vw, 76px);
+  flex: 0 0 auto;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  height: clamp(230px, 30vh, 270px);
+  min-height: 230px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 clamp(20px, 3vw, 40px);
+  margin: 0 auto;
+  box-sizing: border-box;
+  touch-action: pan-y;
 }
 
 .game-stage-container .stage-logic-flow .logic-header-overlay {
@@ -1244,27 +1278,212 @@
 }
 
 @media (max-width: 1024px) {
-  .game-stage-container :is(.quiz-content, .puzzle-content, .flowchart-content) {
+  .game-stage-container :is(.quiz-content, .puzzle-content, .flowchart-content, .logic-content) {
     justify-content: flex-start;
     overflow-y: auto !important;
+    overflow-x: hidden !important;
     padding-bottom: 72px;
+    -webkit-overflow-scrolling: touch;
   }
 
   .game-stage-container .stage-logic-flow {
-    padding: 170px 14px 44px;
+    padding: 0 !important;
   }
 
-  .game-stage-container .stage-logic-flow .circuit-board {
-    width: min(720px, 100%);
-    min-width: 0;
-    height: auto;
-    min-height: 620px;
+  .game-stage-container .stage-logic-flow > .logic-content {
+    padding-top: clamp(65px, 9vh, 85px) !important;
+    padding-bottom: 40px !important;
   }
 
+  .game-stage-container .stage-logic-flow .logic-card {
+    width: 100% !important;
+    max-width: min(520px, calc(100vw - 20px)) !important;
+    flex: 0 0 auto !important;
+    max-height: none !important;
+    padding: 14px 12px 16px !important;
+  }
+
+  .game-stage-container .stage-logic-flow .circuit-board,
   .game-stage-container .stage-logic-flow .circuit-board--extended {
-    width: min(760px, 100%);
-    max-width: 760px;
-    padding-inline: clamp(20px, 4vw, 34px);
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    height: auto !important;
+    min-height: unset !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    padding: 12px 8px !important;
+    gap: 12px !important;
+    touch-action: pan-y !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .game-stage-container .stage-logic-flow {
+    padding: 0 !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+  }
+
+  .game-stage-container .stage-logic-flow > .logic-content {
+    padding: 60px 8px 30px !important;
+    width: 100% !important;
+    height: 100% !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .game-stage-container .stage-logic-flow .logic-card {
+    width: 100% !important;
+    max-width: min(480px, calc(100vw - 12px)) !important;
+    padding: 10px 8px 12px !important;
+    flex: 0 0 auto !important;
+    max-height: none !important;
+  }
+
+  .game-stage-container .stage-logic-flow .circuit-board,
+  .game-stage-container .stage-logic-flow .circuit-board--extended {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    height: auto !important;
+    min-height: unset !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    padding: 10px 6px !important;
+    gap: 10px !important;
+    touch-action: pan-y !important;
+  }
+
+  .game-stage-container .stage-logic-flow .start-component {
+    width: min(180px, 80%) !important;
+    min-width: 0 !important;
+    padding: 6px 10px !important;
+  }
+
+  .game-stage-container .stage-logic-flow .start-component .component-label {
+    font-size: 9px !important;
+    margin-bottom: 2px !important;
+  }
+
+  .game-stage-container .stage-logic-flow .start-component .component-value {
+    font-size: 13px !important;
+  }
+
+  .game-stage-container .stage-logic-flow .start-component .output-port {
+    position: relative !important;
+    right: auto !important;
+    top: auto !important;
+    transform: none !important;
+    margin: 4px auto 0 !important;
+  }
+
+  .game-stage-container .stage-logic-flow .diamond-component {
+    width: 100% !important;
+    min-width: 0 !important;
+    padding: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+  }
+
+  .game-stage-container .stage-logic-flow .diamond-component .input-port {
+    position: relative !important;
+    left: auto !important;
+    top: auto !important;
+    transform: none !important;
+    margin: 0 auto 4px !important;
+  }
+
+  .game-stage-container .stage-logic-flow .diamond-shape {
+    width: 72px !important;
+    height: 72px !important;
+    margin: 8px auto !important;
+  }
+
+  .game-stage-container .stage-logic-flow .condition-text {
+    font-size: 9.5px !important;
+    line-height: 1.15 !important;
+  }
+
+  .game-stage-container .stage-logic-flow .diamond-outputs {
+    position: relative !important;
+    right: auto !important;
+    top: auto !important;
+    transform: none !important;
+    flex-direction: row !important;
+    justify-content: center !important;
+    gap: 24px !important;
+    margin-top: 6px !important;
+  }
+
+  .game-stage-container .stage-logic-flow .output-wrapper {
+    flex-direction: column !important;
+    gap: 2px !important;
+    font-size: 9.5px !important;
+  }
+
+  .game-stage-container .stage-logic-flow .bulb-component {
+    width: min(120px, 50%) !important;
+    min-width: 0 !important;
+    height: auto !important;
+    padding: 6px 8px !important;
+    border-radius: 12px !important;
+  }
+
+  .game-stage-container .stage-logic-flow .bulb-component .input-port {
+    position: relative !important;
+    left: auto !important;
+    top: auto !important;
+    transform: none !important;
+    margin: 0 auto 4px !important;
+  }
+
+  .game-stage-container .stage-logic-flow .bulb-glass {
+    width: 26px !important;
+    height: 26px !important;
+    margin: 0 auto 3px !important;
+  }
+
+  .game-stage-container .stage-logic-flow .bulb-component .component-label {
+    font-size: 8.5px !important;
+    margin: 0 !important;
+  }
+
+  .game-stage-container .stage-logic-flow .port {
+    width: 30px !important;
+    height: 30px !important;
+    min-width: 30px !important;
+    min-height: 30px !important;
+    touch-action: none !important;
+  }
+
+  .game-stage-container .stage-logic-flow .logic-header-overlay {
+    position: relative !important;
+    top: auto !important;
+    left: auto !important;
+    transform: none !important;
+    width: 100% !important;
+    max-width: min(520px, calc(100vw - 20px)) !important;
+    margin: 0 auto 10px auto !important;
+    box-sizing: border-box !important;
+    padding: 10px 14px !important;
+    text-align: center !important;
+  }
+
+  .game-stage-container .stage-flowchart .flowchart-workspace {
+    flex-direction: column !important;
+    margin: 0 !important;
+    gap: 8px !important;
+    width: 100% !important;
+  }
+
+  .game-stage-container .stage-flowchart .connector-palette {
+    position: sticky !important;
+    bottom: 6px !important;
+    top: auto !important;
+    width: 100% !important;
   }
 }
 
@@ -1272,10 +1491,11 @@
   .game-stage-container :is(
     .stage-multiple-choice > .quiz-content,
     .stage-puzzle > .puzzle-content,
-    .stage-flowchart > .flowchart-content
+    .stage-flowchart > .flowchart-content,
+    .stage-logic-flow > .logic-content
   ) {
-    padding-top: 72px;
-    padding-bottom: 36px;
+    padding-top: 68px;
+    padding-bottom: 24px;
   }
 
   .game-stage-container .stage-puzzle .puzzle-grid {
@@ -1283,11 +1503,14 @@
   }
 
   .game-stage-container .stage-logic-flow {
-    padding-top: 150px;
+    padding: 0 !important;
   }
 
-  .game-stage-container .stage-logic-flow .circuit-board {
-    height: 380px;
+  .game-stage-container .stage-logic-flow .circuit-board,
+  .game-stage-container .stage-logic-flow .circuit-board--extended {
+    height: 210px !important;
+    min-height: 210px !important;
+    flex-direction: row !important;
   }
 }
 

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useGameStore } from "../../stores/useGameStore";
 import { fetchGlobalLeaderboard } from "../../services/leaderboardService";
 import { supabase, isSupabaseEnabled } from "../../lib/supabase";
+import type { RealtimeChannel } from "@supabase/supabase-js";
 import type { LeaderboardEntry } from "../../types/game.types";
 import { CadetDossierModal } from "../../components/specialization/CadetDossierModal";
 import { getTranslation } from "../../i18n/translations";
@@ -87,7 +88,7 @@ const Leaderboard: React.FC = () => {
     const interval = setInterval(loadLeaderboard, 6000);
 
 
-    let channel: any = null;
+    let channel: RealtimeChannel | null = null;
     if (isSupabaseEnabled() && supabase) {
       channel = supabase
         .channel("realtime-global-leaderboard")

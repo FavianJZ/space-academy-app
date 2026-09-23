@@ -14,7 +14,12 @@ export type MultiplayerMessageType =
   | "RAID_START"
   | "ATTACK_EVENT"
   | "SYNC_TICK"
-  | "ROOM_LEAVE";
+  | "ROOM_LEAVE"
+  | "HEARTBEAT_PING"
+  | "PLAYER_DISCONNECTED"
+  | "RECONNECT_REQUEST"
+  | "RECONNECT_SYNC"
+  | "RECONNECT_RESUME";
 
 export interface RoomJoinPayload {
   playerName: string;
@@ -53,13 +58,26 @@ export interface RaidStartPayload {
   timestamp: number;
 }
 
+export interface ReconnectSyncPayload {
+  bossHP: number;
+  timeLeft: number;
+  score: number;
+  combo: number;
+  timestamp: number;
+}
+
 export type PartyMessage =
   | { type: "ROOM_JOIN"; payload: RoomJoinPayload }
   | { type: "ROOM_READY"; payload: { isReady: boolean; senderId?: string; timestamp: number } }
   | { type: "RAID_START"; payload: RaidStartPayload }
   | { type: "ATTACK_EVENT"; payload: AttackEventPayload }
   | { type: "SYNC_TICK"; payload: SyncTickPayload }
-  | { type: "ROOM_LEAVE"; payload: { playerName: string; timestamp: number } };
+  | { type: "ROOM_LEAVE"; payload: { playerName: string; timestamp: number } }
+  | { type: "HEARTBEAT_PING"; payload: { senderId: string; playerName: string; isHost: boolean; timestamp: number } }
+  | { type: "PLAYER_DISCONNECTED"; payload: { senderId: string; playerName: string; reason?: string; timestamp: number } }
+  | { type: "RECONNECT_REQUEST"; payload: { senderId: string; playerName: string; timestamp: number } }
+  | { type: "RECONNECT_SYNC"; payload: ReconnectSyncPayload }
+  | { type: "RECONNECT_RESUME"; payload: { timestamp: number } };
 
 export interface OnlineRaidSession {
   partyCode: string;
