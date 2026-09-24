@@ -31,24 +31,33 @@ const Leaderboard: React.FC = () => {
   const normalizedCurrentName = currentPlayerName.toLowerCase();
 
   const leaderboard = useMemo(() => {
-    const merged = new Map<string, LeaderboardEntry>();
-
-    for (const entry of remoteEntries) {
-      const existing = merged.get(entry.playerName);
-      if (!existing || entry.totalScore > existing.totalScore) {
-        merged.set(entry.playerName, entry);
+    if (isSupabaseEnabled()) {
+      const list = [...remoteEntries];
+      if (normalizedCurrentName && totalScore > 0) {
+        const found = list.some(
+          (e) => e.playerName.trim().toLowerCase() === normalizedCurrentName
+        );
+        if (!found) {
+          list.push({
+            playerName: currentPlayerName,
+            totalScore,
+            timestamp: Date.now(),
+            major: playerData.major,
+          });
+        }
       }
+      return list.sort((a, b) => b.totalScore - a.totalScore);
     }
 
-    for (const entry of leaderboardEntries) {
-      const existing = merged.get(entry.playerName);
-      if (!existing || entry.totalScore > existing.totalScore) {
-        merged.set(entry.playerName, entry);
-      }
-    }
-
-    return [...merged.values()].sort((a, b) => b.totalScore - a.totalScore);
-  }, [leaderboardEntries, remoteEntries]);
+    return [...leaderboardEntries].sort((a, b) => b.totalScore - a.totalScore);
+  }, [
+    leaderboardEntries,
+    remoteEntries,
+    normalizedCurrentName,
+    totalScore,
+    currentPlayerName,
+    playerData.major,
+  ]);
 
   const userRankIndex = useMemo(() => {
     if (!normalizedCurrentName) return -1;
@@ -74,6 +83,9 @@ const Leaderboard: React.FC = () => {
         major: (r.major || "") as LeaderboardEntry["major"],
       }));
       setRemoteEntries(mapped);
+      if (isSupabaseEnabled()) {
+        useGameStore.setState({ leaderboard: mapped });
+      }
     } catch (err) {
       console.warn("Failed to fetch global leaderboard:", err);
     } finally {

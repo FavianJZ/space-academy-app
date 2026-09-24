@@ -729,7 +729,7 @@ export const useGameStore = create<GameState>()(
     {
       name: STORAGE_KEY,
       storage,
-      version: 9,
+      version: 10,
       partialize: (state) => {
         const rest = { ...state };
         delete (rest as Partial<GameState>).remoteCoPilot;
@@ -814,7 +814,15 @@ export const useGameStore = create<GameState>()(
               }
             : languageMigratedState;
 
-        return bossHPMigratedState as GameState;
+        const leaderboardCleanedState =
+          version < 10
+            ? {
+                ...bossHPMigratedState,
+                leaderboard: [],
+              }
+            : bossHPMigratedState;
+
+        return leaderboardCleanedState as GameState;
       },
     }
   )
