@@ -881,7 +881,7 @@ export async function generateCadetCardPdf(
 
   ctx.fillStyle = "#9dbad6";
   ctx.font = "10.5px 'Segoe UI', Arial, sans-serif";
-  ctx.fillText("Official Gamified Specialization Dossier • School of Computer Science BINUS University Bekasi", rightX + 94, authY + 41);
+  ctx.fillText("Official Gamified Specialization Player Card • School of Computer Science BINUS University Bekasi", rightX + 94, authY + 41);
 
 
   ctx.strokeStyle = "rgba(126, 249, 255, 0.2)";
@@ -1115,7 +1115,7 @@ function renderSlide2(
   ctx.fillStyle = "#ffffff";
   ctx.font = "bold 22px 'Segoe UI', Arial, sans-serif";
   ctx.letterSpacing = "2px";
-  ctx.fillText("CADET FORENSIC TELEMETRY DOSSIER // STAGE DIAGNOSTIC REPORT", 52, 68);
+  ctx.fillText("CADET FORENSIC TELEMETRY PLAYER CARD // STAGE DIAGNOSTIC REPORT", 52, 68);
 
   ctx.fillStyle = "#00ffcc";
   ctx.font = "bold 10px 'Consolas', monospace";
@@ -1390,7 +1390,7 @@ function renderSlide2(
 
   ctx.fillStyle = "#9dbad6";
   ctx.font = "10.5px 'Segoe UI', Arial, sans-serif";
-  ctx.fillText("Official Gamified Specialization Diagnostic Dossier • School of Computer Science (SOCS) BINUS University Bekasi", rightX + 90, sealY + 50);
+  ctx.fillText("Official Gamified Specialization Diagnostic Player Card • School of Computer Science (SOCS) BINUS University Bekasi", rightX + 90, sealY + 50);
 
   const now = new Date();
   const dateFormatted = now.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });

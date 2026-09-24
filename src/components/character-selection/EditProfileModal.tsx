@@ -114,7 +114,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
             <span className="epm-icon">✏️</span>
             <div>
               <h2 id="epm-title">
-                {isEn ? "EDIT PILOT DOSSIER" : "UBAH PROFIL PILOT"}
+                {isEn ? "EDIT PILOT CARD" : "UBAH KARTU PILOT"}
               </h2>
               <p>
                 {isEn

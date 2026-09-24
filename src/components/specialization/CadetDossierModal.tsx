@@ -168,7 +168,7 @@ export const CadetDossierModal: React.FC<CadetDossierModalProps> = ({
         <header className="dossier-header">
           <div className="dossier-header-content">
             <p className="dossier-classification">
-              {language === "en" ? "Space Academy — Cadet Dossier" : "Space Academy — Dosir Kadet"}
+              {language === "en" ? "Space Academy — Cadet Player Card" : "Space Academy — Kartu Player Kadet"}
             </p>
             <h1 className="dossier-cadet-name">
               {cadet.name || (language === "en" ? "Unknown Cadet" : "Kadet Tidak Dikenal")}
