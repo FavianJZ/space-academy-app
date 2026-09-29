@@ -1557,6 +1557,234 @@
   }
 }
 
+/* Portrait phones: give the options list the full screen height instead of
+   collapsing it to a sliver under the preview. */
+@media (max-width: 760px) and (orientation: portrait) {
+  .character-customizer-backdrop {
+    padding:
+      max(8px, env(safe-area-inset-top, 0px))
+      max(8px, env(safe-area-inset-right, 0px))
+      max(8px, env(safe-area-inset-bottom, 0px))
+      max(8px, env(safe-area-inset-left, 0px));
+  }
+
+  .character-customizer-panel {
+    height: calc(100vh - 16px);
+    height: calc(100dvh - 16px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+  }
+
+  .character-customizer-body {
+    flex: 1 1 auto;
+    grid-template-rows: clamp(150px, 24dvh, 220px) minmax(0, 1fr);
+  }
+
+  .character-customizer-preview {
+    min-height: 0;
+  }
+
+  .character-customizer-header {
+    padding: 16px 16px 14px 20px;
+  }
+
+  .character-customizer-controls {
+    padding: 12px 14px 14px;
+  }
+
+  .character-customizer-tabs {
+    padding-bottom: 12px;
+  }
+
+  .character-customizer-tab-panel {
+    padding-top: 12px;
+  }
+
+  .character-customizer-section-heading {
+    margin-bottom: 10px;
+  }
+
+  .character-customizer-section-heading h3 {
+    font-size: 1rem;
+  }
+
+  .character-customizer-color-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .character-customizer-color-grid > button {
+    min-height: 72px;
+  }
+
+  .character-customizer-footer {
+    padding: 10px 14px 12px 18px;
+  }
+}
+
+/* Tablet portrait: stack preview over controls and use the tall screen. */
+@media (min-width: 761px) and (max-width: 1024px) and (orientation: portrait) {
+  .character-customizer-backdrop {
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+
+  .character-customizer-panel {
+    width: min(760px, calc(100vw - 48px));
+    height: min(calc(100vh - 48px), 980px);
+    height: min(calc(100dvh - 48px), 980px);
+    max-height: none;
+  }
+
+  .character-customizer-body {
+    flex: 1 1 auto;
+    grid-template-columns: 1fr;
+    grid-template-rows: clamp(240px, 30dvh, 340px) minmax(0, 1fr);
+  }
+
+  .character-customizer-preview {
+    min-height: 0;
+    border-right: 0;
+    border-bottom: 1px solid var(--cc-line);
+  }
+
+  .character-customizer-color-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .character-customizer-hat-grid,
+  .character-customizer-pet-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* Short landscape phones: fit header, two-column body and footer on screen. */
+@media (orientation: landscape) and (max-height: 620px) {
+  .character-customizer-backdrop {
+    padding:
+      max(8px, env(safe-area-inset-top, 0px))
+      max(16px, env(safe-area-inset-right, 0px))
+      max(8px, env(safe-area-inset-bottom, 0px))
+      max(16px, env(safe-area-inset-left, 0px));
+  }
+
+  .character-customizer-panel {
+    height: calc(100vh - 16px);
+    height: calc(100dvh - 16px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+    max-height: none;
+  }
+
+  .character-customizer-header {
+    padding: 10px 16px 9px 20px;
+  }
+
+  .character-customizer-header h2 {
+    margin: 3px 0 0;
+    font-size: 1.25rem;
+  }
+
+  .character-customizer-body {
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+
+  .character-customizer-controls {
+    padding: 10px 14px 10px;
+  }
+
+  .character-customizer-tabs {
+    padding-bottom: 10px;
+  }
+
+  .character-customizer-tabs button {
+    min-height: 40px;
+  }
+
+  .character-customizer-tab-panel {
+    padding-top: 10px;
+  }
+
+  .character-customizer-section-heading {
+    margin-bottom: 8px;
+  }
+
+  .character-customizer-section-heading h3 {
+    font-size: 0.95rem;
+  }
+
+  .character-customizer-footer {
+    padding-block: 6px;
+  }
+
+  /* The narrow preview column only has room for the model itself. */
+  .character-customizer-preview-label,
+  .character-customizer-preview-data {
+    display: none;
+  }
+
+  .character-customizer-canvas {
+    inset: 8px 0;
+  }
+
+  .character-customizer-color-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .character-customizer-color-grid > button {
+    min-height: 64px;
+  }
+}
+
+/* Touch-size readability for the micro labels (phones + tablet portrait). */
+@media (max-width: 760px), (max-width: 1024px) and (orientation: portrait), (orientation: landscape) and (max-height: 620px), (min-width: 761px) and (max-width: 1100px) and (orientation: landscape) and (min-height: 561px) {
+  .character-customizer-eyebrow,
+  .character-customizer-preview-label,
+  .character-customizer-section-heading > span {
+    font-size: 10px;
+  }
+
+  .character-customizer-preview-data span {
+    font-size: 10px;
+  }
+
+  .character-customizer-preview-data strong,
+  .character-customizer-tabs button > span,
+  .character-customizer-footer > button {
+    font-size: 11px;
+  }
+
+  .character-customizer-color-name,
+  .character-customizer-hat-copy strong,
+  .character-customizer-pet-meta strong {
+    font-size: 12px;
+  }
+
+  .character-customizer-color-grid > button small,
+  .character-customizer-hat-copy small,
+  .character-customizer-pet-copy small {
+    font-size: 10px;
+  }
+
+  .character-customizer-hat-copy em,
+  .character-customizer-pet-meta em,
+  .character-customizer-pet-copy b {
+    font-size: 9px;
+  }
+
+  .character-customizer-pet-intro {
+    font-size: 12px;
+  }
+
+  .character-customizer-close {
+    width: 44px;
+    height: 44px;
+  }
+
+  .character-customizer-live,
+  .character-customizer-footer > span,
+  .character-customizer-tabs small {
+    font-size: 10px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .character-customizer-backdrop,
   .character-customizer-panel {

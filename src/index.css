@@ -32,6 +32,8 @@ body,
 
 html {
   scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 body {
@@ -131,6 +133,7 @@ textarea::placeholder {
   justify-content: center;
   width: 100vw;
   height: 100vh;
+  height: 100dvh;
   background: linear-gradient(135deg, #000010 0%, #001a33 100%);
   font-size: 24px;
   animation: pulse 2s infinite;

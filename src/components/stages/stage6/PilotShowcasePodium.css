@@ -333,3 +333,240 @@
     padding: 0.65rem 1rem;
   }
 }
+
+/* ==========================================================================
+   Responsive: on portrait phones/tablets the pilot cards leave the 3D
+   stage and sit below it, so they never cover the avatars.
+   ========================================================================== */
+@media (max-width: 1024px) and (orientation: portrait) {
+  .pilot-showcase-container {
+    height: auto;
+    min-height: 0;
+    flex: 1 0 auto;
+  }
+
+  .pilot-podium-canvas-wrapper {
+    position: relative;
+    inset: auto;
+    flex: 1 0 auto;
+    height: clamp(220px, 40dvh, 520px);
+  }
+
+  .pilot-podium-overlay {
+    position: relative;
+    inset: auto;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: stretch;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 0 clamp(0.75rem, 3vw, 1.5rem) clamp(0.75rem, 3vw, 1.5rem);
+  }
+
+  .pilot-side-card,
+  .pilot-overhead-card {
+    flex: 1 1 260px;
+    width: auto;
+    max-width: 380px;
+    min-width: 0;
+    animation: none;
+  }
+
+  .pilot-slot-badge {
+    flex-wrap: wrap;
+    font-size: 0.72rem;
+  }
+
+  .slot-id {
+    font-size: 0.72rem;
+  }
+
+  .score-label {
+    font-size: 0.7rem;
+  }
+
+  .pilot-card-ready-toggle {
+    min-height: 44px;
+    font-size: 0.85rem;
+  }
+
+  .copy-hint {
+    font-size: 0.7rem;
+  }
+}
+
+/* Phones: two pilot cards share one row in co-op, compact content. */
+@media (max-width: 640px) and (orientation: portrait) {
+  .pilot-podium-canvas-wrapper {
+    height: clamp(200px, 34dvh, 300px);
+  }
+
+  .pilot-podium-overlay {
+    gap: 0.5rem;
+    padding: 0 0.5rem 0.6rem;
+  }
+
+  .pilot-side-card,
+  .pilot-overhead-card {
+    flex: 1 1 150px;
+    gap: 0.4rem;
+    padding: 0.7rem 0.75rem;
+  }
+
+  .pilot-side-card.left-slot,
+  .pilot-side-card.right-slot {
+    align-items: stretch;
+    text-align: left;
+  }
+
+  .pilot-side-card.right-slot {
+    border-right-width: 1px;
+    border-left: 4px solid #00f3ff;
+  }
+
+  .pilot-name {
+    font-size: 1.05rem;
+    overflow-wrap: anywhere;
+  }
+
+  .pilot-score-pill {
+    flex-wrap: wrap;
+    padding: 0.25rem 0.6rem;
+  }
+
+  .pilot-ready-status-badge {
+    padding: 0.3rem 0.6rem;
+    font-size: 0.72rem;
+  }
+
+  .empty-slot-desc {
+    font-size: 0.75rem;
+  }
+}
+
+/* Landscape phones: 3D stage on the left, pilot cards stacked on the right. */
+@media (orientation: landscape) and (max-height: 560px) {
+  .pilot-showcase-container {
+    height: auto;
+    min-height: calc(100dvh - 180px);
+    flex-direction: row;
+  }
+
+  .pilot-podium-canvas-wrapper {
+    position: relative;
+    inset: auto;
+    flex: 1 1 auto;
+    min-width: 0;
+    min-height: 200px;
+  }
+
+  .pilot-podium-overlay {
+    position: relative;
+    inset: auto;
+    flex: 0 0 clamp(220px, 40vw, 300px);
+    flex-direction: column;
+    justify-content: center;
+    align-items: stretch;
+    gap: 0.5rem;
+    padding: 0.6rem 0.6rem 0.6rem 0;
+  }
+
+  .pilot-side-card,
+  .pilot-overhead-card {
+    width: auto;
+    max-width: none;
+    gap: 0.35rem;
+    padding: 0.6rem 0.8rem;
+    animation: none;
+  }
+
+  .pilot-side-card.right-slot {
+    align-items: stretch;
+    text-align: left;
+    border-right-width: 1px;
+    border-left: 4px solid #00f3ff;
+  }
+
+  .pilot-slot-badge {
+    flex-wrap: wrap;
+    font-size: 0.7rem;
+  }
+
+  .slot-id {
+    font-size: 0.7rem;
+  }
+
+  .pilot-name {
+    font-size: 1rem;
+  }
+
+  .score-label {
+    font-size: 0.7rem;
+  }
+
+  .pilot-card-ready-toggle {
+    min-height: 42px;
+  }
+
+  .copy-hint {
+    font-size: 0.7rem;
+  }
+}
+
+@media (max-width: 640px) and (orientation: portrait), (orientation: landscape) and (max-height: 560px) {
+  .pilot-side-card.right-slot.unoccupied {
+    align-items: center;
+    text-align: center;
+  }
+}
+
+@media (orientation: landscape) and (max-height: 560px) {
+  .pilot-podium-overlay {
+    justify-content: flex-start;
+  }
+
+  /* Co-op: both avatars stay centred on the full-width stage and the two
+     pilot cards flank them (desktop arrangement, scaled down). */
+  .pilot-showcase-container:has(.right-slot) .pilot-podium-canvas-wrapper {
+    position: absolute;
+    inset: 0;
+    min-height: 0;
+  }
+
+  .pilot-podium-overlay:has(.right-slot) {
+    flex: 1 1 100%;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem;
+  }
+
+  .pilot-podium-overlay:has(.right-slot) .pilot-side-card {
+    flex: 0 0 clamp(170px, 30%, 250px);
+    min-width: 0;
+    padding: 0.55rem 0.65rem;
+  }
+
+  .pilot-podium-overlay:has(.right-slot) .pilot-score-pill {
+    flex-wrap: wrap;
+    padding: 0.2rem 0.5rem;
+  }
+
+  .pilot-podium-overlay:has(.right-slot) .pilot-ready-status-badge {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.7rem;
+  }
+}
+
+@media (max-width: 640px) and (orientation: portrait) {
+  /* Co-op: shorter stage so both READY toggles fit on screen. */
+  .pilot-showcase-container:has(.right-slot) .pilot-podium-canvas-wrapper {
+    height: clamp(150px, 25dvh, 260px);
+  }
+}
+
+@media (max-width: 1279px) {
+  .pilot-card-ready-toggle {
+    min-height: 44px;
+  }
+}

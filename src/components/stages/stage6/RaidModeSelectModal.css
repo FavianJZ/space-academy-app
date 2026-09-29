@@ -301,3 +301,108 @@
     min-height: 40px;
   }
 }
+
+/* ==========================================================================
+   Responsive: clear the fixed audio control in the top-right corner,
+   scroll inside the overlay, touch-sized close button.
+   ========================================================================== */
+@media (max-width: 1024px) {
+  .raid-select-overlay {
+    align-items: flex-start;
+    overflow-y: auto;
+    padding: max(64px, env(safe-area-inset-top, 0px) + 56px) max(12px, env(safe-area-inset-right, 0px)) max(12px, env(safe-area-inset-bottom, 0px)) max(12px, env(safe-area-inset-left, 0px));
+  }
+
+  .raid-select-modal {
+    margin: auto 0;
+    max-height: 100%;
+  }
+
+  .raid-select-close {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .mode-card-badge {
+    font-size: 10.5px;
+  }
+
+  .mode-action-btn {
+    min-height: 44px;
+  }
+}
+
+@media (max-width: 820px) {
+  .raid-select-header-bar {
+    padding: 4px 8px 4px 16px;
+  }
+
+  .raid-select-tag {
+    font-size: 10.5px;
+    letter-spacing: 1.5px;
+  }
+
+  .mode-desc {
+    font-size: 12px;
+  }
+
+  .mode-specs {
+    font-size: 11px;
+    flex-wrap: wrap;
+  }
+}
+
+@media (orientation: landscape) and (max-height: 560px) {
+  .raid-select-overlay {
+    padding-top: max(52px, env(safe-area-inset-top, 0px) + 44px);
+    padding-bottom: 8px;
+  }
+
+  .raid-select-title-area {
+    padding: 8px 16px 4px;
+  }
+
+  .raid-select-title-area h2 {
+    font-size: 18px;
+    margin-bottom: 4px;
+  }
+
+  .raid-modes-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    padding: 8px 12px 12px;
+  }
+
+  .raid-mode-card {
+    padding: 10px;
+  }
+
+  .mode-card-badge {
+    position: static;
+    align-self: flex-start;
+  }
+
+  .mode-icon {
+    font-size: 22px;
+    margin: 2px 0 4px;
+  }
+
+  .raid-mode-card h3 {
+    font-size: 14px;
+  }
+
+  .mode-desc {
+    font-size: 11px;
+    margin-bottom: 6px;
+  }
+
+  .mode-specs {
+    margin-bottom: 8px;
+    gap: 4px;
+  }
+
+  .mode-action-btn {
+    min-height: 42px;
+    padding: 8px;
+  }
+}

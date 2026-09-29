@@ -31,6 +31,7 @@ import {
   ROUTE_WORLD,
   SHUTTLE_TARGET_SIZE,
   ease01,
+  fitFovToAspect,
   routeGearCompression,
   writeRoutePose,
 } from "./routeCinematicConfig";
@@ -1235,7 +1236,10 @@ const CinematicCameraRig: React.FC<CinematicCameraRigProps> = ({
   );
 
   useLayoutEffect(() => {
-    const fov = calculateFrame(timelineRef.current.elapsed);
+    const fov = fitFovToAspect(
+      calculateFrame(timelineRef.current.elapsed),
+      camera.aspect
+    );
     if (!skipEntrySnap) {
       camera.position.copy(desiredPosition);
       camera.quaternion.copy(desiredQuaternion);
@@ -1255,7 +1259,7 @@ const CinematicCameraRig: React.FC<CinematicCameraRigProps> = ({
 
   useFrame(({ clock }, delta) => {
     const time = readTimeline(clock, timelineRef);
-    const fov = calculateFrame(time);
+    const fov = fitFovToAspect(calculateFrame(time), camera.aspect);
 
     const safeDelta = THREE.MathUtils.clamp(delta, 0, 1 / 30);
     const positionSmoothing = 1 - Math.exp(-safeDelta * 3.8);

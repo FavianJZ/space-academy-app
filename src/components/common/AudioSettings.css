@@ -143,12 +143,12 @@ body:has(.dam-overlay) .audio-settings-launcher {
   }
 
   .audio-settings-launcher--selection {
-    top: 14px;
-    right: 14px;
-    min-width: 36px;
-    width: 36px;
-    height: 36px;
-    min-height: 36px;
+    top: max(14px, env(safe-area-inset-top));
+    right: max(14px, env(safe-area-inset-right));
+    min-width: 44px;
+    width: 44px;
+    height: 44px;
+    min-height: 44px;
     padding: 0;
     display: inline-flex;
     align-items: center;
@@ -1159,12 +1159,17 @@ body:has(.dam-overlay) .audio-settings-launcher {
 
 @media (max-width: 768px) {
   .audio-settings-overlay {
-    padding: 10px;
+    padding:
+      max(10px, env(safe-area-inset-top))
+      max(10px, env(safe-area-inset-right))
+      max(10px, env(safe-area-inset-bottom))
+      max(10px, env(safe-area-inset-left));
   }
 
   .audio-settings-dialog {
     width: 100%;
-    max-height: 94dvh;
+    max-height: 94vh;
+    max-height: calc(100dvh - max(20px, env(safe-area-inset-top) + env(safe-area-inset-bottom) + 10px));
     border-radius: 12px;
     clip-path: none;
   }
@@ -1229,6 +1234,53 @@ body:has(.dam-overlay) .audio-settings-launcher {
     min-height: 40px;
     font-size: 0.72rem;
   }
+}
+
+/* ---- Touch / small-screen legibility (desktop >= 1025px untouched) ---- */
+@media (max-width: 1024px) {
+  .audio-settings-eyebrow { font-size: 10px; }
+  .audio-settings-header p { font-size: 12px; }
+  .audio-settings-live { font-size: 9px; }
+  .audio-settings-monitor-head,
+  .audio-settings-monitor-head strong,
+  .audio-settings-signal > span { font-size: 9.5px; }
+  .audio-settings-signal > strong { font-size: 11px; }
+  .audio-settings-monitor dt,
+  .audio-settings-monitor dd { font-size: 9px; }
+  .audio-settings-master { font-size: 10px; }
+  .audio-settings-channel-head span { font-size: 9px; }
+  .audio-settings-channel-head p { font-size: 10.5px; }
+  .audio-settings-profile-kicker { font-size: 9px !important; }
+  .audio-settings-major-pill { font-size: 9.5px; }
+  .profile-meta-tag { font-size: 10.5px; }
+  .audio-settings-edit-btn { min-height: 44px; font-size: 10.5px; }
+  .audio-settings-lang-pill { min-height: 44px; }
+  .audio-settings-scale { margin-top: 2px; font-size: 8.5px; }
+  .audio-settings-shortcuts { font-size: 9px; }
+  .audio-settings-footer-actions button { font-size: 10px; }
+}
+
+@media (max-width: 768px) {
+  /* decorative corner brackets float mid-content once the dialog scrolls */
+  .audio-settings-corner { display: none; }
+
+  .audio-settings-header h2 { font-size: 1.2rem; letter-spacing: -0.02em; }
+  .audio-settings-eyebrow { letter-spacing: 0.14em; }
+  .audio-settings-channel-head h3 { font-size: 13px; }
+  .audio-settings-profile-name { font-size: 15px !important; }
+  .audio-settings-master { font-size: 10.5px; }
+  .audio-settings-footer-actions button { min-height: 44px; font-size: 11px; }
+  .audio-settings-footer-actions .audio-settings-primary { font-size: 12px; }
+}
+
+/* Phone landscape: short viewport, keep header compact so content scrolls */
+@media (orientation: landscape) and (max-height: 540px) {
+  .audio-settings-header { padding: 12px 18px 10px; }
+  .audio-settings-header p,
+  .audio-settings-live { display: none; }
+  .audio-settings-header h2 { font-size: 1.15rem; }
+  .audio-settings-monitor { padding: 10px 18px; }
+  .audio-settings-mixer { padding: 12px 18px; gap: 10px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

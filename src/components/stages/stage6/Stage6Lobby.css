@@ -555,3 +555,742 @@
   margin: 0;
 }
 
+
+/* ==========================================================================
+   STAGE 6 RESPONSIVE LAYER (phones, tablets, landscape phones)
+   Scoped under the stage-6 page wrapper so it overrides the shared
+   StageStyle.css / AdvancedHUD.css rules without touching them.
+   Desktop (>= 1280px wide) is unaffected.
+   ========================================================================== */
+
+/* ---------- Lobby: top bar stacks on portrait tablets too ---------- */
+@media (max-width: 1024px) and (orientation: portrait) {
+  .game-stage-container.game-stage-6 .stage-bug-hunt.intro-phase {
+    overflow-x: hidden;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .game-stage-6 .stage6-lobby-wrapper {
+    flex: 1 0 auto;
+    min-height: 0;
+    justify-content: flex-start;
+    gap: 0.75rem;
+    padding: 0.5rem clamp(0.75rem, 3vw, 1.5rem) max(1rem, env(safe-area-inset-bottom, 0px));
+  }
+
+  .game-stage-6 .stage6-lobby-top-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+    margin-bottom: 0;
+    padding: clamp(0.75rem, 2vw, 1.1rem);
+  }
+
+  .game-stage-6 .stage6-top-info {
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    gap: 0.6rem 1rem;
+  }
+
+  .game-stage-6 .stage6-boss-hp-header {
+    max-width: none;
+  }
+
+  .game-stage-6 .stage6-top-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%;
+    gap: 0.5rem;
+  }
+
+  .game-stage-6 .stage6-top-status-chip,
+  .game-stage-6 .stage6-manual-btn,
+  .game-stage-6 .stage6-top-ready-btn {
+    justify-content: center;
+    min-width: 0;
+    min-height: 44px;
+    padding: 0.5rem 0.75rem;
+    font-size: clamp(0.72rem, 1.9vw, 0.9rem);
+    white-space: normal;
+    text-align: center;
+  }
+
+  /* READY spans the full row; in local co-op (no top ready button) the
+     status chip + manual share the row. */
+  .game-stage-6 .stage6-top-ready-btn {
+    grid-column: 1 / -1;
+  }
+
+  .game-stage-6 .stage6-lobby-center {
+    flex: 1 0 auto;
+    min-height: 0;
+    margin: 0;
+  }
+
+  .game-stage-6 .stage6-raid-chip {
+    font-size: clamp(0.68rem, 1.8vw, 0.8rem);
+  }
+
+  .game-stage-6 .stage6-lobby-title-block h1 {
+    font-size: clamp(1.05rem, 3vw, 1.4rem);
+  }
+
+  .game-stage-6 .stage6-lobby-title-block p,
+  .game-stage-6 .boss-hp-header-label {
+    font-size: clamp(0.72rem, 1.8vw, 0.85rem);
+  }
+}
+
+@media (max-width: 480px) {
+  .game-stage-6 .stage6-top-info {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+  }
+
+  .game-stage-6 .stage6-raid-chip {
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+  }
+}
+
+/* ---------- Lobby: landscape phones ---------- */
+@media (orientation: landscape) and (max-height: 560px) {
+  .game-stage-container.game-stage-6 .stage-bug-hunt.intro-phase {
+    overflow-x: hidden;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+    padding-top: max(52px, env(safe-area-inset-top, 0px) + 44px) !important;
+  }
+
+  .game-stage-6 .stage6-lobby-wrapper {
+    flex: 1 0 auto;
+    min-height: 0;
+    justify-content: flex-start;
+    gap: 0.5rem;
+    padding: 0.25rem max(0.75rem, env(safe-area-inset-right, 0px)) 0.75rem max(0.75rem, env(safe-area-inset-left, 0px));
+  }
+
+  .game-stage-6 .stage6-lobby-top-bar {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 0.75rem;
+    padding: 0.5rem 0.75rem;
+    margin-bottom: 0;
+  }
+
+  .game-stage-6 .stage6-top-info {
+    flex: 1 1 auto;
+    gap: 0.6rem;
+  }
+
+  .game-stage-6 .stage6-boss-hp-header {
+    flex: 1 1 180px;
+    max-width: none;
+  }
+
+  .game-stage-6 .stage6-top-actions {
+    flex: 1 1 100%;
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 0.5rem;
+  }
+
+  .game-stage-6 .stage6-top-status-chip,
+  .game-stage-6 .stage6-manual-btn,
+  .game-stage-6 .stage6-top-ready-btn {
+    flex: 1 1 0;
+    justify-content: center;
+    min-width: 0;
+    min-height: 42px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.72rem;
+    white-space: normal;
+    text-align: center;
+  }
+
+  .game-stage-6 .stage6-lobby-center {
+    min-height: 0;
+    margin: 0;
+  }
+}
+
+/* ---------- Gameplay: shared tweaks below desktop ---------- */
+@media (max-width: 1279px) {
+  /* The UFO HP strip (local co-op) joins the normal flow under the HUD
+     instead of floating over the mission header. */
+  .game-stage-container.game-stage-6 .stage-bug-hunt .boss-hp-hud {
+    position: relative;
+    top: auto;
+    left: auto;
+    transform: none;
+    align-self: center;
+    flex-shrink: 0;
+    width: min(calc(100% - 16px), 420px);
+    margin: 6px auto 0;
+  }
+
+  .game-stage-container.game-stage-6 .bughunt-results-overlay {
+    align-items: flex-start;
+    overflow-x: hidden;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: clamp(64px, 11vh, 110px) clamp(12px, 3vw, 32px) max(16px, env(safe-area-inset-bottom, 0px));
+  }
+
+  .game-stage-container.game-stage-6 .bughunt-results-card {
+    margin: auto 0;
+  }
+
+  /* CoPilotTelemetryHUD.css leaks a global 8.5px .stat-label */
+  .game-stage-container.game-stage-6 .bughunt-results-card .stat-label {
+    font-size: clamp(10.5px, 1.5vw, 13px);
+  }
+
+  .game-stage-container.game-stage-6 .results-actions button {
+    min-height: 44px;
+  }
+
+  /* Completion screen scrolls instead of clipping its top under the header. */
+  .game-stage-container.game-stage-6 .stage-completion {
+    width: 100%;
+    height: 100%;
+    align-items: flex-start;
+    overflow-x: hidden;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: clamp(64px, 11vh, 110px) clamp(12px, 3vw, 32px) max(20px, env(safe-area-inset-bottom, 0px));
+  }
+
+  .game-stage-container.game-stage-6 .stage-completion .completion-card {
+    margin: auto 0;
+  }
+
+  .game-stage-container.game-stage-6 .completion-buttons button {
+    min-height: 44px;
+  }
+}
+
+/* ---------- Gameplay: portrait phones + tablets ---------- */
+@media (max-width: 1024px) and (orientation: portrait) {
+  .game-stage-container.game-stage-6 .stage-bug-hunt:not(.intro-phase) {
+    overflow-y: hidden !important;
+  }
+
+  .game-stage-container.game-stage-6 .stage-bug-hunt .boss-ticker {
+    display: none !important;
+  }
+
+  /* Solo grid fills the free space between HUD and stats bar. */
+  .game-stage-container.game-stage-6 .stage-bug-hunt .bughunt-grid-wrapper {
+    flex: 1 1 0;
+    min-height: 0;
+    padding: clamp(6px, 2vw, 20px) !important;
+  }
+
+  .game-stage-container.game-stage-6 .bughunt-grid-wrapper .bughunt-grid {
+    width: 100% !important;
+    max-width: 760px !important;
+    height: min(100%, 118vw) !important;
+    aspect-ratio: auto !important;
+    gap: clamp(5px, 1.2vw, 12px) !important;
+  }
+
+  /* Boss cockpit: fill the remaining height instead of a fixed 100dvh block. */
+  .game-stage-container.game-stage-6 .online-raid-cockpit {
+    flex: 1 1 0;
+    height: auto;
+    min-height: 0;
+    max-height: none;
+  }
+
+  .game-stage-container.game-stage-6 .online-raid-main-grid .bughunt-grid {
+    width: 100% !important;
+    max-width: 760px !important;
+    height: min(100%, 118vw) !important;
+    aspect-ratio: auto !important;
+  }
+
+  /* Local co-op: P1 grid / UFO strip / P2 grid stacked, all on screen. */
+  .game-stage-container.game-stage-6 .stage-bug-hunt .boss-split-screen {
+    flex: 1 1 0;
+    flex-direction: column !important;
+    height: auto !important;
+    min-height: 0;
+    overflow: hidden !important;
+    padding: 6px clamp(6px, 2vw, 20px) !important;
+    gap: clamp(6px, 1.2vw, 12px) !important;
+  }
+
+  .game-stage-container.game-stage-6 .stage-bug-hunt .split-panel {
+    flex: 1 1 0;
+    min-height: 0;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    height: auto;
+  }
+
+  .game-stage-container.game-stage-6 .split-panel-header {
+    flex-shrink: 0;
+    padding: 6px 10px;
+    margin-bottom: 6px;
+  }
+
+  .game-stage-container.game-stage-6 .split-player-title {
+    font-size: clamp(0.85rem, 2.4vw, 1.1rem);
+  }
+
+  .game-stage-container.game-stage-6 .split-player-hint {
+    font-size: 0.7rem;
+  }
+
+  .game-stage-container.game-stage-6 .split-stat {
+    font-size: clamp(0.85rem, 2.2vw, 1.1rem);
+  }
+
+  .game-stage-container.game-stage-6 .split-grid-container {
+    flex: 1 1 0;
+    min-height: 0;
+  }
+
+  .game-stage-container.game-stage-6 .split-grid-container .bughunt-grid {
+    width: 100% !important;
+    max-width: 760px !important;
+    height: 100% !important;
+    aspect-ratio: auto !important;
+  }
+
+  .game-stage-container.game-stage-6 .stage-bug-hunt .split-center-ufo {
+    flex: 0 0 auto !important;
+    height: clamp(60px, 11dvh, 190px) !important;
+  }
+
+  .game-stage-container.game-stage-6 .stage-bug-hunt .boss-ufo-scene-split {
+    width: min(100%, 420px);
+    max-width: none !important;
+    height: 100% !important;
+    border-radius: 14px;
+  }
+
+  .game-stage-container.game-stage-6 .boss-split-robot {
+    display: none;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 1024px) and (orientation: portrait) {
+  .game-stage-container.game-stage-6 .bughunt-grid-wrapper .bughunt-grid,
+  .game-stage-container.game-stage-6 .online-raid-main-grid .bughunt-grid {
+    height: min(100%, 92vw) !important;
+  }
+
+  .game-stage-container.game-stage-6 .stage-bug-hunt .cell-code {
+    font-size: clamp(13px, 1.9vw, 17px) !important;
+  }
+
+  .game-stage-container.game-stage-6 .online-raid-ufo-stage {
+    width: clamp(120px, 20vw, 180px);
+    height: clamp(80px, 10dvh, 120px);
+  }
+
+  .game-stage-container.game-stage-6 .deck-boss-title,
+  .game-stage-container.game-stage-6 .deck-boss-val {
+    font-size: 0.8rem;
+  }
+
+  .game-stage-container.game-stage-6 .deck-boss-hp-card {
+    padding: 8px 12px;
+  }
+}
+
+@media (max-width: 640px) {
+  .game-stage-container.game-stage-6 .stage-bug-hunt .cell-code {
+    font-size: clamp(11px, 3vw, 13px) !important;
+  }
+
+  .game-stage-container.game-stage-6 .stage-bug-hunt .cell-category {
+    font-size: 10px !important;
+  }
+
+  .game-stage-container.game-stage-6 .stage-bug-hunt .bughunt-stats {
+    font-size: 12px !important;
+    gap: 12px !important;
+  }
+
+  .game-stage-container.game-stage-6 .stage-bug-hunt .boss-hp-value {
+    font-size: 0.7rem;
+  }
+}
+
+/* ---------- Gameplay: landscape phones ---------- */
+@media (orientation: landscape) and (max-height: 560px) {
+  .game-stage-container.game-stage-6 .stage-bug-hunt:not(.intro-phase) {
+    overflow-y: hidden !important;
+    padding-top: max(50px, env(safe-area-inset-top, 0px) + 42px) !important;
+    padding-left: env(safe-area-inset-left, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
+  }
+
+  .game-stage-container.game-stage-6 .stage-bug-hunt .bughunt-hud {
+    padding: 4px 10px !important;
+  }
+
+  .game-stage-container.game-stage-6 .stage-bug-hunt .bughunt-stats {
+    padding: 3px 8px !important;
+    font-size: 12px !important;
+  }
+
+  .game-stage-container.game-stage-6 .stage-bug-hunt .bughunt-canvas-corner,
+  .game-stage-container.game-stage-6 .stage-bug-hunt .boss-ticker,
+  .game-stage-container.game-stage-6 .boss-split-robot {
+    display: none !important;
+  }
+
+  .game-stage-container.game-stage-6 .stage-bug-hunt .cell-code {
+    font-size: clamp(11px, 1.9vw, 14px) !important;
+  }
+
+  /* Solo grid: wide 3x3 that fits the short viewport. */
+  .game-stage-container.game-stage-6 .stage-bug-hunt .bughunt-grid-wrapper {
+    flex: 1 1 0;
+    min-height: 0;
+    padding: 6px 12px !important;
+  }
+
+  .game-stage-container.game-stage-6 .bughunt-grid-wrapper .bughunt-grid {
+    width: min(100%, 640px) !important;
+    max-width: none !important;
+    height: 100% !important;
+    aspect-ratio: auto !important;
+    gap: 6px !important;
+  }
+
+  .game-stage-container.game-stage-6 .bughunt-grid-wrapper .bughunt-cell {
+    min-height: 0 !important;
+  }
+
+  /* Boss cockpit: grid left, command deck right. */
+  .game-stage-container.game-stage-6 .online-raid-cockpit {
+    flex: 1 1 0;
+    flex-direction: row;
+    height: auto;
+    min-height: 0;
+    max-height: none;
+    padding: 4px 10px 6px;
+    gap: 10px;
+  }
+
+  .game-stage-container.game-stage-6 .online-raid-main-grid {
+    height: 100%;
+  }
+
+  .game-stage-container.game-stage-6 .online-raid-main-grid .bughunt-grid {
+    width: 100% !important;
+    max-width: 640px !important;
+    height: 100% !important;
+    aspect-ratio: auto !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .game-stage-container.game-stage-6 .online-raid-main-grid .bughunt-cell {
+    min-height: 0 !important;
+  }
+
+  .game-stage-container.game-stage-6 .online-raid-command-deck {
+    order: 0;
+    width: clamp(150px, 26vw, 240px);
+    height: 100%;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+    overflow-y: auto;
+  }
+
+  .game-stage-container.game-stage-6 .online-raid-ufo-stage {
+    display: block;
+    width: 100%;
+    height: clamp(60px, 22dvh, 130px);
+  }
+
+  .game-stage-container.game-stage-6 .deck-boss-hp-card {
+    flex: 0 0 auto;
+  }
+
+  .game-stage-container.game-stage-6 .deck-copilot-section {
+    width: 100%;
+    max-width: none;
+  }
+
+  /* Local co-op: P1 | UFO | P2 side by side. */
+  .game-stage-container.game-stage-6 .stage-bug-hunt .boss-split-screen {
+    flex: 1 1 0;
+    flex-direction: row !important;
+    height: auto !important;
+    min-height: 0;
+    overflow: hidden !important;
+    padding: 4px 8px 6px !important;
+    gap: 8px !important;
+  }
+
+  .game-stage-container.game-stage-6 .stage-bug-hunt .split-panel {
+    flex: 1 1 0;
+    min-width: 0 !important;
+    max-width: none !important;
+    width: auto !important;
+    height: 100%;
+    min-height: 0;
+  }
+
+  .game-stage-container.game-stage-6 .split-panel-header {
+    flex-shrink: 0;
+    padding: 4px 8px;
+    margin-bottom: 4px;
+  }
+
+  .game-stage-container.game-stage-6 .split-player-badge {
+    margin-right: 8px;
+    padding: 2px 8px;
+  }
+
+  .game-stage-container.game-stage-6 .split-player-info {
+    min-width: 0;
+  }
+
+  .game-stage-container.game-stage-6 .split-player-title {
+    font-size: 0.8rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .game-stage-container.game-stage-6 .split-player-hint {
+    font-size: 0.7rem;
+  }
+
+  .game-stage-container.game-stage-6 .split-player-stats {
+    flex-direction: row;
+    gap: 8px;
+  }
+
+  .game-stage-container.game-stage-6 .split-stat {
+    font-size: 0.85rem;
+  }
+
+  .game-stage-container.game-stage-6 .split-grid-container {
+    flex: 1 1 0;
+    min-height: 0;
+  }
+
+  .game-stage-container.game-stage-6 .split-grid-container .bughunt-grid {
+    width: 100% !important;
+    max-width: none !important;
+    height: 100% !important;
+    aspect-ratio: auto !important;
+    gap: 5px !important;
+  }
+
+  .game-stage-container.game-stage-6 .split-grid-container .bughunt-cell {
+    min-height: 0 !important;
+  }
+
+  .game-stage-container.game-stage-6 .stage-bug-hunt .split-center-ufo {
+    flex: 0 0 clamp(80px, 15vw, 150px) !important;
+    height: 100% !important;
+  }
+
+  .game-stage-container.game-stage-6 .stage-bug-hunt .boss-ufo-scene-split {
+    width: 100%;
+    max-width: none !important;
+    height: min(100%, 170px) !important;
+    border-radius: 14px;
+  }
+
+  .game-stage-container.game-stage-6 .stage-bug-hunt .boss-hp-hud {
+    margin-top: 4px;
+    padding: 2px 10px !important;
+  }
+
+  /* Results + completion: compact so they fit a short screen. */
+  .game-stage-container.game-stage-6 .bughunt-results-overlay,
+  .game-stage-container.game-stage-6 .stage-completion {
+    padding-top: max(52px, env(safe-area-inset-top, 0px) + 44px);
+    padding-left: max(12px, env(safe-area-inset-left, 0px));
+    padding-right: max(12px, env(safe-area-inset-right, 0px));
+  }
+
+  .game-stage-container.game-stage-6 .bughunt-results-card {
+    padding: 14px 18px;
+  }
+
+  .game-stage-container.game-stage-6 .results-title {
+    font-size: 20px;
+    margin-bottom: 6px;
+  }
+
+  .game-stage-container.game-stage-6 .results-stars {
+    margin-bottom: 8px;
+  }
+
+  .game-stage-container.game-stage-6 .result-star {
+    font-size: 24px;
+  }
+
+  .game-stage-container.game-stage-6 .results-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+
+  .game-stage-container.game-stage-6 .result-stat {
+    padding: 6px;
+  }
+
+  .game-stage-container.game-stage-6 .result-stat .stat-value {
+    font-size: 18px;
+  }
+
+  .game-stage-container.game-stage-6 .boss-hp-result {
+    margin: 6px auto 10px;
+  }
+
+  .game-stage-container.game-stage-6 .stage-completion .completion-card {
+    padding: 18px 20px;
+    margin: 0 auto;
+  }
+
+  .game-stage-container.game-stage-6 .stage-completion .robot-celebration {
+    height: 150px;
+  }
+}
+
+/* ---------- Follow-up polish ---------- */
+@media (max-width: 1279px) {
+  .game-stage-container.game-stage-6 .completion-buttons :is(.replay-btn, .return-btn) {
+    font-size: 0.75rem;
+  }
+}
+
+@media (max-width: 1024px) and (orientation: portrait) {
+  /* The translucent helper robot would sit on top of the enlarged grid. */
+  .game-stage-container.game-stage-6 .stage-bug-hunt:has(> .bughunt-grid-wrapper) > .bughunt-canvas-corner {
+    display: none;
+  }
+
+  .game-stage-container.game-stage-6 .stage-bug-hunt .cell-category {
+    font-size: 10px !important;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 1024px) and (orientation: portrait) {
+  .game-stage-container.game-stage-6 .bughunt-results-card {
+    max-width: 620px;
+  }
+
+  .game-stage-container.game-stage-6 .bughunt-results-card .stat-label {
+    font-size: 12px;
+  }
+
+  .game-stage-container.game-stage-6 .results-actions button {
+    font-size: 16px;
+  }
+}
+
+@media (orientation: landscape) and (max-height: 560px) {
+  .game-stage-container.game-stage-6 .stage-bug-hunt .cell-category {
+    font-size: 10px !important;
+  }
+
+  .game-stage-container.game-stage-6 .stage-completion .completion-card h1 {
+    font-size: 1.9rem;
+    margin-bottom: 10px;
+  }
+
+  .game-stage-container.game-stage-6 .stage-completion .score-info {
+    margin: 10px auto;
+    padding: 12px;
+  }
+}
+
+@media (max-width: 1279px) {
+  .game-stage-container.game-stage-6 .boss-hp-result .boss-hp-label,
+  .game-stage-container.game-stage-6 .boss-hp-result .boss-hp-text {
+    font-size: 0.72rem;
+  }
+}
+
+@media (max-width: 640px), (orientation: landscape) and (max-height: 560px) {
+  .game-stage-container.game-stage-6 .deck-boss-title,
+  .game-stage-container.game-stage-6 .deck-boss-val {
+    font-size: 0.7rem;
+  }
+}
+
+/* ---------- Local co-op split screen: sizing fixes ---------- */
+@media (max-width: 1279px) {
+  /* The ticker floats over the HUD score at these widths. */
+  .game-stage-container.game-stage-6 .stage-bug-hunt .boss-ticker {
+    display: none !important;
+  }
+
+  .game-stage-container.game-stage-6 .stage-bug-hunt .boss-hp-value {
+    font-size: 0.72rem;
+  }
+}
+
+@media (max-width: 1024px) and (orientation: portrait), (orientation: landscape) and (max-height: 560px) {
+  /* Let the 3D canvas shrink with its column instead of forcing width. */
+  .game-stage-container.game-stage-6 .stage-bug-hunt .split-center-ufo,
+  .game-stage-container.game-stage-6 .stage-bug-hunt .boss-ufo-scene-split {
+    min-width: 0 !important;
+    overflow: hidden;
+  }
+
+  .game-stage-container.game-stage-6 .split-grid-container .bughunt-cell {
+    min-height: 0 !important;
+  }
+}
+
+@media (max-width: 640px) and (orientation: portrait) {
+  .game-stage-container.game-stage-6 .split-panel-header {
+    padding: 4px 8px;
+    margin-bottom: 4px;
+  }
+
+  .game-stage-container.game-stage-6 .split-player-badge {
+    margin-right: 8px;
+    padding: 2px 8px;
+  }
+
+  .game-stage-container.game-stage-6 .split-player-info {
+    min-width: 0;
+    flex-direction: row;
+    align-items: baseline;
+    gap: 8px;
+  }
+
+  .game-stage-container.game-stage-6 .split-player-title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .game-stage-container.game-stage-6 .split-player-hint {
+    margin-top: 0;
+    white-space: nowrap;
+  }
+
+  .game-stage-container.game-stage-6 .split-player-stats {
+    flex-direction: row;
+    gap: 8px;
+  }
+
+  .game-stage-container.game-stage-6 .stage-bug-hunt .split-center-ufo {
+    height: clamp(48px, 8dvh, 90px) !important;
+  }
+
+  .game-stage-container.game-stage-6 .split-grid-container .bughunt-grid {
+    gap: 4px !important;
+  }
+}

@@ -392,10 +392,129 @@
   .intro-skip-control strong { margin: 0; font-size: 0.51rem; }
 }
 
+/* Keep the phase label clear of the centred audio launcher on narrower screens. */
+@media (max-width: 1279px) {
+  .intro-phase-status > span {
+    max-width: calc(50vw - 70px - clamp(24px, 3.5vw, 64px) - clamp(184px, 17vw, 250px));
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+/* Landscape tablets / small laptops: the bottom-centred route card would sit
+   under the AI dialogue, so dock it to the right, next to the skip button. */
+@media (min-width: 901px) and (max-width: 1279px) {
+  .intro-route-telemetry {
+    left: auto;
+    right: calc(clamp(24px, 3.5vw, 64px) + 200px);
+    width: min(360px, 30vw);
+    min-width: 0;
+    transform: none;
+    animation-name: introRouteTelemetryInLandscape;
+  }
+}
+
+@media (max-width: 900px) {
+  .intro-phase-status > span { max-width: calc(50vw - 96px); }
+}
+
+@media (max-width: 620px) {
+  .intro-ops-header {
+    top: max(26px, env(safe-area-inset-top));
+    left: max(18px, env(safe-area-inset-left));
+  }
+  .intro-ops-identity { gap: 0; }
+  .intro-ops-beacon { display: none; }
+  .intro-ops-identity span { font-size: 0.6rem; letter-spacing: 0.14em; }
+  .intro-ops-identity strong { font-size: 0.66rem; letter-spacing: 0.14em; }
+  .intro-route-telemetry-heading span { font-size: 0.6rem; }
+  .intro-route-telemetry-heading strong { font-size: 0.7rem; }
+  /* The route card sits where the odometer lives on phones. */
+  .new-intro-scene-container:has(.intro-route-telemetry) .intro-telemetry { display: none; }
+  .intro-skip-control {
+    top: max(22px, env(safe-area-inset-top));
+    right: max(15px, env(safe-area-inset-right));
+    min-height: 42px;
+    justify-content: center;
+  }
+  .intro-skip-control strong { font-size: 0.6rem; }
+  .intro-skip-control.is-recovery {
+    top: auto;
+    right: max(16px, env(safe-area-inset-right));
+    bottom: max(28px, calc(env(safe-area-inset-bottom) + 16px));
+    left: max(16px, env(safe-area-inset-left));
+    min-height: 56px;
+    padding: 10px 16px;
+  }
+  .intro-skip-control.is-recovery span { display: block; font-size: 0.6rem; }
+  .intro-skip-control.is-recovery strong { margin-top: 5px; font-size: 0.76rem; }
+}
+
+/* Tablet portrait: scale the HUD chrome up so it is not desktop-tiny. */
+@media (min-width: 621px) and (max-width: 1024px) and (orientation: portrait) {
+  .intro-ops-identity span,
+  .intro-phase-status > span { font-size: 0.68rem; }
+  .intro-ops-identity strong { font-size: 0.86rem; }
+  .intro-route-telemetry {
+    left: 28px;
+    width: min(460px, calc(100vw - 260px));
+    min-width: 0;
+    padding: 12px 16px 11px;
+    transform: none;
+    animation-name: introRouteTelemetryInLandscape;
+  }
+  .intro-route-telemetry-heading span,
+  .intro-route-telemetry small,
+  .intro-route-telemetry-state span { font-size: 0.6rem; }
+  .intro-route-telemetry-heading strong { font-size: 0.74rem; }
+  .intro-skip-control { min-width: 180px; min-height: 56px; }
+  .intro-skip-control span { font-size: 0.6rem; }
+  .intro-skip-control strong { font-size: 0.72rem; }
+}
+
 @media (orientation: landscape) and (max-height: 560px) {
-  .intro-ops-header { top: 24px; }
-  .intro-skip-control { right: 16px; bottom: 18px; min-height: 42px; }
-  .intro-route-telemetry { bottom: 18px; padding-block: 8px; }
+  .intro-ops-header {
+    top: max(24px, env(safe-area-inset-top));
+    left: max(20px, env(safe-area-inset-left));
+    right: max(20px, env(safe-area-inset-right));
+  }
+  /* The route card repeats this label; free the top-right for the skip button. */
+  .intro-phase-status { display: none; }
+  .intro-skip-control {
+    top: max(16px, env(safe-area-inset-top));
+    right: max(16px, env(safe-area-inset-right));
+    bottom: auto;
+    min-height: 42px;
+  }
+  .intro-skip-control.is-recovery {
+    top: auto;
+    bottom: max(18px, env(safe-area-inset-bottom));
+  }
+  .intro-skip-control span { font-size: 0.56rem; }
+  .intro-skip-control strong { font-size: 0.66rem; }
+  .intro-route-telemetry {
+    top: 62px;
+    bottom: auto;
+    left: max(16px, env(safe-area-inset-left));
+    width: min(320px, 46vw);
+    min-width: 0;
+    padding-block: 8px;
+    transform: none;
+    animation-name: introRouteTelemetryInLandscape;
+  }
+  .intro-route-telemetry-heading span,
+  .intro-route-telemetry small,
+  .intro-route-telemetry-state span { font-size: 0.56rem; }
+  .intro-route-telemetry-heading strong { font-size: 0.66rem; }
+}
+
+@keyframes introRouteTelemetryInLandscape {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+    filter: blur(5px);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

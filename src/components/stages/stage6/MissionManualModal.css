@@ -355,3 +355,126 @@
   }
 }
 
+
+/* ==========================================================================
+   Responsive: keep the modal clear of the mission header (which sits above
+   the stage runtime layer) and make every control touch-sized.
+   ========================================================================== */
+@media (max-width: 1024px) {
+  .mission-manual-backdrop {
+    align-items: flex-start;
+    overflow-y: auto;
+    padding: max(64px, env(safe-area-inset-top, 0px) + 56px) max(12px, env(safe-area-inset-right, 0px)) max(12px, env(safe-area-inset-bottom, 0px)) max(12px, env(safe-area-inset-left, 0px));
+  }
+
+  .mission-manual-modal {
+    margin: auto 0;
+    max-height: 100%;
+  }
+
+  .manual-close-btn {
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+  }
+
+  .manual-tab-btn {
+    min-height: 44px;
+  }
+
+  .manual-action-btn {
+    min-height: 44px;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 1024px) and (orientation: portrait) {
+  .mission-manual-modal {
+    max-width: 680px;
+  }
+
+  .manual-card p {
+    font-size: 0.9rem;
+  }
+
+  .control-card p {
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .manual-tabs {
+    overflow-x: visible;
+    padding: 0.25rem 0.4rem 0;
+  }
+
+  .manual-tab-btn {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 0.4rem 0.35rem;
+    font-size: 0.72rem;
+    white-space: normal;
+    line-height: 1.25;
+    text-align: center;
+  }
+
+  .manual-pretitle {
+    font-size: 0.66rem;
+  }
+
+  .manual-card p {
+    font-size: 0.8rem;
+  }
+
+  .control-card p {
+    font-size: 0.75rem;
+  }
+
+  .numpad-preview span,
+  .keyboard-preview span {
+    font-size: 0.72rem;
+  }
+}
+
+@media (orientation: landscape) and (max-height: 560px) {
+  .mission-manual-backdrop {
+    padding-top: max(52px, env(safe-area-inset-top, 0px) + 44px);
+    padding-bottom: 8px;
+  }
+
+  .mission-manual-header {
+    padding: 6px 14px;
+  }
+
+  .manual-book-badge {
+    font-size: 1.2rem;
+  }
+
+  .manual-title {
+    font-size: 1rem;
+  }
+
+  .manual-tabs {
+    padding-top: 0;
+  }
+
+  .manual-tab-btn {
+    min-height: 40px;
+    padding: 0.35rem 0.8rem;
+  }
+
+  .manual-body {
+    padding: 10px 14px;
+  }
+
+  .manual-controls-grid {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+
+  .mission-manual-footer {
+    padding: 6px 14px;
+  }
+
+  .manual-action-btn {
+    min-height: 40px;
+  }
+}

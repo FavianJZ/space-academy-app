@@ -562,6 +562,196 @@
   .dossier-footer {
     flex-direction: column;
   }
+
+  .dossier-container {
+    max-height: calc(100vh - 20px);
+    max-height: calc(100dvh - 20px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+  }
+
+  .dossier-header {
+    padding: 16px 16px 14px;
+  }
+
+  .dossier-body {
+    padding: 0 16px 16px;
+  }
+
+  .dossier-footer {
+    padding: 0 16px 16px;
+  }
+
+  .dossier-close-btn {
+    width: 44px;
+    height: 44px;
+  }
+
+  .dossier-classification,
+  .dossier-section-label {
+    font-size: 10px;
+    letter-spacing: 1.5px;
+  }
+
+  .dossier-confidence-markers span {
+    font-size: 10px;
+  }
+
+  .dossier-radar-wrapper {
+    width: calc(100% + 24px);
+    margin-inline: -12px;
+  }
+
+  /* Two legend columns overflow at phone width; stack them. */
+  .radar-legend-bar {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
+  }
+
+  .radar-legend-item {
+    font-size: 11px;
+  }
+
+  .radar-legend-score {
+    font-size: 12px;
+  }
+
+  .dossier-archetype-rank {
+    font-size: 10px;
+  }
+
+  .dossier-archetype-title {
+    font-size: 13px;
+  }
+
+  .dossier-archetype-tagline {
+    font-size: 11px;
+  }
+
+  .dossier-footer-btn {
+    min-height: 44px;
+    font-size: 11px;
+  }
+}
+
+/* Tablets: use the wider screen and scale the desktop micro text up. */
+@media (min-width: 561px) and (max-width: 1024px) and (orientation: portrait), (min-width: 761px) and (max-width: 1100px) and (orientation: landscape) and (min-height: 561px) {
+  .dossier-container {
+    width: min(680px, calc(100vw - 64px));
+    max-height: calc(100vh - 64px);
+    max-height: calc(100dvh - 64px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+  }
+
+  .dossier-header {
+    padding: 24px 28px 20px;
+  }
+
+  .dossier-body {
+    padding: 0 28px 24px;
+  }
+
+  .dossier-footer {
+    padding: 0 28px 24px;
+  }
+
+  .dossier-close-btn {
+    width: 44px;
+    height: 44px;
+  }
+
+  .dossier-classification,
+  .dossier-section-label {
+    font-size: 11px;
+  }
+
+  .dossier-cadet-name {
+    font-size: 26px;
+  }
+
+  .dossier-cadet-info li,
+  .dossier-confidence-milestone {
+    font-size: 13px;
+  }
+
+  .dossier-confidence-markers span {
+    font-size: 10px;
+  }
+
+  .radar-chart-container {
+    max-width: 520px;
+  }
+
+  .radar-legend-item {
+    font-size: 12px;
+  }
+
+  .radar-legend-score {
+    font-size: 13px;
+  }
+
+  .dossier-archetype-rank {
+    font-size: 10px;
+  }
+
+  .dossier-archetype-title {
+    font-size: 14px;
+  }
+
+  .dossier-archetype-tagline {
+    font-size: 12px;
+  }
+
+  .dossier-analysis-text {
+    font-size: 15px;
+  }
+
+  .dossier-recommendation {
+    font-size: 14px;
+  }
+
+  .dossier-career-pill,
+  .dossier-socs-track {
+    font-size: 12px;
+  }
+
+  .dossier-footer-btn {
+    min-height: 48px;
+    font-size: 12px;
+  }
+}
+
+/* Short landscape phones: keep the modal inside the viewport height and
+   clear of a side notch. */
+@media (orientation: landscape) and (max-height: 560px) {
+  .dossier-backdrop {
+    padding: 0 env(safe-area-inset-right, 0px) 0 env(safe-area-inset-left, 0px);
+  }
+
+  .dossier-container {
+    width: min(540px, calc(100vw - 32px - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px)));
+    max-height: calc(100vh - 16px);
+    max-height: calc(100dvh - 16px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+  }
+
+  .dossier-close-btn {
+    width: 44px;
+    height: 44px;
+  }
+
+  .dossier-classification,
+  .dossier-section-label,
+  .dossier-confidence-markers span,
+  .dossier-archetype-rank {
+    font-size: 10px;
+  }
+
+  .radar-legend-item,
+  .dossier-archetype-tagline {
+    font-size: 11px;
+  }
+
+  .dossier-footer-btn {
+    min-height: 44px;
+    font-size: 11px;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

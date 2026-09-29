@@ -1694,6 +1694,422 @@
   .story-chat-log { max-height: 30vh; }
 }
 
+/* ---- Responsive refinements (tablet / phone) ---- */
+
+/* Small laptops & tablet landscape: keep the IDENTITY LINK label clear of the
+   playback buttons and give the dialogue a little more room and type size. */
+@media (min-width: 901px) and (max-width: 1279px) {
+  .sequence-status { margin-right: 230px; }
+
+  .dialogue-bubble {
+    width: clamp(380px, 44vw, 540px);
+  }
+
+  .dialogue-text { font-size: 0.86rem; }
+  .line-text { font-size: 0.84rem; }
+  .speaker-name { font-size: 0.72rem; }
+
+  .dialogue-btn,
+  .send-btn,
+  .form-submit {
+    font-size: 0.74rem;
+  }
+
+  .playback-controls .auto-play-toggle,
+  .playback-controls .skip-dialog-btn {
+    min-height: 40px;
+    font-size: 0.66rem;
+  }
+}
+
+/* Tablet portrait: use the width, larger readable type, bigger touch targets. */
+@media (min-width: 561px) and (max-width: 1024px) and (orientation: portrait) {
+  .playback-controls .auto-play-toggle,
+  .playback-controls .skip-dialog-btn {
+    min-height: 44px;
+    padding: 10px 16px;
+    font-size: 0.74rem;
+  }
+
+  .mission-eyebrow { font-size: 0.66rem; }
+  .mission-identity strong { font-size: 0.86rem; }
+
+  .dialogue-bubble,
+  .dialogue-bubble.pos-left,
+  .dialogue-bubble.pos-right,
+  .dialogue-bubble.pos-center {
+    left: max(32px, env(safe-area-inset-left, 0px));
+    right: max(32px, env(safe-area-inset-right, 0px));
+    bottom: calc(40px + env(safe-area-inset-bottom, 0px));
+    width: auto;
+    max-width: none;
+    min-width: 0;
+    max-height: calc(100vh - 150px);
+    max-height: calc(100dvh - 150px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 26px 30px 30px;
+    transform: none;
+  }
+
+  .dialogue-bubble.pos-center {
+    animation-name: cinematicDialogueIn;
+  }
+
+  .dialogue-bubble .dialogue-speaker {
+    gap: 12px;
+    margin-bottom: 16px;
+    padding-bottom: 14px;
+  }
+
+  .speaker-avatar {
+    width: 40px;
+    height: 40px;
+    font-size: 1.15rem;
+  }
+
+  .speaker-name { font-size: 0.86rem; }
+
+  .dialogue-text {
+    max-width: 64ch;
+    font-size: 1.04rem;
+    line-height: 1.7;
+  }
+
+  .dialogue-actions {
+    gap: 10px;
+    margin-top: 20px;
+  }
+
+  .dialogue-btn,
+  .send-btn,
+  .form-submit {
+    min-height: 52px;
+    padding: 12px 18px;
+    font-size: 0.9rem;
+  }
+
+  .story-chat-log {
+    gap: 4px;
+    max-height: min(38vh, 420px);
+  }
+
+  .story-line,
+  .story-line.ai,
+  .story-line.spaceman {
+    padding: 12px 14px 12px 16px;
+  }
+
+  .speaker-avatar-sm {
+    width: 28px;
+    height: 28px;
+    font-size: 0.9rem;
+  }
+
+  .line-speaker { font-size: 0.76rem; }
+
+  .line-text {
+    font-size: 1rem;
+    line-height: 1.6;
+  }
+
+  .step-progress { font-size: 0.86rem; }
+  .form-label { font-size: 0.82rem; }
+
+  .form-input {
+    min-height: 54px;
+    font-size: 18px;
+    padding: 12px 14px;
+  }
+
+  .summary-row {
+    padding: 10px 12px;
+  }
+
+  .summary-row span,
+  .summary-row strong {
+    font-size: 0.95rem;
+  }
+
+  .form-hint,
+  .inline-error {
+    font-size: 0.9rem;
+  }
+
+  .dialogue-overlay .completion-message {
+    width: calc(100% - 64px);
+    max-width: 720px;
+  }
+
+  .message-content h3 { font-size: 1.6rem; }
+  .message-content p { font-size: 1.05rem; }
+}
+
+/* Phones (portrait): full-width panel, readable type, 40px+ touch targets. */
+@media (max-width: 560px) {
+  .scene-hud-top {
+    top: max(18px, env(safe-area-inset-top, 0px));
+  }
+
+  .playback-controls {
+    top: max(16px, env(safe-area-inset-top, 0px) + 2px);
+    left: max(14px, env(safe-area-inset-left, 0px));
+    right: auto;
+  }
+
+  .playback-controls .auto-play-toggle,
+  .playback-controls .skip-dialog-btn {
+    min-height: 42px;
+    padding: 8px 12px;
+    font-size: 0.66rem;
+    letter-spacing: 0.08em;
+  }
+
+  .dialogue-bubble,
+  .dialogue-bubble.pos-left,
+  .dialogue-bubble.pos-right,
+  .dialogue-bubble.pos-center {
+    left: max(12px, env(safe-area-inset-left, 0px));
+    right: max(12px, env(safe-area-inset-right, 0px));
+    bottom: calc(22px + env(safe-area-inset-bottom, 0px));
+    width: auto;
+    max-height: calc(100vh - 96px);
+    max-height: calc(100dvh - 96px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 14px 16px 18px;
+  }
+
+  .speaker-name { font-size: 0.72rem; }
+
+  .dialogue-text {
+    font-size: 0.86rem;
+    line-height: 1.6;
+  }
+
+  .dialogue-btn,
+  .send-btn,
+  .form-submit {
+    min-height: 44px;
+    font-size: 0.76rem;
+    letter-spacing: 0.05em;
+  }
+
+  .line-speaker { font-size: 0.68rem; }
+
+  /* The log never auto-scrolls, so on phones keep only the two most recent
+     lines (older ones were already read) and let the latest stay visible. */
+  .story-chat-log {
+    max-height: none;
+    overflow: visible;
+  }
+
+  .story-chat-log > .story-line:nth-last-child(n + 3) {
+    display: none;
+  }
+
+  .line-text {
+    font-size: 0.84rem;
+  }
+
+  .step-progress,
+  .form-label {
+    font-size: 0.72rem;
+  }
+
+  .confirm-summary {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px;
+  }
+
+  .summary-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    padding: 6px 8px;
+  }
+
+  .summary-row span,
+  .summary-row strong {
+    font-size: 0.8rem;
+  }
+
+  .summary-row strong {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+  }
+
+  .form-hint,
+  .inline-error {
+    font-size: 0.76rem;
+  }
+
+  .dialogue-overlay .completion-message {
+    width: calc(100% - 24px);
+    bottom: calc(22px + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+/* Phone landscape: compact HUD, narrow side panel that leaves the scene visible. */
+@media (orientation: landscape) and (max-height: 560px) {
+  .dialogue-overlay::before,
+  .dialogue-overlay::after {
+    height: 6px;
+  }
+
+  .scene-hud-top {
+    top: max(12px, env(safe-area-inset-top, 0px));
+    left: max(18px, env(safe-area-inset-left, 0px));
+  }
+
+  .mission-identity { gap: 8px; }
+  .mission-identity strong { margin-top: 3px; }
+
+  .playback-controls {
+    top: max(10px, env(safe-area-inset-top, 0px));
+    right: max(18px, env(safe-area-inset-right, 0px));
+    left: auto;
+  }
+
+  .playback-controls .auto-play-toggle,
+  .playback-controls .skip-dialog-btn {
+    min-height: 40px;
+    padding: 6px 11px;
+    font-size: 0.62rem;
+    letter-spacing: 0.08em;
+  }
+
+  .dialogue-bubble,
+  .dialogue-bubble.pos-left,
+  .dialogue-bubble.pos-right {
+    left: max(16px, env(safe-area-inset-left, 0px));
+    right: auto;
+    bottom: max(12px, env(safe-area-inset-bottom, 0px));
+    width: min(48vw, 420px);
+    max-width: none;
+    min-width: 0;
+    max-height: calc(100vh - 72px);
+    max-height: calc(100dvh - 72px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 10px 14px 12px;
+    transform: none;
+  }
+
+  /* Input / confirm cards dock left too: the camera framing shifts the
+     characters into the right half on these screens. */
+  .dialogue-bubble.pos-center {
+    left: max(16px, env(safe-area-inset-left, 0px));
+    right: auto;
+    bottom: max(12px, env(safe-area-inset-bottom, 0px));
+    width: min(54vw, 440px);
+    max-width: none;
+    max-height: calc(100vh - 72px);
+    max-height: calc(100dvh - 72px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 10px 14px 12px;
+    transform: none;
+    animation-name: cinematicDialogueIn;
+  }
+
+  .dialogue-bubble .dialogue-speaker {
+    margin-bottom: 6px;
+    padding-bottom: 6px;
+  }
+
+  .speaker-avatar {
+    width: 26px;
+    height: 26px;
+    font-size: 0.8rem;
+  }
+
+  .speaker-name { font-size: 0.66rem; }
+
+  .dialogue-text {
+    margin-bottom: 6px;
+    font-size: 0.78rem;
+    line-height: 1.5;
+  }
+
+  .dialogue-actions {
+    gap: 6px;
+    margin-top: 8px;
+  }
+
+  .dialogue-btn,
+  .send-btn,
+  .form-submit {
+    min-height: 40px;
+    padding: 8px 12px;
+    font-size: 0.7rem;
+    letter-spacing: 0.05em;
+  }
+
+  .form-submit { margin-top: 0; }
+
+  .story-chat-log {
+    margin: 0 0 6px;
+    max-height: none;
+    overflow: visible;
+  }
+
+  .story-chat-log > .story-line:nth-last-child(n + 3) {
+    display: none;
+  }
+
+  .story-line,
+  .story-line.ai,
+  .story-line.spaceman {
+    padding: 5px 8px 6px 10px;
+  }
+
+  .line-text {
+    font-size: 0.76rem;
+    line-height: 1.45;
+  }
+
+  .step-progress { margin-bottom: 6px; }
+
+  .form-input { min-height: 42px; padding: 8px 10px; }
+  .send-btn { margin-top: 8px; }
+
+  .confirm-summary {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px;
+    margin: 4px 0;
+  }
+
+  .summary-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1px;
+    padding: 4px 8px;
+  }
+
+  .summary-row strong {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+  }
+
+  .form-hint { margin-top: 4px; font-size: 0.7rem; }
+
+  .dialogue-overlay .completion-message {
+    bottom: max(12px, env(safe-area-inset-bottom, 0px));
+    width: min(70vw, 520px);
+  }
+}
+
+/* Phone landscape narrower than 720px: the audio launcher collapses to a 44px
+   icon at the top-right corner, so the playback controls sit just left of it. */
+@media (orientation: landscape) and (max-height: 560px) and (max-width: 720px) {
+  .playback-controls {
+    right: calc(max(14px, env(safe-area-inset-right, 0px)) + 54px);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .scene-grain,
   .mission-beacon,

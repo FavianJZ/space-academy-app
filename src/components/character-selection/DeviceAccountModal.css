@@ -932,3 +932,97 @@
   }
 }
 
+
+/* ==========================================================================
+   RESPONSIVE: safe areas, touch targets, short landscape screens
+   ========================================================================== */
+.dam-close-btn { flex-shrink: 0; }
+
+@media (max-width: 1024px) {
+  .dam-overlay {
+    padding:
+      max(clamp(6px, 1.5vh, 12px), env(safe-area-inset-top))
+      max(8px, env(safe-area-inset-right))
+      max(clamp(6px, 1.5vh, 12px), env(safe-area-inset-bottom))
+      max(8px, env(safe-area-inset-left));
+  }
+}
+
+@media (max-width: 768px) {
+  .dam-modal {
+    max-height: 94vh;
+    max-height: 94dvh;
+  }
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .dam-close-btn {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+  }
+
+  .dam-reset-btn,
+  .dam-refresh-btn { min-height: 44px; }
+
+  .dam-action-btn { min-height: 44px; }
+  .dam-action-btn.unlink { min-height: 40px; }
+}
+
+@media (max-width: 768px) and (hover: none) and (pointer: coarse) {
+  .dam-header { padding-right: 58px; }
+  .dam-close-btn {
+    top: 8px;
+    right: 8px;
+    width: 42px;
+    height: 42px;
+  }
+  .dam-reset-btn,
+  .dam-refresh-btn { min-height: 40px; font-size: 0.72rem; }
+  .dam-action-btn { min-height: 42px !important; }
+  .dam-action-btn.unlink { min-height: 38px !important; font-size: 0.68rem !important; }
+  .dam-action-btn.create { min-height: 42px !important; }
+}
+
+/* Short landscape phones: scroll the whole modal instead of a tiny slot pane */
+@media (orientation: landscape) and (max-height: 540px) {
+  .dam-overlay { align-items: flex-start; }
+
+  .dam-modal {
+    max-width: min(720px, 100%);
+    max-height: calc(100vh - 12px);
+    max-height: calc(100dvh - max(12px, env(safe-area-inset-top) + env(safe-area-inset-bottom)));
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+  }
+
+  .dam-header,
+  .dam-device-bar,
+  .dam-footer-notice { flex-shrink: 0; }
+
+  .dam-slots-container {
+    flex: 0 0 auto !important;
+    overflow: visible !important;
+  }
+
+  .dam-footer-notice { font-size: 0.7rem !important; }
+}
+
+@media (orientation: landscape) and (max-height: 540px) and (min-width: 600px) {
+  .dam-slots-container {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .slot-canvas-wrap {
+    width: 100px !important;
+    min-width: 100px !important;
+    max-width: 100px !important;
+    height: 150px !important;
+    min-height: 150px !important;
+    max-height: 150px !important;
+  }
+
+  .dam-empty-slot { padding: 16px 10px !important; }
+}

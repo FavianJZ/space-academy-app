@@ -77,6 +77,19 @@
   .intro-telemetry-row:first-child { display: none; }
 }
 
+@media (max-width: 700px) {
+  .intro-telemetry-row > span { font-size: 0.58rem; white-space: nowrap; }
+  .intro-telemetry-row strong { font-size: 0.86rem; }
+  .intro-telemetry-row small { font-size: 0.56rem; }
+}
+
+@media (min-width: 701px) and (max-width: 1024px) and (orientation: portrait) {
+  .intro-telemetry { width: 190px; }
+  .intro-telemetry-row > span { font-size: 0.6rem; }
+  .intro-telemetry-row strong { font-size: 0.92rem; }
+  .intro-telemetry-row small { font-size: 0.58rem; }
+}
+
 @media (orientation: landscape) and (max-height: 560px) {
-  .intro-telemetry { top: 62px; }
+  .intro-telemetry { top: 68px; right: max(16px, env(safe-area-inset-right)); }
 }

@@ -390,3 +390,76 @@
     display: none;
   }
 }
+
+/* Touch devices have no keyboard: the key legend only covers the scene. */
+@media (hover: none) and (pointer: coarse) {
+  .nav-flight-controls { display: none; }
+}
+
+@media (max-width: 900px) {
+  .nav-flight-throttle { width: 144px; }
+  .nav-flight-throttle-row { gap: 8px; }
+  .nav-flight-throttle-row strong { white-space: nowrap; }
+  .nav-flight-hint,
+  .nav-flight-warning {
+    width: max-content;
+    max-width: calc(100vw - 32px);
+    text-align: center;
+  }
+}
+
+/* Phone portrait: stack the gate target under the route card and keep
+   transient hints above the throttle / dialogue area. */
+@media (max-width: 620px) {
+  .nav-flight-target { top: 128px; }
+  .nav-flight-target b { font-size: 12px; }
+  .nav-flight-throttle { right: max(12px, env(safe-area-inset-right)); }
+  .nav-flight-hint {
+    top: 176px;
+    bottom: auto;
+    font-size: 10.5px;
+    letter-spacing: 0.1em;
+  }
+  .nav-flight-warning {
+    top: 218px;
+    bottom: auto;
+    font-size: 10.5px;
+    letter-spacing: 0.12em;
+  }
+}
+
+/* Tablet portrait: larger readouts. */
+@media (min-width: 621px) and (max-width: 1024px) and (orientation: portrait) {
+  .nav-flight-target { top: 84px; gap: 12px; padding: 10px 16px; }
+  .nav-flight-target b { font-size: 15px; }
+  .nav-flight-target em { font-size: 14px; }
+  .nav-flight-throttle { right: 24px; bottom: 262px; width: 170px; padding: 12px 14px; gap: 7px; }
+  .nav-flight-throttle-row,
+  .nav-flight-attitude { font-size: 12px; }
+  .nav-flight-hint,
+  .nav-flight-warning { font-size: 12px; }
+  .nav-flight-hint { top: 206px; bottom: auto; }
+  .nav-flight-warning { top: 252px; bottom: auto; }
+}
+
+/* Landscape phones: route card top-left, gate target below the header,
+   throttle bottom-right above the skip button. */
+@media (orientation: landscape) and (max-height: 560px) {
+  .nav-flight-target { top: 118px; padding: 6px 12px; }
+  .nav-flight-throttle {
+    right: max(16px, env(safe-area-inset-right));
+    bottom: max(76px, calc(env(safe-area-inset-bottom) + 58px));
+    width: 140px;
+    padding: 7px 10px;
+    gap: 4px;
+  }
+  .nav-flight-hint,
+  .nav-flight-warning {
+    max-width: calc(100vw - 340px);
+    padding: 6px 12px;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+  }
+  .nav-flight-hint { top: 158px; bottom: auto; }
+  .nav-flight-warning { top: 206px; bottom: auto; }
+}

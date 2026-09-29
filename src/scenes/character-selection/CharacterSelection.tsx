@@ -8,7 +8,7 @@ import {
   type RefObject,
 } from "react";
 import { PerspectiveCamera, Stars } from "@react-three/drei";
-import { useFrame } from "@react-three/fiber";
+import { useFrame, useThree } from "@react-three/fiber";
 import { useNavigate } from "react-router-dom";
 import gsap from "gsap";
 import * as THREE from "three";
@@ -278,24 +278,39 @@ const CandidateStage = ({ candidate, onCycle, compact }: CandidateStageProps) =>
   );
 };
 
+type StageFraming = {
+  distance: number;
+  cameraY: number;
+  lookY: number;
+};
+
+// Portrait screens get their own framing so the pilot sits between the
+// headline/dossier and the selector instead of underneath them.
+const getStageFraming = (compact: boolean, width: number, height: number): StageFraming => {
+  const portrait = height / Math.max(width, 1) > 1.15;
+  if (portrait && compact) return { distance: 10.1, cameraY: 0.2, lookY: -0.57 };
+  if (portrait) return { distance: 10.9, cameraY: 1.72, lookY: 0.77 };
+  return { distance: compact ? 9.1 : 8.2, cameraY: compact ? 0.72 : 0.9, lookY: -0.05 };
+};
+
 const CameraDirector = ({
   compact,
+  framing,
   cameraRef,
 }: {
   compact: boolean;
+  framing: StageFraming;
   cameraRef: RefObject<THREE.PerspectiveCamera | null>;
 }) => {
-  const lookTarget = useMemo(() => new THREE.Vector3(0, -0.05, 0), []);
-
   useFrame(({ clock, pointer }) => {
     const camera = cameraRef.current;
     if (!camera) return;
     const time = clock.elapsedTime;
     const targetX = pointer.x * (compact ? 0.12 : 0.28);
-    const targetY = (compact ? 0.72 : 0.9) + pointer.y * 0.09 + Math.sin(time * 0.2) * 0.025;
+    const targetY = framing.cameraY + pointer.y * 0.09 + Math.sin(time * 0.2) * 0.025;
     camera.position.x = THREE.MathUtils.lerp(camera.position.x, targetX, 0.025);
     camera.position.y = THREE.MathUtils.lerp(camera.position.y, targetY, 0.025);
-    camera.lookAt(lookTarget);
+    camera.lookAt(0, framing.lookY, 0);
   });
 
   return null;
@@ -307,18 +322,21 @@ const CandidateScene = ({
   compact,
 }: CandidateStageProps) => {
   const cameraRef = useRef<THREE.PerspectiveCamera>(null);
+  const viewportWidth = useThree((state) => state.size.width);
+  const viewportHeight = useThree((state) => state.size.height);
+  const framing = getStageFraming(compact, viewportWidth, viewportHeight);
 
   return (
     <>
     <PerspectiveCamera
       ref={cameraRef}
       makeDefault
-      position={[0, compact ? 0.72 : 0.9, compact ? 9.1 : 8.2]}
+      position={[0, framing.cameraY, framing.distance]}
       fov={compact ? 55 : 48}
       near={0.1}
       far={220}
     />
-    <CameraDirector compact={compact} cameraRef={cameraRef} />
+    <CameraDirector compact={compact} framing={framing} cameraRef={cameraRef} />
     <color attach="background" args={["#03090e"]} />
     <fog attach="fog" args={["#03090e", 10, 30]} />
     <ambientLight intensity={0.46} color="#9ad9e6" />
@@ -360,8 +378,20 @@ const CharacterSelection = () => {
   }, []);
 
   useEffect(() => {
-    checkDevice();
-  }, [checkDevice]);
+    let active = true;
+    fetchDeviceAccounts()
+      .then((res) => {
+        if (!active) return;
+        setDeviceAccounts(res.accounts);
+        setDeviceIsFull(res.isFull);
+      })
+      .catch((e) => {
+        console.warn("[CharacterSelection] Device check failed:", e);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const candidates: CandidateProfile[] = useMemo(() => {
     return CANDIDATE_BASES.map((base) => {

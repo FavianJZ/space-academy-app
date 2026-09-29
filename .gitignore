@@ -28,6 +28,8 @@ pnpm-debug.log*
 .idea/
 .agents/
 .claude/
+.kiro/
+.codebase-memory/
 
 # Non-production directories & scratch assets
 rollback/

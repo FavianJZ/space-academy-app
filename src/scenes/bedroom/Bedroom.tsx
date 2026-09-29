@@ -396,13 +396,11 @@ const SpacemanAnimator: React.FC<{
     };
   }, []);
 
-  const scratch = useMemo(
-    () => ({
-      position: new THREE.Vector3(),
-      sway: new THREE.Quaternion(),
-    }),
-    []
-  );
+  const scratchRef = useRef({
+    position: new THREE.Vector3(),
+    sway: new THREE.Quaternion(),
+  });
+  const scratch = scratchRef.current;
 
   useEffect(() => {
     const group = charRef.current;
@@ -784,6 +782,82 @@ const DustMotes: React.FC = () => {
       />
     </points>
   );
+};
+
+const BASE_CAMERA_FOV = 46;
+// Below this aspect ratio (tablet/phone portrait) the vertical FOV is widened so the
+// room keeps roughly the same horizontal framing, and the view is shifted up so the
+// subject sits above the bottom dialogue panel. Wider screens keep the original lens.
+const PORTRAIT_FRAMING_ASPECT = 1.2;
+const MAX_PORTRAIT_FOV = 80;
+// Short landscape screens (phones) dock the dialogue panel on the left, so the
+// view is shifted to place the subject in the right half (matches the CSS query
+// `(orientation: landscape) and (max-height: 560px)`).
+const COMPACT_LANDSCAPE_MAX_HEIGHT = 560;
+const COMPACT_LANDSCAPE_SHIFT = 0.25;
+
+const ResponsiveCameraFraming: React.FC = () => {
+  const lastWidthRef = useRef(0);
+  const lastHeightRef = useRef(0);
+
+  useFrame(({ camera, size }) => {
+    if (
+      size.width === lastWidthRef.current &&
+      size.height === lastHeightRef.current
+    ) {
+      return;
+    }
+    lastWidthRef.current = size.width;
+    lastHeightRef.current = size.height;
+
+    const perspective = camera as THREE.PerspectiveCamera;
+    if (!perspective.isPerspectiveCamera) return;
+
+    const aspect = size.width / Math.max(size.height, 1);
+
+    if (aspect >= PORTRAIT_FRAMING_ASPECT) {
+      perspective.fov = BASE_CAMERA_FOV;
+      if (size.height <= COMPACT_LANDSCAPE_MAX_HEIGHT) {
+        perspective.setViewOffset(
+          size.width,
+          size.height,
+          -size.width * COMPACT_LANDSCAPE_SHIFT,
+          0,
+          size.width,
+          size.height
+        );
+      } else {
+        perspective.clearViewOffset();
+      }
+      perspective.updateProjectionMatrix();
+      return;
+    }
+
+    const halfTan =
+      (Math.tan(THREE.MathUtils.degToRad(BASE_CAMERA_FOV / 2)) *
+        PORTRAIT_FRAMING_ASPECT) /
+      aspect;
+    perspective.fov = Math.min(
+      MAX_PORTRAIT_FOV,
+      THREE.MathUtils.radToDeg(2 * Math.atan(halfTan))
+    );
+    const shift = THREE.MathUtils.clamp(
+      (PORTRAIT_FRAMING_ASPECT - aspect) * 0.3,
+      0,
+      0.2
+    );
+    perspective.setViewOffset(
+      size.width,
+      size.height,
+      0,
+      size.height * shift,
+      size.width,
+      size.height
+    );
+    perspective.updateProjectionMatrix();
+  });
+
+  return null;
 };
 
 const Bedroom: React.FC = () => {
@@ -1346,7 +1420,7 @@ const Bedroom: React.FC = () => {
       window.clearTimeout(startTimer);
       cancelSpeechNarration();
     };
-  }, [activeNarrationText, activeSpeaker, skipModeActive, speechVolume]);
+  }, [activeNarrationText, activeSpeaker, language, skipModeActive, speechVolume]);
 
   const canAdvanceDialogue = typingDone && narrationDone;
   const isActiveSpeech =
@@ -1474,10 +1548,11 @@ const Bedroom: React.FC = () => {
               <PerspectiveCamera
                 makeDefault
                 position={[2.15, 0.28, 3.4]}
-                fov={46}
+                fov={BASE_CAMERA_FOV}
                 near={0.1}
                 far={80}
               />
+              <ResponsiveCameraFraming />
 
               <ambientLight intensity={0.24} color="#b8d8ff" />
               <hemisphereLight args={["#79cfff", "#071018", 0.38]} />

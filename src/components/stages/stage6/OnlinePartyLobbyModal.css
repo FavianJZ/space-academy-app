@@ -504,3 +504,114 @@
     width: 100%;
   }
 }
+
+/* ==========================================================================
+   Responsive: clear the fixed audio control, scroll inside the overlay,
+   readable labels and touch-sized controls.
+   ========================================================================== */
+@media (max-width: 1024px) {
+  .party-lobby-overlay {
+    align-items: flex-start;
+    overflow-y: auto;
+    padding: max(64px, env(safe-area-inset-top, 0px) + 56px) max(12px, env(safe-area-inset-right, 0px)) max(12px, env(safe-area-inset-bottom, 0px)) max(12px, env(safe-area-inset-left, 0px));
+  }
+
+  .party-lobby-modal {
+    margin: auto 0;
+    max-height: 100%;
+  }
+
+  .party-lobby-close {
+    min-width: 44px;
+    min-height: 44px;
+    flex-shrink: 0;
+  }
+
+  .party-lobby-top {
+    padding-right: 8px;
+  }
+
+  .party-lobby-badge {
+    font-size: 10.5px;
+    letter-spacing: 1.5px;
+  }
+
+  .net-mode-pill {
+    font-size: 10.5px;
+  }
+
+  .lobby-tab-btn {
+    min-height: 44px;
+  }
+
+  .copy-code-btn,
+  .join-enter-lobby-btn {
+    min-height: 44px;
+  }
+
+  .partner-role,
+  .partner-ready-tag {
+    font-size: 10.5px;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 1024px) and (orientation: portrait) {
+  .code-instruction,
+  .waiting-sub,
+  .local-mode-tip-box {
+    font-size: 13px;
+  }
+
+  .waiting-title,
+  .lobby-tab-btn {
+    font-size: 13px;
+  }
+}
+
+@media (orientation: landscape) and (max-height: 560px) {
+  .party-lobby-overlay {
+    padding-top: max(52px, env(safe-area-inset-top, 0px) + 44px);
+    padding-bottom: 8px;
+  }
+
+  .party-lobby-top {
+    padding-top: 2px;
+    padding-bottom: 2px;
+  }
+
+  .lobby-tab-btn {
+    min-height: 40px;
+    padding: 6px 8px;
+  }
+
+  .party-lobby-body {
+    padding: 10px 14px;
+  }
+
+  .party-code-card {
+    padding: 10px;
+    margin-bottom: 10px;
+  }
+
+  .party-code-display {
+    flex-direction: row !important;
+    margin-bottom: 6px;
+  }
+
+  .code-text {
+    width: auto !important;
+  }
+
+  .copy-code-btn {
+    width: auto !important;
+  }
+
+  .partner-status-box {
+    padding: 10px 14px;
+    margin-bottom: 10px;
+  }
+
+  .local-mode-tip-box {
+    margin-top: 10px;
+  }
+}

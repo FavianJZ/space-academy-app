@@ -610,14 +610,14 @@ export const AudioSettingsProvider = ({ children }: AudioSettingsProviderProps) 
                   </button>
                 </div>
               </footer>
-
-              {showEditProfileModal && (
-                <EditProfileModal
-                  isOpen={showEditProfileModal}
-                  onClose={() => setShowEditProfileModal(false)}
-                />
-              )}
             </section>
+
+            {showEditProfileModal && (
+              <EditProfileModal
+                isOpen={showEditProfileModal}
+                onClose={() => setShowEditProfileModal(false)}
+              />
+            )}
           </div>,
           document.body
         )}

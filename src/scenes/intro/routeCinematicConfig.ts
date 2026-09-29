@@ -287,6 +287,23 @@ const BLACK_HOLE_EJECTION = new THREE.CubicBezierCurve3(
 export const ease01 = (value: number) =>
   THREE.MathUtils.smootherstep(THREE.MathUtils.clamp(value, 0, 1), 0, 1);
 
+// Portrait / narrow screens: widen the vertical FOV so the horizontal framing
+// (ship + landing planet) is not cropped. No-op at aspect >= FOV_REFERENCE_ASPECT
+// (landscape tablets, phones in landscape and desktop keep the authored lens).
+const FOV_REFERENCE_ASPECT = 1.25;
+const FOV_ASPECT_COMPENSATION = 0.8;
+const MAX_FIT_FOV = 88;
+
+export const fitFovToAspect = (fov: number, aspect: number) => {
+  if (!(aspect > 0) || aspect >= FOV_REFERENCE_ASPECT) return fov;
+  const widen = Math.pow(FOV_REFERENCE_ASPECT / aspect, FOV_ASPECT_COMPENSATION);
+  const halfFov = THREE.MathUtils.degToRad(fov) / 2;
+  return Math.min(
+    MAX_FIT_FOV,
+    THREE.MathUtils.radToDeg(2 * Math.atan(Math.tan(halfFov) * widen))
+  );
+};
+
 export const routeGearCompression = (time: number) => {
   const impactElapsed = time - ROUTE_TIMING.touchdown;
   if (impactElapsed < 0) return 0;

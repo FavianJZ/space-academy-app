@@ -382,6 +382,32 @@
   }
 }
 
+/* Tablets: keep the card clear of the fixed audio launcher (top-right)
+   and make use of the extra room for a more readable table. */
+@media (min-width: 641px) and (max-width: 1024px) and (min-height: 561px) {
+  .leaderboard-container {
+    padding-top: 84px;
+  }
+
+  .leaderboard-content {
+    max-height: calc(100vh - 84px - var(--lb-pad));
+    max-height: calc(100dvh - 84px - var(--lb-pad));
+  }
+
+  .leaderboard-table {
+    font-size: 0.9rem;
+  }
+
+  .leaderboard-table th {
+    font-size: 0.72rem;
+  }
+
+  .rank-badge,
+  .score-badge {
+    font-size: 0.8rem;
+  }
+}
+
 @media (max-width: 768px) {
   .leaderboard-content {
     max-width: 98%;
@@ -409,6 +435,15 @@
     width: 25%;
   }
 
+  .leaderboard-table th.rank-col,
+  .leaderboard-table th.major-col {
+    text-align: center;
+  }
+
+  .leaderboard-table th.score-col {
+    text-align: right;
+  }
+
   .back-button {
     width: 100%;
     max-width: 280px;
@@ -431,6 +466,32 @@
     margin-left: -0.5rem;
     margin-right: -0.5rem;
     padding: 0 0.5rem;
+  }
+
+  .leaderboard-header {
+    margin-bottom: 1rem;
+  }
+
+  .leaderboard-header p {
+    font-size: 0.75rem;
+  }
+
+  .leaderboard-table th {
+    font-size: 0.66rem;
+  }
+
+  .user-rank-banner {
+    flex-wrap: wrap;
+    gap: 6px 12px;
+    padding: 10px 12px;
+  }
+
+  .user-rank-banner-right {
+    margin-left: auto;
+  }
+
+  .user-rank-score-val {
+    white-space: nowrap;
   }
 }
 
@@ -477,12 +538,12 @@
   .rank-badge {
     padding: 2px 5px;
     min-width: 24px;
-    font-size: 0.65rem;
+    font-size: 0.7rem;
   }
 
   .score-badge {
     padding: 3px 6px;
-    font-size: 0.65rem;
+    font-size: 0.7rem;
   }
 
   .name-col {
@@ -490,6 +551,13 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+  }
+
+  /* Let long names wrap instead of truncating, so the (YOU) badge stays visible. */
+  .leaderboard-table td.name-col {
+    max-width: none;
+    white-space: normal;
+    overflow-wrap: anywhere;
   }
 }
 
@@ -507,12 +575,17 @@
   }
 
   .leaderboard-content {
-    max-height: none;
+    max-height: calc(100vh - 1rem);
+    max-height: calc(100dvh - 1rem);
     padding: 0.75rem 1rem;
   }
 
   .leaderboard-header {
     margin-bottom: 0.5rem;
+  }
+
+  .user-rank-score-val {
+    white-space: nowrap;
   }
 
   .leaderboard-header h1 {
@@ -596,5 +669,26 @@
   .leaderboard-table tbody tr.player-row.glow {
     animation: none;
     box-shadow: inset 0 0 15px rgba(0, 255, 136, 0.4);
+  }
+}
+
+/* Keep the scrolling card clear of the fixed audio launcher (top-right corner)
+   so rows never slide underneath it. Placed last so it wins over the padding
+   shorthands above. */
+@media (max-width: 640px) and (orientation: portrait) {
+  .leaderboard-container {
+    padding-top: calc(66px + env(safe-area-inset-top, 0px));
+  }
+
+  .leaderboard-content {
+    max-height: calc(100vh - 66px - 0.75rem);
+    max-height: calc(100dvh - 66px - 0.75rem - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+  }
+}
+
+@media (orientation: landscape) and (max-height: 500px) {
+  .leaderboard-container {
+    padding-left: max(66px, env(safe-area-inset-left, 0px));
+    padding-right: max(66px, env(safe-area-inset-right, 0px));
   }
 }

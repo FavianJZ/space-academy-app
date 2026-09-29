@@ -58,22 +58,150 @@ import type { PlayerData } from "../../types/game.types";
 
 import "./MainHub.css";
 
+/*
+ * Aspect-aware hub framing. The desktop composition (camera at 0,5,25 with a
+ * 60deg vertical FOV) is kept untouched for wide viewports; narrower ones
+ * (tablets, portrait phones) pull the camera back just enough for the whole
+ * planet ring to fit horizontally, and portrait viewports also raise the
+ * camera so the ring opens up vertically instead of stacking planets.
+ */
+const HUB_CAMERA_HOME: [number, number, number] = [0, 5, 25];
+const HUB_CAMERA_HALF_FOV_TAN = Math.tan(THREE.MathUtils.degToRad(30));
+const HUB_RING_RADIUS = 14;
+const HUB_RING_PLANET_MARGIN = 2.6;
+const HUB_RING_FIT = 0.9;
+// Portrait keeps extra side margin for the fixed-size DOM planet labels.
+const HUB_RING_FIT_PORTRAIT = 0.84;
+const HUB_PORTRAIT_ELEVATION = THREE.MathUtils.degToRad(40);
+// Short landscape phones lose most of their height to the HUD bars.
+const HUB_SHORT_LANDSCAPE_HEIGHT = 560;
+const HUB_SHORT_LANDSCAPE_PULLBACK = 1.12;
+const HUB_FOLLOW_OFFSET: [number, number, number] = [0, 3, 8];
+const HUB_FOLLOW_MIN_ASPECT = 1.15;
+// Where the selected planet sits on screen (NDC) when the mission panel
+// would otherwise cover it: bottom-left docked panel on short landscape,
+// bottom sheet on portrait. Landscape (desktop, tablets) keeps it centred.
+const HUB_SHORT_LANDSCAPE_FOLLOW_SCALE = 1.6;
+const HUB_SHORT_LANDSCAPE_FOLLOW_NDC: [number, number] = [0.6, -0.15];
+const HUB_PORTRAIT_FOLLOW_NDC: [number, number] = [0, 0.22];
+
+const getRingFitDistance = (
+  aspect: number,
+  elevation: number,
+  fit: number
+) => {
+  const limit = fit * HUB_CAMERA_HALF_FOV_TAN * aspect;
+  const cosElevation = Math.cos(elevation);
+  let low = 5;
+  let high = 400;
+
+  for (let step = 0; step < 40; step++) {
+    const distance = (low + high) / 2;
+    let widest = 0;
+
+    for (let sample = 0; sample <= 24; sample++) {
+      const angle = (sample / 24) * Math.PI;
+      const depth = distance - HUB_RING_RADIUS * Math.sin(angle) * cosElevation;
+      const halfWidth =
+        HUB_RING_RADIUS * Math.abs(Math.cos(angle)) + HUB_RING_PLANET_MARGIN;
+      widest = Math.max(widest, halfWidth / Math.max(depth, 0.001));
+    }
+
+    if (widest > limit) low = distance;
+    else high = distance;
+  }
+
+  return high;
+};
+
+const getHubCameraHome = (
+  aspect: number,
+  viewportHeight: number
+): [number, number, number] => {
+  const baseDistance = Math.hypot(HUB_CAMERA_HOME[1], HUB_CAMERA_HOME[2]);
+  const baseElevation = Math.atan2(HUB_CAMERA_HOME[1], HUB_CAMERA_HOME[2]);
+
+  if (!Number.isFinite(aspect) || aspect <= 0) return HUB_CAMERA_HOME;
+
+  const landscapeBlend = THREE.MathUtils.smoothstep(aspect, 0.6, 1.2);
+  const elevation =
+    landscapeBlend >= 1
+      ? baseElevation
+      : THREE.MathUtils.lerp(
+          HUB_PORTRAIT_ELEVATION,
+          baseElevation,
+          landscapeBlend
+        );
+  const fitDistance = getRingFitDistance(
+    aspect,
+    elevation,
+    THREE.MathUtils.lerp(HUB_RING_FIT_PORTRAIT, HUB_RING_FIT, landscapeBlend)
+  );
+  const isShortLandscape =
+    aspect > 1 && viewportHeight < HUB_SHORT_LANDSCAPE_HEIGHT;
+
+  if (fitDistance <= baseDistance && landscapeBlend >= 1 && !isShortLandscape) {
+    return HUB_CAMERA_HOME;
+  }
+
+  const distance =
+    Math.max(baseDistance, fitDistance) *
+    (isShortLandscape ? HUB_SHORT_LANDSCAPE_PULLBACK : 1);
+  const round = (value: number) => Math.round(value * 100) / 100;
+
+  return [
+    0,
+    round(distance * Math.sin(elevation)),
+    round(distance * Math.cos(elevation)),
+  ];
+};
+
 const CameraFollowPlanet: React.FC<{
   selectedPlanet: PlanetId | null;
   planetRefs: { [key in PlanetId]?: React.RefObject<THREE.Group | null> };
 }> = ({ selectedPlanet, planetRefs }) => {
   const { camera } = useThree();
-  const cameraOffsetRef = useRef<THREE.Vector3>(new THREE.Vector3(0, 3, 8));
+  const cameraOffsetRef = useRef<THREE.Vector3>(
+    new THREE.Vector3(...HUB_FOLLOW_OFFSET)
+  );
 
-  useFrame(() => {
+  useFrame((state) => {
     if (selectedPlanet !== null && planetRefs[selectedPlanet]?.current) {
       const planetPos = new THREE.Vector3();
       planetRefs[selectedPlanet]!.current!.getWorldPosition(planetPos);
 
-      const cameraPos = planetPos.clone().add(cameraOffsetRef.current);
+      // Narrow viewports back the close-up off so the planet is not wider
+      // than the screen (no-op for landscape desktop aspect ratios).
+      const aspect = state.size.width / Math.max(state.size.height, 1);
+      const isShortLandscape =
+        aspect > 1 && state.size.height < HUB_SHORT_LANDSCAPE_HEIGHT;
+      const offsetScale = isShortLandscape
+        ? HUB_SHORT_LANDSCAPE_FOLLOW_SCALE
+        : Math.max(1, HUB_FOLLOW_MIN_ASPECT / aspect);
+      const cameraPos = planetPos
+        .clone()
+        .addScaledVector(cameraOffsetRef.current, offsetScale);
 
       camera.position.lerp(cameraPos, 0.1);
-      camera.lookAt(planetPos);
+
+      const followNdc = isShortLandscape
+        ? HUB_SHORT_LANDSCAPE_FOLLOW_NDC
+        : aspect < 1
+          ? HUB_PORTRAIT_FOLLOW_NDC
+          : null;
+
+      if (followNdc) {
+        const halfHeight =
+          cameraOffsetRef.current.length() * offsetScale * HUB_CAMERA_HALF_FOV_TAN;
+        const [ndcX, ndcY] = followNdc;
+        camera.lookAt(
+          planetPos.x - ndcX * halfHeight * aspect,
+          planetPos.y - ndcY * halfHeight,
+          planetPos.z
+        );
+      } else {
+        camera.lookAt(planetPos);
+      }
     }
   });
 
@@ -83,19 +211,32 @@ const CameraFollowPlanet: React.FC<{
 const CameraControl: React.FC<{ selectedPlanet: PlanetId | null }> = ({
   selectedPlanet,
 }) => {
-  const { camera } = useThree();
+  const { camera, size } = useThree();
+  const [homeX, homeY, homeZ] = getHubCameraHome(
+    size.width / Math.max(size.height, 1),
+    size.height
+  );
+  const hasFramedRef = useRef(false);
 
   useEffect(() => {
     if (selectedPlanet === null) {
+      if (!hasFramedRef.current) {
+        // First frame: start from the viewport-appropriate framing instead
+        // of flying out from the desktop position.
+        hasFramedRef.current = true;
+        camera.position.set(homeX, homeY, homeZ);
+        return;
+      }
+
       gsap.to(camera.position, {
-        x: 0,
-        y: 5,
-        z: 25,
+        x: homeX,
+        y: homeY,
+        z: homeZ,
         duration: 1.5,
         ease: "power2.inOut",
       });
     }
-  }, [selectedPlanet, camera]);
+  }, [selectedPlanet, camera, homeX, homeY, homeZ]);
 
   return null;
 };

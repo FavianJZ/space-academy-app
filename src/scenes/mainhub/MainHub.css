@@ -5487,3 +5487,270 @@
     animation: none !important;
   }
 }
+
+/* ------------------------------------------------------------------
+   Responsive pass: phones, tablet portrait and short landscape.
+   Desktop (wide landscape) is untouched by these queries.
+   ------------------------------------------------------------------ */
+
+@keyframes planetPanelEnterCompact {
+  from { opacity: 0; transform: translateY(16px); filter: blur(6px); }
+}
+
+@media (max-width: 760px) {
+  .mainhub-scene :is(.leaderboard-btn, .dossier-btn, .settings-btn) {
+    min-height: 40px;
+    padding: 4px 10px;
+    font-size: 11px;
+  }
+
+  .hub-status-row {
+    font-size: 11px;
+  }
+
+  .mainhub-scene .roadmap-planet-name {
+    font-size: 10px;
+    letter-spacing: 0.02em;
+  }
+
+  .mainhub-scene .planet-info-type {
+    font-size: 10px;
+  }
+
+  .mainhub-scene .planet-ui-players-icon {
+    font-size: 9px;
+  }
+
+  .planet-ui-players-label {
+    font-size: 11px;
+  }
+
+  .planet-completed-stat-label,
+  .planet-completed-hint {
+    font-size: 10px;
+  }
+
+  .mainhub-scene .planet-lb-toggle {
+    font-size: 11px;
+  }
+}
+
+/* Tablets (portrait, and landscape up to 1100px wide): readable HUD text. */
+@media (min-width: 761px) and (max-width: 1024px) and (orientation: portrait), (min-width: 761px) and (max-width: 1100px) and (orientation: landscape) and (min-height: 561px) {
+  .mainhub-scene .welcome-message {
+    max-width: min(560px, calc(100vw - 230px));
+  }
+
+  .hub-command-kicker,
+  .hub-status-row {
+    font-size: 11px;
+  }
+
+  .mainhub-scene .welcome-message > p {
+    font-size: 12px;
+  }
+
+  .mainhub-scene :is(.leaderboard-btn, .dossier-btn, .settings-btn) {
+    min-height: 44px;
+    padding: 8px 16px;
+    font-size: 12px;
+  }
+
+  .mainhub-scene .roadmap-node-shape {
+    width: 48px;
+    height: 48px;
+  }
+
+  .mainhub-scene .roadmap-planet-name {
+    font-size: 11px;
+  }
+
+  .mainhub-scene .roadmap-stage-type {
+    font-size: 10px;
+  }
+
+  .mainhub-scene .roadmap-diff {
+    font-size: 10px;
+  }
+
+  .mainhub-scene .planet-selection-ui {
+    width: min(580px, calc(100vw - 64px));
+  }
+
+  .mainhub-scene .planet-info-type {
+    font-size: 11px;
+  }
+
+  .mainhub-scene .planet-info p {
+    font-size: 15px;
+  }
+
+  .planet-info-meta span {
+    font-size: 13px;
+  }
+
+  .mainhub-scene .planet-ui-players-icon {
+    font-size: 10px;
+  }
+
+  .planet-ui-players-label {
+    font-size: 12px;
+  }
+
+  .planet-completed-stat-label {
+    font-size: 10px;
+  }
+
+  .planet-completed-hint {
+    font-size: 11px;
+  }
+
+  .mainhub-scene .planet-lb-toggle {
+    font-size: 12px;
+  }
+
+  .planet-lb-row-header :is(.planet-lb-rank, .planet-lb-name, .planet-lb-score, .planet-lb-time) {
+    font-size: 10px;
+  }
+
+  .planet-lb-time {
+    font-size: 11px;
+  }
+
+  .mainhub-scene :is(.depart-btn, .back-btn) {
+    min-height: 48px;
+    font-size: 13px;
+  }
+}
+
+@media (orientation: landscape) and (max-height: 560px) {
+  .mainhub-scene :is(.leaderboard-btn, .dossier-btn, .settings-btn) {
+    min-height: 40px;
+    font-size: 11px;
+  }
+
+  .mainhub-scene .roadmap-planet-name {
+    font-size: 10px;
+    letter-spacing: 0.04em;
+  }
+
+  /* Keep the mission panel clear of the header buttons (left) and the
+     loadout card (top right): dock it bottom-left under the header. */
+  .mainhub-scene .planet-selection-ui {
+    left: max(12px, env(safe-area-inset-left, 0px));
+    bottom: max(10px, env(safe-area-inset-bottom, 0px));
+    width: min(440px, calc(100vw - 190px));
+    max-height: calc(100vh - 112px);
+    max-height: calc(100dvh - 112px);
+    padding: 14px 16px 0;
+    transform: none;
+    animation-name: planetPanelEnterCompact;
+  }
+
+  /* Sticky footer owns the bottom padding so scrolled text can't peek out
+     underneath it. */
+  .mainhub-scene .planet-selection-ui .button-group {
+    position: sticky;
+    bottom: 0;
+    z-index: 10;
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
+    margin-top: 6px;
+    padding-top: 8px;
+    padding-bottom: 12px;
+    background: linear-gradient(180deg, rgba(7, 24, 33, 0.85) 0%, rgba(2, 10, 16, 0.98) 100%);
+  }
+
+  .mainhub-scene .planet-selection-ui :is(.depart-btn, .back-btn) {
+    min-height: 42px;
+  }
+
+  .planet-completed-stat-label,
+  .planet-completed-hint,
+  .planet-ui-players-label {
+    font-size: 10px;
+  }
+}
+
+@media (max-width: 760px), (orientation: landscape) and (max-height: 560px) {
+  .boss-mode-toggle {
+    min-height: 40px;
+    font-size: 11px;
+  }
+
+  .mainhub-scene .planet-ui-players-icon {
+    font-size: 10px;
+  }
+
+  .mainhub-scene .planet-info-type,
+  .planet-info-meta span,
+  .planet-ui-players-label,
+  .planet-lb-title {
+    font-size: 11px;
+  }
+
+  .planet-lb-row-header :is(.planet-lb-rank, .planet-lb-name, .planet-lb-score, .planet-lb-time) {
+    font-size: 10px;
+    letter-spacing: 1px;
+  }
+
+  .planet-lb-row {
+    grid-template-columns: 28px minmax(0, 1fr) 56px 56px;
+  }
+
+  .planet-lb-rank,
+  .planet-lb-name,
+  .planet-lb-score,
+  .planet-lb-time {
+    font-size: 12px;
+  }
+}
+
+/* Notch / home-indicator clearance (viewport-fit=cover). env() is 0 on
+   desktop, and these are scoped to phone layouts anyway. */
+@media (max-width: 760px) {
+  .mainhub-scene .level-roadmap-bar {
+    padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+@media (orientation: landscape) and (max-height: 560px) {
+  .mainhub-scene .welcome-message {
+    left: calc(12px + env(safe-area-inset-left, 0px));
+  }
+
+  .mainhub-scene .top-right-area {
+    right: calc(12px + env(safe-area-inset-right, 0px));
+  }
+
+  .mainhub-scene .level-roadmap-bar {
+    padding-left: calc(12px + env(safe-area-inset-left, 0px));
+    padding-right: calc(12px + env(safe-area-inset-right, 0px));
+    padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .mainhub-scene .planet-selection-ui {
+    left: calc(12px + env(safe-area-inset-left, 0px));
+    width: min(440px, calc(100vw - 190px - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px)));
+  }
+}
+
+@media (max-width: 480px) {
+  /* Leave a gap before the 108px loadout card (12px inset on each side). */
+  .mainhub-scene .welcome-message {
+    max-width: calc(100vw - 140px);
+  }
+}
+
+@media (max-width: 760px) {
+  /* Sticky DEPART/BACK footer owns the bottom padding so scrolled text
+     can't peek out underneath it. */
+  .mainhub-scene .planet-selection-ui {
+    padding-bottom: 0;
+  }
+
+  .mainhub-scene .planet-selection-ui .button-group {
+    padding-bottom: 12px;
+  }
+}

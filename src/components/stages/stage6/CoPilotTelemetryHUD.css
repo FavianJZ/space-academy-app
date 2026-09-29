@@ -103,3 +103,10 @@
 .combo-val {
   color: #00ffcc;
 }
+
+@media (max-width: 1279px) {
+  .copilot-label,
+  .copilot-hud-card .stat-label {
+    font-size: 10.5px;
+  }
+}

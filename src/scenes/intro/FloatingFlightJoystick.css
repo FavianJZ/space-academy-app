@@ -325,3 +325,60 @@
   }
 }
 
+
+/* Tablets: keep the hint above the bottom-centred route telemetry card. */
+@media (min-width: 641px) and (max-width: 1024px) {
+  .nav-mobile-pilot-hint {
+    bottom: 100px;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 640px) {
+  .nav-mobile-pilot-hint {
+    bottom: max(30px, calc(env(safe-area-inset-bottom) + 16px));
+    width: max-content;
+    max-width: calc(100vw - 24px);
+    font-size: 11px;
+    white-space: normal;
+    text-align: center;
+  }
+}
+
+/* Landscape phones: slightly smaller floating stick so it stays on screen
+   near the bottom edge, and the hint stays clear of the skip button. */
+@media (orientation: landscape) and (max-height: 560px) {
+  .floating-joystick-base {
+    width: 112px;
+    height: 112px;
+    margin-left: -56px;
+    margin-top: -56px;
+  }
+  /* Bottom-right, beside the lower-left AI dialogue box. */
+  .nav-mobile-pilot-hint {
+    left: auto;
+    right: max(16px, env(safe-area-inset-right));
+    bottom: max(18px, env(safe-area-inset-bottom));
+    width: max-content;
+    max-width: calc(50vw - 40px);
+    padding: 6px 12px;
+    border-radius: 14px;
+    font-size: 10px;
+    letter-spacing: 0.04em;
+    white-space: normal;
+    animation-name: pulseHintStatic;
+  }
+  .mobile-two-finger-boost-hud { top: 62px; }
+}
+
+@keyframes pulseHintStatic {
+  0%,
+  100% {
+    opacity: 0.85;
+    transform: translateY(0);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(-3px);
+  }
+}

@@ -196,13 +196,74 @@
   .intro-route-footer span:last-child { display: none; }
 }
 
+@media (max-width: 760px) {
+  .intro-route-layer {
+    padding-bottom: max(26px, calc(env(safe-area-inset-bottom) + 14px));
+  }
+  .intro-route-panel { max-height: 78dvh; overscroll-behavior: contain; }
+  .intro-route-header span,
+  .intro-route-footer,
+  .intro-route-copy > span { font-size: 0.62rem; }
+  .intro-route-copy strong { font-size: 0.8rem; }
+  .intro-route-meta { font-size: 0.6rem; }
+  .intro-route-meta strong { font-size: 0.6rem; }
+  .intro-route-index { font-size: 0.66rem; }
+}
+
+@media (max-width: 760px) and (max-height: 700px) and (orientation: portrait) {
+  .intro-route-option { min-height: 78px; padding: 13px 15px; }
+}
+
+/* Tablet portrait: full-width panel with readable copy. */
+@media (min-width: 761px) and (max-width: 1024px) and (orientation: portrait) {
+  .intro-route-layer { padding-inline: 28px; }
+  .intro-route-panel { width: 100%; max-height: calc(100dvh - 200px); overflow-y: auto; }
+  .intro-route-header { grid-template-columns: 1fr; gap: 12px; }
+  .intro-route-header span,
+  .intro-route-footer,
+  .intro-route-copy > span { font-size: 0.68rem; }
+  .intro-route-header h2 { font-size: clamp(2.4rem, 5.6vw, 3.1rem); }
+  .intro-route-header p { max-width: 60ch; font-size: 0.86rem; }
+  .intro-route-grid { gap: 10px; }
+  .intro-route-option { grid-template-columns: 30px minmax(0, 1fr); min-height: 150px; padding: 18px 18px 36px; }
+  .intro-route-copy strong { font-size: 0.95rem; }
+  .intro-route-copy p { font-size: 0.8rem; }
+  .intro-route-meta {
+    grid-column: 2;
+    flex-direction: row;
+    align-items: baseline;
+    justify-content: flex-start;
+    gap: 14px;
+    padding-right: 0;
+    font-size: 0.64rem;
+  }
+  .intro-route-meta strong { font-size: 0.64rem; }
+  .intro-route-index { font-size: 0.72rem; }
+}
+
 @media (orientation: landscape) and (max-height: 560px) {
-  .intro-route-layer { padding: 58px 18px 18px; }
-  .intro-route-panel { width: min(900px, 90vw); max-height: 86vh; padding: 16px 20px; }
-  .intro-route-header { padding-bottom: 12px; }
-  .intro-route-grid { margin-top: 10px; }
-  .intro-route-option { min-height: 82px; padding: 10px 13px; }
+  .intro-route-layer {
+    align-items: center;
+    padding: max(62px, env(safe-area-inset-top)) max(18px, env(safe-area-inset-right))
+      max(16px, env(safe-area-inset-bottom)) max(18px, env(safe-area-inset-left));
+  }
+  .intro-route-panel {
+    width: min(900px, 100%);
+    max-height: 100%;
+    margin: 0 auto;
+    padding: 12px 18px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+  .intro-route-header { padding-bottom: 8px; gap: 4px; }
+  .intro-route-header h2 { font-size: clamp(1.3rem, 6.5vh, 1.65rem); }
+  .intro-route-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; margin-top: 8px; }
+  .intro-route-option { min-height: 0; padding: 9px 12px 10px; gap: 8px; grid-template-columns: 20px minmax(0, 1fr) auto; }
+  .intro-route-copy strong { margin-top: 3px; font-size: 0.72rem; }
   .intro-route-copy p { display: none; }
+  .intro-route-meta { padding-right: 14px; gap: 5px; font-size: 0.56rem; }
+  .intro-route-meta strong { font-size: 0.56rem; }
+  .intro-route-option > i { right: 10px; bottom: 8px; }
   .intro-route-footer { display: none; }
 }
 

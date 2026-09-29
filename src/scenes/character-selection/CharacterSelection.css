@@ -960,3 +960,312 @@
 
   .cs-transition-line { transform: scaleX(1); }
 }
+
+/* ==========================================================================
+   RESPONSIVE: touch devices, phones, tablets
+   ========================================================================== */
+
+@media (hover: none) and (pointer: coarse) {
+  .cs-lang-switcher { padding: 3px 5px; }
+  .cs-lang-btn { min-height: 36px; padding: 6px 11px; }
+  .cs-device-btn { min-height: 44px; }
+  .cs-device-btn:hover { transform: none; }
+}
+
+/* Tablet portrait: use the extra height for a bigger headline + full dossier */
+@media (min-width: 701px) and (max-width: 1100px) and (orientation: portrait) {
+  .cs-topbar { top: max(28px, env(safe-area-inset-top)); }
+  .cs-brand-lockup span,
+  .cs-link-state > span { white-space: nowrap; }
+  .cs-device-btn-badge { white-space: nowrap; }
+
+  .cs-copy {
+    top: clamp(132px, 12.5vh, 156px);
+    left: clamp(28px, 4.5vw, 44px);
+    width: calc(50% - 56px);
+  }
+
+  .cs-copy h1 {
+    max-width: none;
+    margin: 16px 0 16px;
+    font-size: clamp(3rem, 7.4vw, 4.1rem);
+  }
+
+  .cs-copy > p {
+    display: block;
+    max-width: 40ch;
+    font-size: clamp(0.8rem, 1.7vw, 0.92rem);
+    line-height: 1.6;
+  }
+
+  .cs-kicker,
+  .cs-brand-lockup span,
+  .cs-link-state > span,
+  .cs-stage-readout span { font-size: 0.68rem; }
+
+  .cs-dossier {
+    top: clamp(132px, 12.5vh, 156px);
+    right: clamp(24px, 4.5vw, 44px);
+    width: calc(50% - 44px);
+    padding: 18px 20px 20px;
+  }
+
+  .cs-dossier-heading span,
+  .cs-dossier-name > span { font-size: 0.66rem; }
+  .cs-dossier-heading strong { font-size: 0.78rem; }
+  .cs-dossier-name h2 { font-size: clamp(1.7rem, 3.6vw, 2.2rem); }
+  .cs-dossier-name p { font-size: 0.72rem; }
+
+  .cs-dossier-description {
+    display: block;
+    margin: 12px 0 14px;
+    font-size: clamp(0.76rem, 1.6vw, 0.84rem);
+    line-height: 1.5;
+  }
+
+  .cs-metrics { margin-top: 0; gap: 9px; }
+  .cs-metric > div:first-child { font-size: 0.66rem; }
+
+  .cs-traits { display: flex; margin-top: 14px; }
+  .cs-traits span { font-size: 0.62rem; }
+
+  .cs-stage-readout { bottom: clamp(150px, 16vh, 196px); }
+  .cs-stage-readout strong { font-size: 0.72rem; }
+
+  .cs-selector {
+    bottom: max(clamp(28px, 4vh, 48px), env(safe-area-inset-bottom));
+  }
+
+  .cs-candidate-tabs > button > span { font-size: 0.68rem; }
+  .cs-candidate-tabs > button strong { font-size: 0.86rem; }
+  .cs-candidate-tabs > button small { font-size: 0.6rem; }
+  .cs-confirm span { font-size: 0.62rem; }
+  .cs-confirm strong { font-size: 0.78rem; }
+}
+
+/* Tablet portrait <= 768px: the audio launcher sits in the top-right corner */
+@media (min-width: 701px) and (max-width: 768px) and (orientation: portrait) {
+  .cs-topbar { right: calc(max(14px, env(safe-area-inset-right)) + 56px); }
+  .cs-link-state { display: none; }
+}
+
+/* Phone portrait */
+@media (max-width: 700px) and (orientation: portrait) {
+  .cs-topbar {
+    top: max(16px, env(safe-area-inset-top));
+    left: max(16px, env(safe-area-inset-left));
+    /* keep clear of the fixed audio/settings launcher (44px) in the corner */
+    right: calc(max(14px, env(safe-area-inset-right)) + 54px);
+    flex-wrap: wrap;
+    align-items: center;
+    row-gap: 10px;
+  }
+
+  .cs-brand-lockup { gap: 9px; min-height: 44px; }
+  .cs-brand-lockup > div > span { display: none; }
+  .cs-brand-lockup strong {
+    margin-top: 0;
+    font-size: 0.7rem;
+    letter-spacing: 0.16em;
+    white-space: nowrap;
+  }
+
+  .cs-topbar-actions { display: contents; }
+
+  .cs-lang-switcher { margin-left: auto; }
+  .cs-lang-btn { font-size: 0.7rem; }
+
+  /* device memory button gets its own full-width row under the brand */
+  .cs-device-slot-action {
+    order: 5;
+    flex: 1 0 100%;
+    /* stretch under the launcher too */
+    margin-right: -54px;
+  }
+
+  .cs-device-btn {
+    width: 100%;
+    min-height: 44px;
+    justify-content: center;
+    gap: 8px;
+    padding: 6px 14px;
+    font-size: 0.7rem;
+    white-space: nowrap;
+  }
+
+  .cs-device-btn-icon { font-size: 1rem; }
+  .cs-device-btn-badge { font-size: 0.66rem; padding: 2px 7px; }
+
+  .cs-copy {
+    top: calc(max(16px, env(safe-area-inset-top)) + 118px);
+    left: max(20px, env(safe-area-inset-left));
+    width: calc(100vw - 40px);
+  }
+
+  .cs-kicker { font-size: 0.62rem; }
+
+  .cs-copy h1 {
+    margin-top: 10px;
+    font-size: clamp(1.9rem, 9.2vw, 3rem);
+  }
+
+  .cs-dossier {
+    left: max(14px, env(safe-area-inset-left));
+    right: max(14px, env(safe-area-inset-right));
+    bottom: calc(max(22px, env(safe-area-inset-bottom)) + 122px);
+    width: auto;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    column-gap: 12px;
+    padding: 9px 16px 10px;
+  }
+
+  .cs-dossier-heading {
+    grid-column: 2;
+    grid-row: 1;
+    padding: 0;
+    border-bottom: 0;
+  }
+
+  .cs-dossier-heading strong { font-size: 0.72rem; }
+
+  .cs-dossier-name {
+    grid-column: 1;
+    grid-row: 1;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    column-gap: 10px;
+    margin-top: 0;
+    min-width: 0;
+  }
+
+  .cs-dossier-name > span {
+    flex: 1 0 100%;
+    font-size: 0.6rem;
+  }
+
+  .cs-dossier-name h2 {
+    margin: 3px 0 0;
+    font-size: 1.3rem;
+  }
+
+  .cs-dossier-name p {
+    font-size: 0.64rem;
+    white-space: nowrap;
+  }
+
+  .cs-stage-readout { display: none; }
+
+  .cs-selector {
+    bottom: max(22px, env(safe-area-inset-bottom));
+    grid-template-rows: 56px 48px;
+  }
+
+  .cs-arrow,
+  .cs-candidate-tabs > button { min-height: 56px; }
+  .cs-arrow { font-size: 1.1rem; }
+  .cs-candidate-tabs > button strong { font-size: 0.74rem; }
+  .cs-confirm { min-height: 48px; }
+  .cs-confirm span { font-size: 0.6rem; }
+  .cs-confirm strong { font-size: 0.74rem; }
+}
+
+/* Tall phones: there is room for the intro copy */
+@media (max-width: 700px) and (orientation: portrait) and (min-height: 800px) {
+  .cs-copy > p {
+    display: block;
+    margin-top: 14px;
+    max-width: 40ch;
+    font-size: 0.74rem;
+    line-height: 1.6;
+  }
+}
+
+/* Phone landscape: single-row selector, copy + dossier in the side columns */
+@media (orientation: landscape) and (max-height: 540px) {
+  .cs-topbar {
+    top: max(10px, env(safe-area-inset-top));
+    left: max(18px, env(safe-area-inset-left));
+    right: calc(max(14px, env(safe-area-inset-right)) + 54px);
+  }
+
+  .cs-link-state { display: none; }
+  .cs-topbar-actions { margin-left: 0; gap: 10px; }
+
+  .cs-device-btn {
+    gap: 8px;
+    padding: 6px 14px;
+    font-size: 0.66rem;
+    white-space: nowrap;
+  }
+
+  .cs-device-btn-icon { font-size: 1rem; }
+  .cs-device-btn-badge { font-size: 0.62rem; }
+
+  .cs-copy {
+    top: calc(max(10px, env(safe-area-inset-top)) + 58px);
+    left: max(20px, env(safe-area-inset-left));
+    width: min(30vw, 230px);
+  }
+
+  .cs-kicker { font-size: 0.62rem; }
+
+  .cs-copy h1 {
+    max-width: 9ch;
+    margin: 8px 0 0;
+    font-size: clamp(1.6rem, 4.6vw, 2.15rem);
+  }
+
+  .cs-dossier {
+    top: calc(max(10px, env(safe-area-inset-top)) + 58px);
+    right: max(16px, env(safe-area-inset-right));
+    bottom: auto;
+    width: min(30vw, 230px);
+    padding: 10px 14px 12px;
+  }
+
+  .cs-dossier-heading { padding-bottom: 6px; }
+  .cs-dossier-heading span { display: none; }
+  .cs-dossier-heading { justify-content: flex-end; }
+  .cs-dossier-name { margin-top: 6px; }
+  .cs-dossier-name > span { font-size: 0.6rem; }
+  .cs-dossier-name h2 { font-size: 1.25rem; }
+  .cs-dossier-name p { font-size: 0.64rem; }
+
+  .cs-stage-readout { display: none; }
+
+  .cs-selector {
+    bottom: max(12px, env(safe-area-inset-bottom));
+    grid-template-columns: 44px minmax(0, 1fr) 44px minmax(128px, 170px);
+    grid-template-rows: 48px;
+    gap: 6px;
+    width: min(calc(100vw - 32px), 760px);
+  }
+
+  .cs-arrow,
+  .cs-candidate-tabs > button,
+  .cs-confirm { min-height: 48px; }
+
+  .cs-candidate-tabs > button {
+    grid-template-columns: 1fr;
+    gap: 0;
+    padding: 6px 10px;
+  }
+
+  .cs-candidate-tabs > button > span,
+  .cs-candidate-tabs > button small { display: none; }
+  .cs-candidate-tabs > button strong { font-size: 0.7rem; text-align: center; }
+
+  .cs-confirm {
+    grid-column: auto;
+    align-items: center;
+    flex-direction: column;
+    justify-content: center;
+    padding: 6px 12px;
+  }
+
+  .cs-confirm span { font-size: 0.6rem; }
+  .cs-confirm strong { margin-top: 3px; font-size: 0.7rem; }
+}

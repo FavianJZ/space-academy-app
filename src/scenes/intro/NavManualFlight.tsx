@@ -28,6 +28,7 @@ import {
   ROUTE_WORLD,
   SHUTTLE_TARGET_SIZE,
   ease01,
+  fitFovToAspect,
   writeRoutePose,
 } from "./routeCinematicConfig";
 
@@ -830,8 +831,9 @@ export const NavFlightController: React.FC<NavFlightControllerProps> = ({
       camera.quaternion
         .copy(scratch.alignFromCameraQuaternion)
         .slerp(scratch.alignCameraQuaternion, progress);
-      if (Math.abs(camera.fov - 47) > 0.01) {
-        camera.fov = THREE.MathUtils.lerp(camera.fov, 47, progress);
+      const alignFov = fitFovToAspect(47, camera.aspect);
+      if (Math.abs(camera.fov - alignFov) > 0.01) {
+        camera.fov = THREE.MathUtils.lerp(camera.fov, alignFov, progress);
         camera.updateProjectionMatrix();
       }
 
@@ -891,10 +893,13 @@ export const NavFlightController: React.FC<NavFlightControllerProps> = ({
         cameraReadyRef.current = true;
       }
 
-      const desiredFov = THREE.MathUtils.lerp(
-        FLIGHT_TUNING.fovIdle,
-        FLIGHT_TUNING.fovBoost,
-        throttleRef.current
+      const desiredFov = fitFovToAspect(
+        THREE.MathUtils.lerp(
+          FLIGHT_TUNING.fovIdle,
+          FLIGHT_TUNING.fovBoost,
+          throttleRef.current
+        ),
+        camera.aspect
       );
       if (Math.abs(camera.fov - desiredFov) > 0.05) {
         camera.fov = damp(camera.fov, desiredFov, 3.2, dt);
